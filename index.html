@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+<title>Block Builder Typing Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{
+  --f-pinky:#cfa3f5; --f-pinky-s:#9442dc;
+  --f-ring:#93c6ff;  --f-ring-s:#2a74d8;
+  --f-middle:#9de69d; --f-middle-s:#239423;
+  --f-index:#ffd47e; --f-index-s:#e08a00;
+  --f-thumb:#e6e6e6; --f-thumb-s:#7a7a7a;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'VT323',monospace;color:#fff;background:#2a1c10;min-height:100vh;image-rendering:pixelated;-webkit-font-smoothing:none}
+.px{font-family:'Press Start 2P',monospace}
+[hidden]{display:none !important}
+button{font:inherit}
+
+/* ---------- header ---------- */
+header{position:sticky;top:0;z-index:20;background:rgba(20,14,8,.92);border-bottom:4px solid #000;padding:8px 12px}
+.hdr{max-width:1020px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{font-family:'Press Start 2P';font-size:clamp(11px,2vw,15px);color:#ffd84a;text-shadow:3px 3px 0 #6b3d00;cursor:pointer;line-height:1.3;user-select:none}
+.logo span{color:#7be35a;text-shadow:3px 3px 0 #1f5a10}
+.hud{display:flex;align-items:center;gap:12px;margin-left:auto;flex-wrap:wrap}
+.lvl{font-family:'Press Start 2P';font-size:10px;color:#fff;text-align:right;line-height:1.6}
+.xpbar{width:130px;height:12px;background:#222;border:2px solid #000;position:relative;margin-top:3px}
+.xpbar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(#b4ff6a,#5fc22a);width:0;transition:width .3s}
+.gems{display:flex;align-items:center;gap:6px;font-family:'Press Start 2P';font-size:13px;color:#7dffaa;text-shadow:2px 2px 0 #064d22}
+.gem{width:22px;height:22px;shape-rendering:crispEdges}
+.sets{display:flex;gap:6px}
+.sbtn{font-family:'Press Start 2P';font-size:8px;line-height:1.5;padding:6px 7px;background:#5a5a5a;color:#fff;border:2px solid #000;box-shadow:inset 2px 2px 0 #8a8a8a, inset -2px -2px 0 #333;cursor:pointer;min-width:58px}
+.sbtn.off{background:#3a3a3a;color:#aaa}
+
+/* ---------- generic UI ---------- */
+main{max-width:1020px;margin:0 auto;padding:14px 12px 60px}
+.panel{background:#c6c6c6;color:#3a3a3a;border:3px solid #000;box-shadow:inset 3px 3px 0 #fff, inset -3px -3px 0 #555;padding:16px}
+.panel h2{font-family:'Press Start 2P';font-size:clamp(12px,2.2vw,16px);margin:0 0 10px;color:#3a3a3a;line-height:1.5}
+.panel p{font-size:22px;margin:6px 0;line-height:1.15}
+.btn{font-family:'Press Start 2P';font-size:11px;line-height:1.4;color:#fff;text-shadow:2px 2px 0 #333;background:#7d7d7d;border:3px solid #000;box-shadow:inset 3px 3px 0 #aaa, inset -3px -3px 0 #4a4a4a;padding:12px 14px;cursor:pointer}
+.btn:hover{background:#6b9a45;box-shadow:inset 3px 3px 0 #a6dc74, inset -3px -3px 0 #335220}
+.btn:active{transform:translateY(2px)}
+.btn.primary{background:#4f9a2e;box-shadow:inset 3px 3px 0 #8fdc5e, inset -3px -3px 0 #2c5c16}
+.btn.danger{background:#a83a2c;box-shadow:inset 3px 3px 0 #e07060, inset -3px -3px 0 #5e1a12}
+.btn.small{font-size:9px;padding:8px 10px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spacer{flex:1}
+.back{margin-bottom:12px}
+.title-big{font-family:'Press Start 2P';text-align:center;color:#ffd84a;text-shadow:4px 4px 0 #6b3d00;font-size:clamp(18px,4.6vw,38px);margin:10px 0 4px;line-height:1.3}
+.title-big span{color:#7be35a;text-shadow:4px 4px 0 #1f5a10}
+.sub{text-align:center;font-size:clamp(20px,3vw,28px);color:#f3e7c9;margin:0 0 18px}
+
+/* ---------- menu ---------- */
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media (max-width:640px){.cards{grid-template-columns:1fr}}
+.card{display:flex;gap:14px;align-items:center;text-align:left;cursor:pointer;background:#c6c6c6;color:#3a3a3a;border:3px solid #000;box-shadow:inset 3px 3px 0 #fff, inset -3px -3px 0 #555;padding:14px;transition:transform .1s}
+.card:hover{transform:translateY(-3px);background:#d4e9c4}
+.card canvas{width:72px;height:auto;flex:none;image-rendering:pixelated}
+.card h3{font-family:'Press Start 2P';font-size:13px;margin:0 0 8px;line-height:1.4}
+.card p{margin:0;font-size:21px;line-height:1.05}
+.tips{margin-top:16px}
+.posture{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.posture span{background:#e8e8e8;border:2px solid #000;padding:2px 8px;font-size:21px}
+details{margin-top:14px}
+summary{font-family:'Press Start 2P';font-size:10px;cursor:pointer;color:#f3e7c9;padding:6px 0}
+details .panel{margin-top:8px}
+details li{font-size:21px;margin:4px 0}
+
+/* ---------- lessons ---------- */
+.lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.ltile{position:relative;cursor:pointer;background:#8b8b8b;border:3px solid #000;box-shadow:inset 3px 3px 0 #b5b5b5, inset -3px -3px 0 #555;padding:10px 8px;color:#fff;text-align:center;min-height:104px}
+.ltile:hover{background:#6b9a45}
+.ltile .n{font-family:'Press Start 2P';font-size:9px;color:#ffe;opacity:.8}
+.ltile .t{font-family:'Press Start 2P';font-size:11px;margin:8px 0;line-height:1.5;text-shadow:2px 2px 0 #333}
+.ltile .st{font-size:26px;letter-spacing:2px}
+.ltile.locked{background:#4a4a4a;cursor:not-allowed;color:#999}
+.ltile.locked:hover{background:#4a4a4a}
+.star{color:#ffd84a;text-shadow:2px 2px 0 #7a5200}
+.star.off{color:#666;text-shadow:none}
+.newkeys{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.kcap{font-family:'VT323';font-size:30px;min-width:46px;height:46px;display:inline-flex;align-items:center;justify-content:center;border:3px solid #000;color:#222;padding:0 8px;box-shadow:inset 2px 2px 0 rgba(255,255,255,.6), inset -2px -3px 0 rgba(0,0,0,.25)}
+
+/* ---------- typing area ---------- */
+.playhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.playhead h2{margin:0}
+.badge{font-family:'Press Start 2P';font-size:9px;background:#3a3a3a;color:#fff;padding:6px 8px;border:2px solid #000}
+.typebox{background:#1b1b1b;border:3px solid #000;box-shadow:inset 3px 3px 0 #3a3a3a, inset -3px -3px 0 #0a0a0a;padding:16px 18px;font-family:'VT323',monospace;font-size:clamp(30px,5vw,48px);line-height:1.25;color:#9a9a9a;min-height:84px;letter-spacing:1px;margin-top:10px}
+.typebox .w{display:inline-block;white-space:pre}
+.c.done{color:#7cf07c}
+.c.done.miss{color:#ffb15c}
+.c.cur{background:#ffd84a;color:#1b1b1b;box-shadow:0 4px 0 #b07d00;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{background:#ffe98a}}
+.typebox.shake{animation:shake .25s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.stat{background:#3a3a3a;border:2px solid #000;color:#fff;padding:4px 10px;font-size:22px;min-width:110px}
+.stat b{font-family:'Press Start 2P';font-size:12px;color:#ffd84a;margin-left:6px}
+
+/* ---------- coach (keyboard + hands) ---------- */
+#coach{margin-top:12px}
+.hint{font-size:clamp(22px,3.2vw,30px);color:#fff;text-align:center;min-height:38px;line-height:1.2;padding:4px 8px;background:rgba(0,0,0,.45);border:2px solid #000}
+.fn{padding:0 8px;border:2px solid #000;color:#111;white-space:nowrap}
+.hint kbd,.side kbd{white-space:nowrap;font-family:'VT323',monospace;background:#eee;color:#111;border:2px solid #000;padding:0 8px;box-shadow:inset -2px -2px 0 #999}
+.oops{color:#ff8a7a;font-size:clamp(20px,2.8vw,26px);text-align:center;min-height:28px;margin-top:4px}
+.kb{display:flex;flex-direction:column;gap:5px;padding:10px;background:#3b3b3b;border:3px solid #000;margin-top:8px}
+.kbrow{display:flex;gap:5px}
+.key{flex:1 1 0;min-width:0;height:clamp(30px,5.4vw,50px);display:flex;align-items:center;justify-content:center;font-family:'VT323';font-size:clamp(17px,2.8vw,28px);color:#222;border:2px solid #000;box-shadow:inset 2px 2px 0 rgba(255,255,255,.6), inset -2px -3px 0 rgba(0,0,0,.25);position:relative;transition:transform .08s;user-select:none}
+.key small{position:absolute;top:0;left:4px;font-size:.62em;opacity:.75}
+.key.mod{font-size:clamp(12px,1.9vw,19px)}
+.key.f-pinky{background:var(--f-pinky)} .key.f-ring{background:var(--f-ring)} .key.f-middle{background:var(--f-middle)} .key.f-index{background:var(--f-index)} .key.f-thumb{background:var(--f-thumb)}
+.key.bump::after{content:'';position:absolute;bottom:4px;left:34%;width:32%;height:3px;background:#222}
+.key.next{outline:4px solid #fff;outline-offset:1px;z-index:2;animation:pulse .55s infinite alternate}
+.key.next.f-pinky{background:var(--f-pinky-s);color:#fff} .key.next.f-ring{background:var(--f-ring-s);color:#fff} .key.next.f-middle{background:var(--f-middle-s);color:#fff} .key.next.f-index{background:var(--f-index-s);color:#fff} .key.next.f-thumb{background:var(--f-thumb-s);color:#fff}
+@keyframes pulse{to{transform:translateY(-3px) scale(1.07)}}
+.key.hit{background:#7cf07c !important;transform:translateY(3px)}
+.key.bad{background:#ff5d5d !important;transform:translateY(3px)}
+.kb.blank .key .lb,.kb.blank .key small{visibility:hidden}
+#hands{width:100%;max-width:540px;display:block;margin:8px auto 0}
+.palm{fill:#ece4d6;stroke:#000;stroke-width:3}
+.fg{stroke:#000;stroke-width:3;transform-box:fill-box;transform-origin:50% 100%}
+.fg.f-pinky{fill:var(--f-pinky)} .fg.f-ring{fill:var(--f-ring)} .fg.f-middle{fill:var(--f-middle)} .fg.f-index{fill:var(--f-index)} .fg.f-thumb{fill:var(--f-thumb)}
+.fg.next{stroke:#fff;stroke-width:4;animation:wig .4s infinite alternate}
+.fg.next.f-pinky{fill:var(--f-pinky-s)} .fg.next.f-ring{fill:var(--f-ring-s)} .fg.next.f-middle{fill:var(--f-middle-s)} .fg.next.f-index{fill:var(--f-index-s)} .fg.next.f-thumb{fill:var(--f-thumb-s)}
+@keyframes wig{to{transform:translateY(5px) scaleY(.93)}}
+.hl{font-family:'Press Start 2P';font-size:13px;fill:#222;text-anchor:middle;pointer-events:none}
+.hcap{font-family:'Press Start 2P';font-size:10px;fill:#f3e7c9;text-anchor:middle}
+
+/* ---------- build ---------- */
+#house{width:100%;display:block;border:3px solid #000;image-rendering:pixelated;background:#8fc8ff}
+.tipcard{display:flex;gap:12px;align-items:flex-start;margin-top:10px}
+.tipcard .why{font-size:22px;line-height:1.1}
+.tipnum{font-family:'Press Start 2P';font-size:10px;color:#3a6d1c;margin-bottom:6px}
+.prog{height:14px;background:#333;border:2px solid #000;margin-top:8px;position:relative}
+.prog i{position:absolute;inset:0 auto 0 0;background:linear-gradient(#ffe27a,#e0a800);width:0;transition:width .2s}
+
+/* ---------- speed ---------- */
+.abc{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin:8px 0}
+.abc span{width:30px;height:32px;display:inline-flex;align-items:center;justify-content:center;font-size:24px;background:#555;color:#bbb;border:2px solid #000;transition:all .15s}
+.abc span.on{background:#4fe3a0;color:#063;transform:translateY(-3px)}
+.best{font-family:'Press Start 2P';font-size:10px;color:#3a3a3a}
+
+/* ---------- story ---------- */
+.prompt{font-size:26px;background:#fff8dc;border:3px solid #000;padding:10px 12px;color:#4a3000;line-height:1.1}
+#storyText{width:100%;min-height:200px;margin-top:10px;font-family:'VT323',monospace;font-size:clamp(24px,3.6vw,32px);line-height:1.15;background:#1b1b1b;color:#eaffea;border:3px solid #000;padding:12px;resize:vertical;outline:none}
+#storyText:focus{box-shadow:0 0 0 3px #ffd84a}
+.goal{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:22px;color:#3a3a3a}
+.goal .prog{flex:1;margin:0}
+.slist{display:grid;gap:10px;margin-top:10px}
+.sitem{background:#e8e8e8;border:2px solid #000;padding:10px}
+.sitem .p{font-size:20px;color:#5a4000}
+.sitem .tx{font-size:22px;color:#222;margin:4px 0 8px;max-height:3.5em;overflow:hidden}
+
+/* ---------- overlays ---------- */
+#modalBg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;display:flex;align-items:center;justify-content:center;padding:14px}
+#modal{max-width:560px;width:100%;max-height:90vh;overflow:auto;text-align:center}
+#modal .big{font-family:'Press Start 2P';font-size:clamp(14px,3vw,20px);margin:4px 0 12px;line-height:1.4;color:#2f5f16}
+#modal .stars{font-size:54px;letter-spacing:6px}
+#modal .mrow{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:10px 0}
+#modal .mstat{background:#3a3a3a;color:#fff;border:2px solid #000;padding:6px 10px;font-size:22px}
+#modal .mstat b{display:block;font-family:'Press Start 2P';font-size:14px;color:#ffd84a;margin-top:4px}
+#modal ol{text-align:left;font-size:21px;margin:8px 0;padding-left:28px}
+#toasts{position:fixed;top:76px;left:50%;transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none;width:min(92vw,520px)}
+.toast{background:#1b1b1b;color:#fff;border:3px solid #000;box-shadow:inset 3px 3px 0 #444;padding:8px 14px;font-size:24px;text-align:center;animation:tin .25s ease-out}
+@keyframes tin{from{transform:translateY(-14px);opacity:0}}
+#count{position:fixed;inset:0;z-index:55;display:flex;align-items:center;justify-content:center;pointer-events:none;font-family:'Press Start 2P';font-size:clamp(60px,16vw,150px);color:#ffd84a;text-shadow:8px 8px 0 #6b3d00}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:70}
+.banner{position:fixed;left:50%;transform:translateX(-50%);z-index:45;font-family:'Press Start 2P';font-size:11px;padding:10px 14px;border:3px solid #000;line-height:1.5;text-align:center;max-width:92vw}
+#focusNote{bottom:14px;background:#ffd84a;color:#222;cursor:pointer;animation:pulse .6s infinite alternate}
+#capsNote{bottom:64px;background:#ff6b5d;color:#fff}
+
+/* ---------- typing music ---------- */
+.np{display:flex;align-items:center;gap:10px;width:100%;margin-top:6px;background:#1b1b1b;border:2px solid #000;color:#d8ffd0;font-family:'VT323',monospace;font-size:21px;padding:3px 10px;cursor:pointer;text-align:left}
+.np:hover{background:#26331f}
+.np b{color:#fff}
+.np .bar{flex:1;height:9px;background:#333;border:1px solid #000;position:relative;min-width:40px}
+.np .bar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(#b4ff6a,#5fc22a);width:0;transition:width .15s}
+.np .chg{font-family:'Press Start 2P';font-size:8px;color:#ffd84a}
+.songs{display:grid;grid-template-columns:1fr 1fr;gap:6px;text-align:left;margin-top:8px}
+.song{display:flex;align-items:center;justify-content:space-between;gap:6px;background:#8b8b8b;border:2px solid #000;box-shadow:inset 2px 2px 0 #b5b5b5, inset -2px -2px 0 #555;color:#fff;padding:5px 8px;font-size:20px;line-height:1.05;cursor:pointer;text-shadow:1px 1px 0 #333}
+.song:hover{background:#6b9a45}
+.song.on{background:#3f8a22;outline:3px solid #ffd84a;outline-offset:-1px}
+.pv{flex:none;font-family:'Press Start 2P';font-size:9px;background:#333;color:#ffd84a;border:2px solid #000;padding:5px 7px;cursor:pointer}
+.sgh{grid-column:1/-1;font-family:'Press Start 2P';font-size:9px;color:#3a3a3a;margin-top:8px}
+@media (max-width:520px){.songs{grid-template-columns:1fr}}
+@media (max-width:760px),(orientation:landscape) and (max-height:560px){.np{font-size:16px;padding:1px 6px;margin-top:3px}.np .chg{display:none}}
+
+/* ---------- build picker ---------- */
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:10px}
+.bcard{display:flex;flex-direction:column;gap:5px;text-align:left;cursor:pointer;background:#8b8b8b;border:3px solid #000;box-shadow:inset 3px 3px 0 #b5b5b5, inset -3px -3px 0 #555;padding:8px;color:#fff;transition:transform .1s}
+.bcard:hover{transform:translateY(-3px);background:#6b9a45}
+.bcard canvas{width:100%;height:auto;border:2px solid #000;image-rendering:pixelated;display:block}
+.bname{font-family:'Press Start 2P';font-size:11px;text-shadow:2px 2px 0 #333;line-height:1.4}
+.bprog{font-family:'Press Start 2P';font-size:8px;color:#ffe;opacity:.9}
+.bcard .prog{display:block;margin-top:2px}
+.bdname{font-family:'Press Start 2P';font-size:12px;color:#ffd84a;text-shadow:2px 2px 0 #6b3d00}
+
+/* ---------- side hand panels (wide screens) ---------- */
+.side-l-slot,.side-r-slot{display:none}
+.side{background:#1d1d1d;border:3px solid #000;box-shadow:inset 3px 3px 0 #3a3a3a;padding:10px 8px;text-align:center;transition:background .15s,box-shadow .15s}
+.side h3{font-family:'Press Start 2P';font-size:12px;color:#bdb39a;margin:2px 0 8px}
+.side svg{width:100%;display:block}
+.side .stx{font-size:24px;line-height:1.25;color:#bbb;min-height:110px;margin-top:8px}
+.side .stx b{color:#fff}
+.side .big{display:block;font-family:'Press Start 2P';font-size:12px;color:#ffd84a;margin-bottom:8px;animation:pulse .5s infinite alternate}
+.side.active{background:#2c2610;box-shadow:0 0 0 3px #ffd84a, 0 0 26px rgba(255,216,74,.5)}
+.side.active h3{color:#ffd84a}
+@media (min-width:1180px){
+  main,.hdr{max-width:1520px}
+  .play{display:grid;grid-template-columns:230px minmax(0,1fr) 230px;grid-template-areas:". m ." "l c r";column-gap:14px;align-items:start}
+  .side-l-slot,.side-r-slot{display:block;align-self:center;margin-top:12px}
+  .side-l-slot{grid-area:l}.side-r-slot{grid-area:r}.colmain{grid-area:m}.coach-slot{grid-area:c}
+  #coach #hands{display:none}
+  #house{height:min(54vh,620px);width:auto;max-width:100%;margin:0 auto}
+}
+
+/* ---------- mobile input + settings menu ---------- */
+#cap{position:fixed;left:0;bottom:0;width:2px;height:2px;opacity:0;border:0;padding:0;font-size:16px;z-index:-1;background:transparent;color:transparent;caret-color:transparent}
+#tapType{display:none;width:100%;margin-bottom:6px}
+body.touch #tapType{display:block}
+body.touch.capfocus #tapType{display:none}
+.gear{display:none;min-width:40px;font-size:14px}
+.hdr{position:relative}
+
+/* ---------- responsive: phones & small tablets ---------- */
+@media (max-width:760px){
+  header{padding:6px 8px}
+  .logo{font-size:9px}
+  .hud{gap:8px}
+  .lvl{font-size:7px}
+  .xpbar{width:76px;height:9px}
+  .gems{font-size:10px}.gem{width:16px;height:16px}
+  main{padding:8px 8px 40px}
+  .panel{padding:10px}
+  .panel h2{font-size:11px;margin-bottom:6px}
+  .panel p{font-size:19px}
+  .back{margin-bottom:8px}
+  .btn{font-size:9px;padding:9px 10px}
+  .title-big{font-size:clamp(16px,6vw,28px)}
+  .sub{font-size:20px;margin-bottom:12px}
+  .card{padding:10px;gap:10px}.card canvas{width:56px}.card h3{font-size:11px}.card p{font-size:19px}
+  .posture span{font-size:18px}
+  .lgrid{grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px}
+  .ltile{min-height:84px;padding:8px 4px}.ltile .t{font-size:9px}.ltile .st{font-size:20px}
+  .newkeys b{font-size:18px !important}.kcap{min-width:34px;height:34px;font-size:24px}
+  .typebox{font-size:clamp(22px,6.6vw,30px);padding:8px 10px;margin-top:8px;min-height:0;letter-spacing:0}
+  .stats{gap:4px;margin-top:6px;flex-wrap:nowrap}
+  .stat{min-width:0;flex:1;font-size:16px;padding:2px 5px;white-space:nowrap}.stat b{font-size:9px;margin-left:3px}
+  #coach{margin-top:8px}
+  .hint{font-size:18px;min-height:0;padding:3px 6px}
+  .oops{font-size:18px;min-height:22px}
+  .kb{padding:4px;gap:3px;margin-top:4px}.kbrow{gap:3px}
+  .key{height:clamp(26px,8.4vw,34px);font-size:clamp(14px,4.4vw,19px);border-width:1px}
+  .key.mod{font-size:clamp(8px,2.4vw,11px)}
+  .key small{display:none}
+  .key.next{outline-width:3px}
+  #hands{max-width:280px;margin-top:4px}
+  #house{width:auto;max-width:100%;max-height:27vh;margin:0 auto}
+  .tipcard{margin-top:0}.tipcard canvas{display:none}.tipcard .why{font-size:18px}.tipnum{font-size:8px;margin-bottom:3px}
+  .prog{height:10px;margin-top:6px}
+  .abc{gap:2px;margin:4px 0}.abc span{width:21px;height:24px;font-size:18px;border-width:1px}
+  .best{font-size:8px}
+  .prompt{font-size:20px;padding:6px 8px}
+  #storyText{min-height:130px;font-size:22px}
+  .goal{font-size:18px}
+  #modal .stars{font-size:40px}#modal .mstat{font-size:18px}#modal .mstat b{font-size:11px}#modal ol{font-size:18px}
+  .toast{font-size:19px;padding:6px 10px}
+  #toasts{top:60px}
+}
+/* shared phone bits (upright or sideways) */
+@media (max-width:760px),(orientation:landscape) and (max-height:560px){
+  .gear{display:inline-block}
+  .sets{display:none}
+  .sets.open{display:flex;flex-direction:column;position:absolute;right:0;top:calc(100% + 8px);background:#1b1b1b;border:3px solid #000;padding:8px;gap:8px;z-index:30}
+  .sets.open .sbtn{min-width:150px;font-size:9px;padding:10px}
+  .logo{text-shadow:1px 1px 0 #6b3d00}.logo span{text-shadow:1px 1px 0 #1f5a10}
+  #tapType{padding:7px;font-size:9px;margin-bottom:4px}
+  #coach{position:relative}
+  .oops{position:absolute;left:0;right:0;top:0;z-index:4;background:#7a1212;border:2px solid #000;color:#fff;padding:2px 6px;margin:0;min-height:0}
+  .oops:empty{display:none}
+  body.fit1 #hands{max-width:210px;max-height:20vh}
+  body.fit1 .hcap{display:none}
+  body.fit1 .tipcard .why{font-size:15px;line-height:1}
+  body.fit1 #house{max-height:16vh}
+  body.fit2 .np,body.fit2 .stats,body.fit2 #lsTip,body.fit2 .spintro,body.fit2 .newkeys{display:none}
+  body.fit2 .back{margin-bottom:4px}
+  body.fit3 .tipcard .why,body.fit3 .abc{display:none}
+  body.fit3 #hands{max-width:170px;max-height:15vh}
+  body.fit4 #hands{display:none}
+  body.fit5 .back{display:none}
+  body.fit5 #house{max-height:11vh}
+  .bgrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+  .bname{font-size:9px}
+}
+/* phone held sideways: text on the left, keyboard + hands on the right */
+@media (orientation:landscape) and (max-height:560px){
+  header{position:static;padding:3px 8px}
+  body.fit1 #house,body.fit5 #house{max-height:34vh}
+  .lvl{font-size:7px}.xpbar{width:80px;height:8px}.gems{font-size:10px}.gem{width:16px;height:16px}.gear{padding:3px 8px}
+  .logo{font-size:9px}.logo br{display:none}
+  main{padding:4px 10px 2px}
+  .back{margin-bottom:4px}
+  body.fit3 #hands{max-height:15vh}
+  .back{margin-bottom:6px}
+  .btn.small{padding:6px 8px;font-size:8px}
+  .play{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:start}
+  #story .play{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}
+  .play .coach-slot{position:sticky;top:6px}
+  #coach{margin-top:0}
+  .panel{padding:8px}
+  .panel p{font-size:17px;margin:3px 0}
+  .panel h2{font-size:10px;margin:0}
+  .playhead{margin-bottom:4px;gap:6px}
+  .typebox{font-size:clamp(18px,6.2vh,28px);padding:6px 8px;margin-top:6px;min-height:0;letter-spacing:0}
+  .stats{gap:3px;margin-top:4px;flex-wrap:nowrap}
+  .stat{min-width:0;flex:1;font-size:15px;padding:1px 4px;white-space:nowrap}.stat b{font-size:9px;margin-left:2px}
+  .hint{font-size:16px;min-height:0;padding:2px 4px}
+  .hint kbd{padding:0 4px}
+  .oops{font-size:15px;min-height:18px;margin-top:2px}
+  .kb{padding:4px;gap:2px;margin-top:2px}.kbrow{gap:2px}
+  .key{height:clamp(18px,7.2vh,30px);font-size:clamp(12px,4vh,18px);border-width:1px}
+  .key.mod{font-size:clamp(7px,2.4vh,11px)}
+  .key small{display:none}
+  .key.next{outline-width:2px}
+  #hands{max-height:25vh;width:auto;max-width:100%;margin-top:2px}
+  .hcap{display:none}
+  #house{width:auto;max-width:100%;max-height:30vh;margin:0 auto}
+  .tipcard{margin-top:2px}.tipcard canvas{display:none}.tipcard .why{font-size:16px}.tipnum{font-size:8px;margin-bottom:2px}
+  .prog{height:8px;margin-top:4px}
+  #lsTip{display:none}
+  .newkeys b{font-size:16px !important}.kcap{min-width:28px;height:28px;font-size:20px}.newkeys span{font-size:16px !important}
+  .spintro{display:none}
+  .abc{gap:2px;margin:2px 0}.abc span{width:clamp(14px,3.2vw,22px);height:22px;font-size:16px;border-width:1px}
+  .prompt{font-size:18px;padding:4px 8px}
+  #storyText{min-height:90px;height:34vh;font-size:20px;margin-top:6px}
+  .goal{font-size:16px;margin-top:4px}
+  .title-big{font-size:clamp(16px,5vh,26px);margin:4px 0}
+  .sub{font-size:18px;margin-bottom:8px}
+  .card{padding:8px}.card canvas{width:48px}.card h3{font-size:10px;margin-bottom:4px}.card p{font-size:17px}
+  #modal{max-height:94vh;padding:10px}#modal .big{font-size:13px;margin:2px 0 6px}#modal .stars{font-size:32px}#modal .mrow{margin:4px 0}#modal .mstat{font-size:15px;padding:3px 6px}#modal .mstat b{font-size:10px}#modal p,#modal ol{font-size:16px;margin:3px 0}
+  #rankIcon{width:56px !important}
+  #toasts{top:8px}
+  .toast{font-size:17px;padding:4px 10px}
+  .banner{font-size:9px;padding:6px 10px}
+}
+/* phone upright with the on-screen keyboard open (very little height left) */
+@media (orientation:portrait) and (max-height:520px){
+  header .hud .lvl,header .gems{display:none}
+  #hands,.kb{display:none}
+  #house{max-height:20vh}
+  .tipcard,.spintro,#lsTip,.abc{display:none}
+}
+/* sideways with the on-screen keyboard open */
+@media (max-height:300px){
+  header,.back,#hands,.kb,#house,.tipcard,.spintro,#lsTip,.abc,.newkeys,.stats{display:none !important}
+  .play{grid-template-columns:1fr !important}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="hdr">
+    <div class="logo" id="logo" title="Main menu">BLOCK BUILDER<br><span>TYPING QUEST</span></div>
+    <div class="hud">
+      <div class="lvl"><div id="lvlTxt">LV 1 · Wood Builder</div><div class="xpbar"><i id="xpFill"></i></div></div>
+      <div class="gems" title="Emeralds"><svg class="gem" viewBox="0 0 8 8"><path d="M2 0h4v1h1v1h1v4h-1v1h-1v1h-4v-1h-1v-1h-1v-4h1v-1h1z" fill="#0a8a3a"/><path d="M2 1h4v1h1v4h-1v1h-4v-1h-1v-4h1z" fill="#17dd62"/><path d="M3 2h2v1h-2zM2 3h1v2h-1z" fill="#c4ffd8"/></svg><span id="gemTxt">0</span></div>
+      <button class="sbtn gear" id="gearBtn" title="Settings">⚙</button>
+      <div class="sets" id="sets">
+        <button class="sbtn" id="sndBtn" title="Sound on/off">SOUND<br>ON</button>
+        <button class="sbtn" id="capsBtn" title="Capital letters and punctuation in sentences">CAPS +<br>PUNCT</button>
+        <button class="sbtn" id="musicBtn" title="Pick the typing music">TYPING<br>MUSIC</button>
+        <button class="sbtn" id="hideBtn" title="Hide letters on the keyboard picture (expert mode)">KEY<br>LETTERS</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+<!-- ================= MENU ================= -->
+<section class="screen" id="menu">
+  <div class="title-big">BLOCK BUILDER<br><span>TYPING QUEST</span></div>
+  <p class="sub">Learn to type like a pro builder — no peeking at your hands!</p>
+  <div class="cards">
+    <div class="card" data-go="camp"><canvas data-icon="grass"></canvas><div><h3>1. Finger Camp</h3><p>Learn where every finger lives, one key at a time. Earn stars to unlock new keys!</p></div></div>
+    <div class="card" data-go="builds"><canvas data-icon="planks"></canvas><div><h3>2. Build School</h3><p>7 builds: cozy home, train station, redstone machine, ice castle and more. Every letter places a block!</p></div></div>
+    <div class="card" data-go="speed"><canvas data-icon="ore"></canvas><div><h3>3. Silly Speed Run</h3><p>Race a goofy sentence that uses ALL 26 letters. Get a Wood → Diamond rank!</p></div></div>
+    <div class="card" data-go="story"><canvas data-icon="shelf"></canvas><div><h3>4. Story Book</h3><p>Write your own adventure stories. Then hear the computer read them out loud!</p></div></div>
+  </div>
+  <div class="panel tips">
+    <h2>Before you type</h2>
+    <div class="posture">
+      <span>🪑 Sit up tall</span><span>🦶 Feet flat</span><span>✋ Wrists floating</span><span>👀 Eyes on screen</span><span>🏠 Fingers on A S D F — J K L ;</span><span>👍 Thumbs on SPACE</span>
+    </div>
+    <p style="margin-top:10px">Feel the little <b>bumps</b> on <b>F</b> and <b>J</b>? Your pointer fingers always go back there. That’s home base!</p>
+  </div>
+  <details>
+    <summary>FOR GROWN-UPS</summary>
+    <div class="panel"><ul>
+      <li>Play on a computer with a real keyboard. 10–15 minutes a day works better than one long session.</li>
+      <li>Every key is coloured by the finger that should press it — the hands picture shows which finger to use next.</li>
+      <li>Accuracy matters more than speed. Stars and speed-run scores go down a lot when there are lots of mistakes.</li>
+      <li><b>CAPS + PUNCT</b> (top right) turns capital letters and punctuation on or off in Build School and the Speed Run. Turn it off for an easier start.</li>
+      <li>Once the home row feels easy, turn off <b>KEY LETTERS</b> so he has to remember where keys are instead of looking for them.</li>
+      <li>Progress, stars and saved stories are kept in this browser on this device.</li>
+    </ul>
+    <button class="btn small danger" id="resetAll">Reset all progress</button></div>
+  </details>
+</section>
+
+<!-- ================= CAMP (lesson list) ================= -->
+<section class="screen" id="camp" hidden>
+  <button class="btn small back" data-go="menu">◀ Menu</button>
+  <div class="panel">
+    <h2>Finger Camp</h2>
+    <p>Get 1 star (80% correct) to unlock the next lesson. Go for 3 stars (97%)!</p>
+    <div class="lgrid" id="lgrid" style="margin-top:12px"></div>
+    <p style="margin-top:12px;font-size:18px"><a href="#" id="unlockAll" style="color:#555">Grown-up: unlock all lessons</a></p>
+  </div>
+</section>
+
+<!-- ================= LESSON ================= -->
+<section class="screen" id="lesson" hidden>
+  <button class="btn small back" data-go="camp">◀ Lessons</button>
+  <div class="play"><div class="side-l-slot"></div><div class="colmain">
+  <div class="panel">
+    <div class="playhead"><h2 id="lsTitle">Lesson</h2><span class="badge" id="lsRound">Line 1 of 3</span></div>
+    <div class="newkeys" id="lsKeys"></div>
+    <p id="lsTip" style="margin-top:8px"></p>
+    <div class="typebox" id="lsText"></div>
+    <div class="stats"><div class="stat">⏱<b class="st-time">0s</b></div><div class="stat">⚡ WPM<b class="st-wpm">0</b></div><div class="stat">🎯<b class="st-acc">100%</b></div><div class="stat">🔥<b class="st-streak">0</b></div></div>
+  </div>
+  </div><div class="coach-slot"></div><div class="side-r-slot"></div></div>
+</section>
+
+<!-- ================= BUILD PICKER ================= -->
+<section class="screen" id="builds" hidden>
+  <button class="btn small back" data-go="menu">◀ Menu</button>
+  <div class="panel">
+    <h2>Build School — pick a build!</h2>
+    <p>Type each builder tip to add blocks. Finish every tip to complete the build and see it come alive!</p>
+    <div class="bgrid" id="bgrid"></div>
+  </div>
+</section>
+
+<!-- ================= BUILD ================= -->
+<section class="screen" id="build" hidden>
+  <div class="row back"><button class="btn small" data-go="builds">◀ Builds</button><span class="bdname" id="bdName"></span><span class="spacer"></span><button class="btn small" id="buildRestart">↺ Start over</button></div>
+  <div class="play"><div class="side-l-slot"></div><div class="colmain">
+  <canvas id="house" width="432" height="320"></canvas>
+  <div class="panel">
+    <div class="tipcard"><canvas data-icon="planks" style="width:54px;flex:none;image-rendering:pixelated"></canvas>
+      <div><div class="tipnum" id="tipNum">BUILDER TIP 1 OF 10</div><div class="why" id="tipWhy"></div></div></div>
+    <div class="prog"><i id="buildProg"></i></div>
+    <div class="typebox" id="bdText"></div>
+    <div class="stats"><div class="stat">⏱<b class="st-time">0s</b></div><div class="stat">⚡ WPM<b class="st-wpm">0</b></div><div class="stat">🎯<b class="st-acc">100%</b></div><div class="stat">🔥<b class="st-streak">0</b></div></div>
+  </div>
+  </div><div class="coach-slot"></div><div class="side-r-slot"></div></div>
+</section>
+
+<!-- ================= SPEED ================= -->
+<section class="screen" id="speed" hidden>
+  <button class="btn small back" data-go="menu">◀ Menu</button>
+  <div class="play"><div class="side-l-slot"></div><div class="colmain">
+  <div class="panel">
+    <div class="playhead"><h2>Silly Sentence Speed Run</h2><span class="spacer"></span><span class="best" id="bestTxt">BEST: —</span></div>
+    <p class="spintro">Every sentence uses <b>all 26 letters</b>! Light them all up. Be fast — but mistakes cost lots of points.</p>
+    <div class="abc" id="abc"></div>
+    <div class="typebox" id="spText"></div>
+    <div class="stats"><div class="stat">⏱<b class="st-time">0s</b></div><div class="stat">⚡ WPM<b class="st-wpm">0</b></div><div class="stat">🎯<b class="st-acc">100%</b></div><div class="stat">🔥<b class="st-streak">0</b></div></div>
+    <div class="row" style="margin-top:12px"><button class="btn primary" id="spStart">▶ START (Enter)</button><button class="btn" id="spNew">🎲 New sentence</button></div>
+  </div>
+  </div><div class="coach-slot"></div><div class="side-r-slot"></div></div>
+</section>
+
+<!-- ================= STORY ================= -->
+<section class="screen" id="story" hidden>
+  <button class="btn small back" data-go="menu">◀ Menu</button>
+  <div class="play"><div class="side-l-slot"></div><div class="colmain">
+  <div class="panel">
+    <div class="playhead"><h2>Story Book</h2><span class="spacer"></span><button class="btn small" id="newPrompt">🎲 New idea</button></div>
+    <div class="prompt" id="promptTxt"></div>
+    <textarea id="storyText" spellcheck="true" placeholder="Start typing your story here… keep your fingers on the home row!"></textarea>
+    <div class="goal"><span id="wordCount">0 words</span><div class="prog"><i id="storyProg"></i></div><span id="goalTxt">Goal: 10</span></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn primary" id="saveStory">💾 Save story</button>
+      <button class="btn" id="readStory">🔊 Read it to me</button>
+      <button class="btn" id="copyStory">📋 Copy</button>
+      <button class="btn danger" id="clearStory">🗑 Start over</button>
+    </div>
+  </div>
+  </div><div class="coach-slot"></div><div class="side-r-slot"></div></div>
+  <div class="panel" style="margin-top:14px">
+    <h2>My saved stories</h2>
+    <div class="slist" id="slist"></div>
+  </div>
+</section>
+</main>
+
+<!-- the shared keyboard coach -->
+<div id="coach">
+  <button class="btn primary" id="tapType">⌨ TAP HERE TO TYPE</button>
+  <div class="hint" id="hint">Put your fingers on the home row!</div>
+  <div class="oops" id="oops"></div>
+  <button class="np" id="np" type="button"></button>
+  <div class="kb" id="kb"></div>
+  <svg id="hands" class="handsvg" viewBox="0 0 400 176"></svg>
+</div>
+
+<input id="cap" type="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" aria-label="Typing input">
+<div id="parking" hidden>
+  <div class="side" id="sideL"><h3>LEFT HAND</h3><svg class="handsvg" viewBox="0 0 200 160"></svg><div class="stx"></div></div>
+  <div class="side" id="sideR"><h3>RIGHT HAND</h3><svg class="handsvg" viewBox="0 0 200 160"></svg><div class="stx"></div></div>
+</div>
+<div id="modalBg" hidden><div class="panel" id="modal"></div></div>
+<div id="toasts"></div>
+<div id="count" hidden></div>
+<canvas id="fx"></canvas>
+<div class="banner" id="focusNote" hidden>👆 CLICK HERE, THEN START TYPING!</div>
+<div class="banner" id="capsNote" hidden>⚠ CAPS LOCK IS ON — PRESS IT TO TURN IT OFF</div>
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const randInt=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ================= SAVE DATA ================= */
+const SAVE_KEY='bbtq-v1';
+const fresh=()=>({xp:0,emeralds:0,lessons:{},builds:{},bproj:'home',best:{score:0,wpm:0,acc:0},stories:[],draft:'',draftPrompt:'',settings:{sound:true,caps:true,hide:false,song:'sunrise',inst:'harp'},unlockAll:false});
+let S=fresh();
+try{const raw=localStorage.getItem(SAVE_KEY);if(raw){const o=JSON.parse(raw);const f=fresh();S=Object.assign(f,o);S.settings=Object.assign(fresh().settings,o.settings||{});S.best=Object.assign(fresh().best,o.best||{});if(!Array.isArray(S.stories))S.stories=[];if(!S.builds||typeof S.builds!=='object')S.builds={};if(typeof o.build==='number'&&S.builds.home===undefined)S.builds.home=o.build;}}catch(e){}
+let saveT=null;
+function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}},150)}
+
+/* ================= SOUND (all made live in the browser) ================= */
+let AC=null,MASTER=null,NOISE=null;
+function ac(){if(!S.settings.sound)return null;try{if(!AC){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;AC=new C();
+  const comp=AC.createDynamicsCompressor();MASTER=AC.createGain();MASTER.gain.value=.9;MASTER.connect(comp);comp.connect(AC.destination);
+  const n=AC.sampleRate;NOISE=AC.createBuffer(1,n,n);const d=NOISE.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1}
+  if(AC.state==='suspended')AC.resume();return AC}catch(e){return null}}
+function env(g,t,a,peak,d){g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+a+d)}
+function osc(type,f,t,dur,vol,o={}){const x=AC.createOscillator();x.type=type;x.frequency.setValueAtTime(f,t);if(o.to)x.frequency.exponentialRampToValueAtTime(o.to,t+dur);const g=AC.createGain();env(g,t,o.a||.004,vol,dur);x.connect(g);g.connect(MASTER);x.start(t);x.stop(t+(o.a||.004)+dur+.05);return x}
+function nz(t,dur,vol,type,freq,o={}){const s=AC.createBufferSource();s.buffer=NOISE;s.loop=true;const f=AC.createBiquadFilter();f.type=type;f.frequency.setValueAtTime(freq,t);if(o.to)f.frequency.exponentialRampToValueAtTime(o.to,t+dur);f.Q.value=o.Q||1;const g=AC.createGain();env(g,t,o.a||.002,vol,dur);s.connect(f);f.connect(g);g.connect(MASTER);s.start(t,Math.random()*.5);s.stop(t+(o.a||.002)+dur+.05)}
+const NOTE=n=>440*Math.pow(2,(n-9)/12); // 0 = middle C
+function plingAt(t,semi,vol=.11){const f=NOTE(semi);osc('triangle',f,t,.5,vol,{a:.003});osc('sine',f*2,t,.25,vol*.35);osc('sine',f*4,t,.06,vol*.12)}
+function creak(t,dur,vol){const x=AC.createOscillator();x.type='sawtooth';x.frequency.setValueAtTime(60,t);for(let i=1;i<dur/.03;i++)x.frequency.setValueAtTime(45+Math.random()*40,t+i*.03);const f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=950;f.Q.value=7;const g=AC.createGain();env(g,t,.03,vol,dur);x.connect(f);f.connect(g);g.connect(MASTER);x.start(t);x.stop(t+dur+.1)}
+const play=fn=>(...args)=>{if(!ac())return;try{fn(AC.currentTime+.005,...args)}catch(e){}};
+let lastHmm=0;
+const SFX={
+  click:play(t=>{osc('square',1700,t,.012,.035);nz(t,.015,.05,'highpass',3500)}),
+  stone:play(t=>{const v=.85+Math.random()*.3;nz(t,.055,.4*v,'bandpass',1700*v,{Q:1.3});nz(t+.018,.05,.28,'bandpass',850*v,{Q:1.5});osc('square',2600*v,t,.006,.03)}),
+  dirt:play(t=>{nz(t,.08,.35,'lowpass',850+Math.random()*350);nz(t+.03,.06,.18,'lowpass',550)}),
+  wood:play(t=>{const v=.85+Math.random()*.3;nz(t,.06,.32,'bandpass',520*v,{Q:3});osc('triangle',200*v,t,.07,.28,{to:110})}),
+  grass:play(t=>{for(let i=0;i<3;i++)nz(t+i*.028,.045,.16,'bandpass',2400+Math.random()*1800,{Q:.8})}),
+  glass:play(t=>{[2637,3951,5274].forEach((f,i)=>osc('sine',f*(.97+Math.random()*.06),t,.28-i*.06,.07/(i+1)));nz(t,.025,.1,'highpass',5000)}),
+  metal:play(t=>{[880,1980,3150].forEach((f,i)=>osc('sine',f,t,.4,.06/(i+1)));nz(t,.025,.12,'bandpass',3000,{Q:2})}),
+  anvil:play(t=>{nz(t,.09,.5,'lowpass',500);[523,1187,1903,2950,4100].forEach((f,i)=>osc('sine',f,t,1.1-i*.15,.09/(i*.6+1)))}),
+  xp:play(t=>{const f=1250+Math.random()*900;osc('sine',f,t,.14,.09,{to:f*1.07});osc('sine',f*2,t,.07,.025)}),
+  pop:play(t=>{osc('sine',380,t,.07,.2,{to:1300})}),
+  // grumpy "hrrmm" when you press the wrong key
+  hmm:play(t=>{if(t-lastHmm<.3){osc('square',140,t,.08,.05,{to:90});return}lastHmm=t;
+    const o=AC.createOscillator();o.type='sawtooth';const b=135+Math.random()*35;o.frequency.setValueAtTime(b*1.3,t);o.frequency.exponentialRampToValueAtTime(b,t+.1);o.frequency.exponentialRampToValueAtTime(b*.8,t+.38);
+    const l=AC.createOscillator();l.frequency.value=8;const lg=AC.createGain();lg.gain.value=7;l.connect(lg);lg.connect(o.frequency);
+    const g=AC.createGain();env(g,t,.03,.9,.36);[[650,4],[1150,5],[2400,6]].forEach(([fr,q])=>{const f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=fr;f.Q.value=q;o.connect(f);f.connect(g)});
+    g.connect(MASTER);o.start(t);l.start(t);o.stop(t+.45);l.stop(t+.45)}),
+  eat:play(t=>{for(let i=0;i<4;i++){nz(t+i*.15,.06,.32,'bandpass',2000+Math.random()*1200,{Q:1});nz(t+i*.15+.02,.06,.22,'lowpass',650)}}),
+  burp:play(t=>{const o=AC.createOscillator();o.type='sawtooth';o.frequency.setValueAtTime(115,t);o.frequency.linearRampToValueAtTime(72,t+.55);const l=AC.createOscillator();l.frequency.value=23;const lg=AC.createGain();lg.gain.value=22;l.connect(lg);lg.connect(o.frequency);
+    const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=520;f.Q.value=3;const g=AC.createGain();env(g,t,.04,.55,.55);o.connect(f);f.connect(g);g.connect(MASTER);o.start(t);l.start(t);o.stop(t+.7);l.stop(t+.7)}),
+  firework:play((t,delay=0)=>{t+=delay;nz(t,.55,.13,'bandpass',300,{Q:2,to:3600,a:.06});const b=t+.62;nz(b,.5,.7,'lowpass',1300,{to:180});osc('sine',95,b,.35,.45,{to:38});
+    for(let i=0;i<24;i++)nz(b+.15+Math.random()*.9,.014,.1+Math.random()*.12,'highpass',2800+Math.random()*3500)}),
+  chest:play(t=>{creak(t,.32,.55);nz(t+.3,.08,.35,'lowpass',380)}),
+  door:play(t=>{creak(t,.45,.5);nz(t+.42,.08,.4,'bandpass',420,{Q:2});osc('triangle',150,t+.42,.08,.25,{to:90})}),
+  tick:play(t=>plingAt(t,7,.13)),
+  go:play(t=>{plingAt(t,19,.14);plingAt(t,12,.1)}),
+  level:play(t=>{[0,4,7,12,16,19,24].forEach((s,i)=>plingAt(t+i*.075,s+7,.1));osc('sine',2100,t+.55,.3,.06,{to:2400})}),
+  jingle:play(t=>{[[0,0],[4,.1],[7,.2],[12,.3],[7,.45],[12,.55]].forEach(([s,w])=>plingAt(t+w,s+12,.11))}),
+  note:play((t,semi)=>plingAt(t,semi,.09)),
+  spooky:play(t=>{const o=AC.createOscillator();o.type='sine';o.frequency.setValueAtTime(220,t);o.frequency.exponentialRampToValueAtTime(330,t+.5);o.frequency.exponentialRampToValueAtTime(170,t+1.1);const l=AC.createOscillator();l.frequency.value=6;const lg=AC.createGain();lg.gain.value=12;l.connect(lg);lg.connect(o.frequency);const g=AC.createGain();env(g,t,.2,.2,.9);o.connect(g);g.connect(MASTER);o.start(t);l.start(t);o.stop(t+1.3);l.stop(t+1.3)}),
+  piston:play(t=>{nz(t,.05,.1,'lowpass',500);osc('square',220,t,.03,.02,{to:120})}),
+  bell:play(t=>{[1480,2220,3330].forEach((f,i)=>osc('sine',f,t,.32,.045/(i+1)))}),
+  chime:play(t=>{plingAt(t,16,.1);plingAt(t+.35,12,.1)}),
+  toot:play(t=>{[523,659].forEach(f=>osc('square',f,t,.5,.03,{a:.03}));nz(t,.5,.03,'bandpass',1500,{Q:1,a:.03})}),
+};
+SFX.gem=()=>{SFX.pop();setTimeout(SFX.xp,70)};
+SFX.err=SFX.hmm;
+SFX.win=()=>{SFX.jingle();SFX.firework(.4)};
+SFX.fireworks=n=>{for(let i=0;i<n;i++)SFX.firework(i*.45+Math.random()*.2)};
+SFX.snack=()=>{SFX.eat();setTimeout(SFX.burp,650)};
+const PLACE_SND={gravel:'dirt',road:'stone',rail:'metal',railPOn:'metal',railD:'metal',redblock:'stone',post:'stone',crossbuck:'wood',flashA:'glass',flashB:'glass',gatebox:'metal',stoneBricks:'stone',smooth:'stone',edge:'stone',bench:'wood',sign:'wood',clock:'metal',lever:'wood',dust:'grass',repeater:'stone',lamp:'glass',piston:'wood',pushCobble:'stone',woolR:'grass',woolY:'grass',woolB:'grass',rtorch:'wood',torch:'wood',packed:'glass',ice:'glass',blueIce:'glass',roofIce:'glass',iceStairL:'glass',iceStairR:'glass',bars:'metal',gateDark:'stone',glowWin:'glass',flag:'grass',seaLantern:'glass',cavebg:'stone',ladder:'wood',trapdoor:'wood',chest:'wood',crafting:'wood',furnace:'stone',shelf:'wood',bedL:'grass',bedR:'grass',cobweb:'grass',drip:'stone',oreIron:'stone',oreGold:'stone',oreCoal:'stone',ore:'glass',lava:'pop',slabWood:'wood',eyes:'spooky',stone:'stone',cobble:'stone',brick:'stone',planks:'wood',darkplanks:'wood',log:'wood',roof:'wood',stairL:'wood',stairR:'wood',doorTop:'wood',doorBot:'wood',glass:'glass',leaves:'grass',flower:'grass',flower2:'grass',lantern:'metal',smoke:'pop'};
+addEventListener('pointerdown',()=>ac(),{passive:true});
+/* ================= TYPING MUSIC ================= */
+const SONGS=[
+ {id:'sunrise',group:'orig',name:'Blocky Sunrise',notes:'G4 B4 D5 G5 F#5 D5 B4 D5 G4 B4 D5 E5 D5 B4 A4 B4 E4 G4 B4 E5 D5 B4 G4 A4 D4 G4 B4 D5 C5 B4 A4 G4'},
+ {id:'cave',group:'orig',name:'Cozy Cave',notes:'A3 C4 E4 A4 G4 E4 C4 E4 F3 A3 C4 F4 E4 C4 A3 B3 C4 E4 G4 C5 B4 G4 E4 G4 E3 G#3 B3 E4 D4 B3 G#3 B3'},
+ {id:'village',group:'orig',name:'Village Stroll',notes:'C4 E4 G4 E4 F4 A4 G4 E4 D4 F4 E4 C4 D4 G3 B3 D4 C4 E4 G4 C5 B4 G4 A4 F4 E4 G4 F4 D4 C4 G3 C4 C4'},
+ {id:'night',group:'orig',name:'Starry Night Watch',notes:'E4 B4 E5 D5 B4 G4 A4 B4 D4 A4 D5 C#5 A4 F#4 G4 A4 C4 G4 C5 B4 G4 E4 F#4 G4 B3 F#4 B4 A4 F#4 D#4 E4 E4'},
+ {id:'twinkle',group:'pop',name:'Twinkle Twinkle Little Star',notes:'C4 C4 G4 G4 A4 A4 G4 F4 F4 E4 E4 D4 D4 C4 G4 G4 F4 F4 E4 E4 D4 G4 G4 F4 F4 E4 E4 D4 C4 C4 G4 G4 A4 A4 G4 F4 F4 E4 E4 D4 D4 C4'},
+ {id:'mary',group:'pop',name:'Mary Had a Little Lamb',notes:'E4 D4 C4 D4 E4 E4 E4 D4 D4 D4 E4 G4 G4 E4 D4 C4 D4 E4 E4 E4 E4 D4 D4 E4 D4 C4'},
+ {id:'ode',group:'pop',name:'Ode to Joy',notes:'E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 E4 D4 D4 E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 D4 C4 C4 D4 D4 E4 C4 D4 E4 F4 E4 C4 D4 E4 F4 E4 D4 C4 D4 G3 E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 D4 C4 C4'},
+ {id:'jacques',group:'pop',name:'Frère Jacques',notes:'C4 D4 E4 C4 C4 D4 E4 C4 E4 F4 G4 E4 F4 G4 G4 A4 G4 F4 E4 C4 G4 A4 G4 F4 E4 C4 C4 G3 C4 C4 G3 C4'},
+ {id:'jingle',group:'pop',name:'Jingle Bells',notes:'E4 E4 E4 E4 E4 E4 E4 G4 C4 D4 E4 F4 F4 F4 F4 F4 E4 E4 E4 E4 E4 D4 D4 E4 D4 G4 E4 E4 E4 E4 E4 E4 E4 G4 C4 D4 E4 F4 F4 F4 F4 F4 E4 E4 E4 E4 G4 G4 F4 D4 C4'},
+ {id:'birthday',group:'pop',name:'Happy Birthday',notes:'G4 G4 A4 G4 C5 B4 G4 G4 A4 G4 D5 C5 G4 G4 G5 E5 C5 B4 A4 F5 F5 E5 C5 D5 C5'},
+ {id:'row',group:'pop',name:'Row, Row, Row Your Boat',notes:'C4 C4 C4 D4 E4 E4 D4 E4 F4 G4 C5 C5 C5 G4 G4 G4 E4 E4 E4 C4 C4 C4 G4 F4 E4 D4 C4'},
+ {id:'farm',group:'pop',name:'Old MacDonald',notes:'C4 C4 C4 G3 A3 A3 G3 E4 E4 D4 D4 C4 G3 C4 C4 C4 G3 A3 A3 G3 E4 E4 D4 D4 C4'},
+ {id:'bridge',group:'pop',name:'London Bridge',notes:'G4 A4 G4 F4 E4 F4 G4 D4 E4 F4 E4 F4 G4 G4 A4 G4 F4 E4 F4 G4 D4 G4 E4 C4'},
+ {id:'doodle',group:'pop',name:'Yankee Doodle',notes:'C4 C4 D4 E4 C4 E4 D4 G3 C4 C4 D4 E4 C4 B3 C4 C4 D4 E4 F4 E4 D4 C4 B3 G3 A3 B3 C4 C4'},
+ {id:'elise',group:'pop',name:'Für Elise',notes:'E5 D#5 E5 D#5 E5 B4 D5 C5 A4 C4 E4 A4 B4 E4 G#4 B4 C5 E4 E5 D#5 E5 D#5 E5 B4 D5 C5 A4 C4 E4 A4 B4 E4 C5 B4 A4'},
+ {id:'king',group:'pop',name:'Hall of the Mountain King',notes:'A3 B3 C4 D4 E4 C4 E4 D#4 B3 D#4 D4 A#3 D4 A3 B3 C4 D4 E4 C4 E4 A4 G4 E4 C4 E4 G4'}
+];
+const NOTE_IDX={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+SONGS.forEach(s=>{s.seq=s.notes.split(/\s+/).map(n=>{const m=n.match(/^([A-G])([#b]?)(\d)$/);return NOTE_IDX[m[1]]+(m[2]==='#'?1:m[2]==='b'?-1:0)+(+m[3]-4)*12})});
+const SONG={};SONGS.forEach(s=>SONG[s.id]=s);
+const INSTR={
+  harp:{name:'🎵 Note block',play:(t,s,v)=>plingAt(t,s,v)},
+  piano:{name:'🎹 Piano',play:(t,s,v)=>{const f=NOTE(s);osc('triangle',f,t,1.1,v*.95,{a:.003});osc('sine',f*2,t,.6,v*.3);osc('sine',f*3,t,.25,v*.12)}},
+  box:{name:'🎁 Music box',play:(t,s,v)=>{const f=NOTE(s+12);osc('sine',f,t,.9,v*.85,{a:.002});osc('sine',f*2.01,t,.35,v*.25);osc('sine',f*4.2,t,.08,v*.1)}},
+  bell:{name:'🔔 Bells',play:(t,s,v)=>{const f=NOTE(s+12);[1,2.76,5.4].forEach((m,i)=>osc('sine',f*m,t,1.3/(i+1),v*.55/(i+1)))}},
+  flute:{name:'🎶 Flute',play:(t,s,v)=>{const f=NOTE(s+12);osc('sine',f,t,.5,v*.8,{a:.05});osc('triangle',f,t,.4,v*.2,{a:.05});nz(t,.08,v*.08,'bandpass',f*2,{Q:3,a:.02})}},
+  retro:{name:'👾 Retro 8-bit',play:(t,s,v)=>{const f=NOTE(s);osc('square',f,t,.22,v*.35);osc('square',f*2,t,.08,v*.1)}}
+};
+const MEL={idx:0,shuffleId:null};
+const musicOn=()=>S.settings.sound&&S.settings.song&&S.settings.song!=='off';
+function curSong(){if(S.settings.song==='shuffle'){if(!MEL.shuffleId||!SONG[MEL.shuffleId])MEL.shuffleId=pick(SONGS).id;return SONG[MEL.shuffleId]}return SONG[S.settings.song]||SONGS[0]}
+const playNote=play((t,semi,inst)=>(INSTR[inst||S.settings.inst]||INSTR.harp).play(t,semi,.13));
+function playNextNote(){const s=curSong();playNote(s.seq[MEL.idx%s.seq.length]);MEL.idx++;
+  if(MEL.idx>=s.seq.length){MEL.idx=0;setTimeout(()=>{addGems(1);SFX.xp();toast(`🎵 You played all of “${esc(s.name)}”! +1 emerald`)},350);
+    if(S.settings.song==='shuffle'){let n;do{n=pick(SONGS).id}while(n===s.id);MEL.shuffleId=n}}
+  renderNP()}
+function renderNP(){const el=$('#np');if(!el)return;if(!musicOn()){el.innerHTML=`<span>🎵 Typing music: <b>${S.settings.sound?'off':'sound is off'}</b> — tap to pick a song</span>`;return}
+  const s=curSong();el.innerHTML=`<span>🎵 <b>${esc(s.name)}</b>${S.settings.song==='shuffle'?' (shuffle)':''}</span><span class="bar"><i style="width:${100*MEL.idx/s.seq.length}%"></i></span><span class="chg">CHANGE</span>`}
+let previewT=[];
+function previewSong(id,inst){previewT.forEach(clearTimeout);previewT=[];const s=id==='shuffle'?pick(SONGS):SONG[id];if(!s)return;
+  s.seq.slice(0,8).forEach((n,k)=>previewT.push(setTimeout(()=>playNote(n,inst),k*260)))}
+function openMusic(){const item=s=>`<div class="song${S.settings.song===s.id?' on':''}" data-song="${s.id}"><span>${esc(s.name)}</span><button class="pv" data-pv="${s.id}" title="Listen">▶</button></div>`;
+  modal(`<div class="big">🎵 TYPING MUSIC</div><p>Every letter you get right plays the next note. Play a whole song to earn a bonus emerald!</p>
+   <div class="songs">
+     <div class="song${!musicOn()&&S.settings.song==='off'?' on':''}" data-song="off"><span>🔇 Off (game sounds)</span></div>
+     <div class="song${S.settings.song==='shuffle'?' on':''}" data-song="shuffle"><span>🔀 Shuffle all songs</span><button class="pv" data-pv="shuffle">▶</button></div>
+     <div class="sgh">BLOCKY ADVENTURE TUNES (made for this game)</div>${SONGS.filter(s=>s.group==='orig').map(item).join('')}
+     <div class="sgh">FAMOUS SONGS</div>${SONGS.filter(s=>s.group==='pop').map(item).join('')}
+     <div class="sgh">INSTRUMENT</div>${Object.entries(INSTR).map(([k,v])=>`<div class="song inst${S.settings.inst===k?' on':''}" data-inst="${k}"><span>${v.name}</span></div>`).join('')}
+   </div>${S.settings.sound?'':'<p><b>Sound is OFF.</b> Turn SOUND on to hear the music.</p>'}`,[{label:'Done',primary:true,fn:()=>{previewT.forEach(clearTimeout)}}]);
+  $('#modal .songs').addEventListener('click',e=>{const pv=e.target.closest('[data-pv]');if(pv){e.stopPropagation();ac();previewSong(pv.dataset.pv);return}
+    const sg=e.target.closest('[data-song]');if(sg){S.settings.song=sg.dataset.song;MEL.idx=0;MEL.shuffleId=null;save();$$('#modal [data-song]').forEach(x=>x.classList.toggle('on',x===sg));if(sg.dataset.song!=='off'){ac();previewSong(sg.dataset.song)}renderNP();renderHUD();return}
+    const ins=e.target.closest('[data-inst]');if(ins){S.settings.inst=ins.dataset.inst;save();$$('#modal [data-inst]').forEach(x=>x.classList.toggle('on',x===ins));ac();previewSong(S.settings.song==='off'?'sunrise':S.settings.song==='shuffle'?'twinkle':S.settings.song)}})}
+
+
+/* ================= BLOCK TEXTURES ================= */
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function cv(w=16,h=16){const c=document.createElement('canvas');c.width=w;c.height=h;return c}
+function nf(x,pal,r,x0=0,y0=0,w=16,h=16){for(let y=y0;y<y0+h;y++)for(let i=x0;i<x0+w;i++){x.fillStyle=pal[Math.floor(r()*pal.length)];x.fillRect(i,y,1,1)}}
+const TEX={};
+(function buildTextures(){
+  const make=(n,seed,fn)=>{const c=cv();const x=c.getContext('2d');fn(x,rng(seed));TEX[n]=c};
+  const DIRT=['#866043','#79553a','#966c4a','#6b4a30','#9b7150'];
+  const GRASS=['#5d9b37','#6aaa40','#4f8a2e','#79bd4f'];
+  const STONE=['#7f7f7f','#8a8a8a','#747474','#6c6c6c','#959595'];
+  make('dirt',1,(x,r)=>{nf(x,DIRT,r);for(let i=0;i<7;i++){x.fillStyle='#5a3d26';x.fillRect(Math.floor(r()*16),Math.floor(r()*16),1,1)}});
+  make('grassTop',2,(x,r)=>nf(x,GRASS,r));
+  make('grass',3,(x,r)=>{nf(x,DIRT,r);nf(x,GRASS,r,0,0,16,3);for(let i=0;i<16;i++)if(r()<.6){x.fillStyle=GRASS[Math.floor(r()*4)];x.fillRect(i,3,1,1+Math.floor(r()*2))}});
+  make('stone',4,(x,r)=>{nf(x,STONE,r);for(let i=0;i<5;i++){x.fillStyle='#606060';x.fillRect(Math.floor(r()*14),Math.floor(r()*15),2+Math.floor(r()*2),1)}});
+  make('cobble',5,(x,r)=>{x.fillStyle='#4a4a4a';x.fillRect(0,0,16,16);[[0,0,6,5],[6,0,5,4],[11,0,5,5],[0,5,4,6],[4,4,7,5],[11,5,5,5],[0,11,6,5],[6,9,5,7],[11,10,5,6]].forEach(([a,b,w,h])=>{x.fillStyle=STONE[Math.floor(r()*5)];x.fillRect(a+1,b+1,w-1,h-1);x.fillStyle='rgba(255,255,255,.2)';x.fillRect(a+1,b+1,w-1,1)})});
+  make('log',6,(x,r)=>{const P=['#6b5131','#5c452a','#76593a','#4e3a23'];for(let i=0;i<16;i++){const base=P[(i+Math.floor(r()*2))%4];for(let j=0;j<16;j++){x.fillStyle=r()<.13?'#3f2e1b':base;x.fillRect(i,j,1,1)}}});
+  const planks=(n,seed,pal,line)=>make(n,seed,(x,r)=>{nf(x,pal,r);x.fillStyle=line;for(let b=0;b<4;b++){x.fillRect(0,b*4+3,16,1);x.fillRect(b%2?4:11,b*4,1,3)}});
+  planks('planks',7,['#b8945f','#ad8a55','#c29d66','#a7834f'],'#7a5a32');
+  planks('darkplanks',8,['#5a3a24','#4f3320','#63402a'],'#2f1e12');
+  planks('roof',9,['#a3402e','#943828','#b04b3a'],'#5e2118');
+  make('stairL',10,x=>{x.drawImage(TEX.roof,0,0);x.clearRect(0,0,8,8)});
+  make('stairR',11,x=>{x.drawImage(TEX.roof,0,0);x.clearRect(8,0,8,8)});
+  make('glass',12,x=>{x.fillStyle='#2b3f4f';x.fillRect(0,0,16,16);x.fillStyle='#5b8fb0';x.fillRect(1,1,14,14);x.fillStyle='#8cc6e6';x.fillRect(3,3,10,10);x.fillStyle='rgba(255,255,255,.8)';x.fillRect(4,10,1,2);x.fillRect(5,9,1,1);x.fillRect(9,5,1,2);x.fillRect(10,4,1,1);x.fillRect(11,3,1,1);x.fillStyle='rgba(0,0,0,.35)';x.fillRect(1,1,14,2);x.fillRect(1,3,2,12)});
+  const DOOR=['#9c7a46','#a8854f','#8f6f3e'];
+  make('doorTop',13,(x,r)=>{nf(x,DOOR,r);x.fillStyle='#5e4422';x.fillRect(0,0,16,1);x.fillRect(0,0,1,16);x.fillRect(15,0,1,16);x.fillStyle='#2b3a44';x.fillRect(3,3,4,6);x.fillRect(9,3,4,6);x.fillStyle='#5a7d90';x.fillRect(3,3,4,1);x.fillRect(9,3,4,1);x.fillStyle='#5e4422';x.fillRect(2,12,12,1)});
+  make('doorBot',14,(x,r)=>{nf(x,DOOR,r);x.fillStyle='#5e4422';x.fillRect(0,15,16,1);x.fillRect(0,0,1,16);x.fillRect(15,0,1,16);x.fillRect(2,3,12,1);x.fillRect(2,10,12,1);x.fillStyle='#222';x.fillRect(12,0,2,2)});
+  make('brick',15,(x,r)=>{x.fillStyle='#bfae9e';x.fillRect(0,0,16,16);for(let row=0;row<4;row++){const off=row%2?4:0;for(let c=-1;c<3;c++){x.fillStyle=['#96503d','#8a4634','#a35a45'][Math.floor(r()*3)];x.fillRect(c*8+off+1,row*4+1,7,3)}}});
+  make('leaves',16,(x,r)=>{nf(x,['#3f7f2a','#4c9535','#2f6620','#58a63e'],r);for(let i=0;i<14;i++){x.fillStyle='#1d4413';x.fillRect(Math.floor(r()*16),Math.floor(r()*16),1,1)}});
+  make('lantern',17,x=>{x.fillStyle='#3a3a3a';x.fillRect(7,0,2,4);x.fillStyle='#2b2b2b';x.fillRect(5,4,6,2);x.fillRect(4,6,8,8);x.fillStyle='#ffb13b';x.fillRect(5,7,6,6);x.fillStyle='#fff0a0';x.fillRect(6,8,4,4);x.fillStyle='#2b2b2b';x.fillRect(5,14,6,1)});
+  make('flower',18,x=>{x.fillStyle='#3e8a2a';x.fillRect(7,8,2,8);x.fillRect(9,11,2,1);x.fillRect(5,13,2,1);x.fillStyle='#e8333b';x.fillRect(6,3,4,1);x.fillRect(5,4,6,3);x.fillRect(6,7,4,1);x.fillStyle='#ffd23f';x.fillRect(7,5,2,1)});
+  make('flower2',19,x=>{x.fillStyle='#3e8a2a';x.fillRect(7,9,2,7);x.fillRect(5,12,2,1);x.fillStyle='#ffd83a';x.fillRect(6,4,4,1);x.fillRect(5,5,6,3);x.fillRect(6,8,4,1);x.fillStyle='#e07a10';x.fillRect(7,6,2,1)});
+  make('smoke',20,x=>{x.fillStyle='rgba(235,235,235,.75)';x.fillRect(3,7,7,6);x.fillStyle='rgba(215,215,215,.6)';x.fillRect(8,2,5,5)});
+  make('ore',21,x=>{x.drawImage(TEX.stone,0,0);[[3,3],[10,4],[5,10],[11,11],[2,7],[8,7]].forEach(([a,b])=>{x.fillStyle='#4fe3dc';x.fillRect(a,b,2,2);x.fillStyle='#d6fffc';x.fillRect(a,b,1,1);x.fillStyle='#168d8d';x.fillRect(a+1,b+1,1,1)})});
+  make('shelf',22,(x,r)=>{x.drawImage(TEX.planks,0,0);x.fillStyle='#3b2a18';x.fillRect(0,1,16,6);x.fillRect(0,9,16,6);const C=['#c23b3b','#3b6dc2','#3bab52','#d9a334','#8a4fc2','#e0e0e0'];for(const row of [1,9]){let p=1;while(p<15){const w=r()<.5?1:2;x.fillStyle=C[Math.floor(r()*C.length)];const h=4+Math.floor(r()*2);x.fillRect(p,row+6-h,Math.min(w,15-p),h);p+=w+(r()<.3?1:0)}}});
+  const solid=(n,base,light,dark)=>make(n,30,(x)=>{x.fillStyle=base;x.fillRect(0,0,16,16);x.fillStyle=light;x.fillRect(0,0,16,1);x.fillRect(0,0,1,16);x.fillRect(3,3,3,1);x.fillRect(3,3,1,3);x.fillStyle=dark;x.fillRect(0,15,16,1);x.fillRect(15,0,1,16);x.fillRect(10,12,3,1);x.fillRect(12,10,1,3)});
+  solid('iron','#dcdcdc','#ffffff','#9a9a9a');
+  solid('goldb','#f5cf3a','#fff6a8','#b98a10');
+  solid('diamond','#5de6dc','#d6fffb','#1f9b93');
+})();
+(function moreTextures(){
+  const make=(n,seed,fn)=>{const c=cv();const x=c.getContext('2d');fn(x,rng(seed));TEX[n]=c};
+  const STONE=['#7f7f7f','#8a8a8a','#747474','#6c6c6c','#959595'];
+  const PL=['#b8945f','#ad8a55','#c29d66','#a7834f'];
+  const px=(x,c,a,b,w=1,h=1)=>{x.fillStyle=c;x.fillRect(a,b,w,h)};
+  make('gravel',40,(x,r)=>{nf(x,['#8a8580','#7a7570','#9c9690','#6a6560','#a8a29b'],r)});
+  make('road',41,(x,r)=>{nf(x,['#3a3a3d','#343437','#414144','#2e2e31'],r);for(let i=0;i<6;i++)px(x,'#5a5a60',r()*16|0,r()*16|0)});
+  const rail=(n,c1,c2,ex)=>make(n,42,x=>{px(x,'#6b4a2b',1,13,3,3);px(x,'#6b4a2b',6,13,3,3);px(x,'#6b4a2b',11,13,3,3);px(x,c1,0,11,16,2);px(x,c2,0,11,16,1);if(ex)ex(x)});
+  rail('rail','#8c8c8c','#d0d0d0');
+  rail('railPOn','#d9b22c','#fff07a',x=>px(x,'#ff2a1a',0,13,16,1));
+  rail('railD','#8c8c8c','#d0d0d0',x=>{px(x,'#707070',4,9,8,2);px(x,'#c22',7,13,2,1)});
+  make('redblock',43,(x,r)=>{nf(x,['#b01b0e','#a0160a','#c4271a','#8e1208'],r);for(let i=0;i<8;i++)px(x,'#ff6a4a',r()*16|0,r()*16|0);px(x,'#5a0a04',0,15,16);px(x,'#5a0a04',15,0,1,16)});
+  make('post',44,(x,r)=>{nf(x,STONE,r,5,0,6,16);px(x,'#4a4a4a',5,0,1,16);px(x,'#4a4a4a',10,0,1,16)});
+  make('crossbuck',45,x=>{for(let i=0;i<15;i++){px(x,'#111',i-1,i-1,4,3);px(x,'#111',13-i,i-1,4,3)}for(let i=0;i<15;i++){px(x,'#f4f4f4',i,i,2,1);px(x,'#f4f4f4',14-i,i,2,1)}});
+  make('gatebox',46,x=>{px(x,'#111',3,3,10,10);for(let i=0;i<4;i++)px(x,i%2?'#111':'#f2c61f',4+i*2,4,2,8)});
+  make('stoneBricks',47,(x,r)=>{nf(x,STONE,r);px(x,'#5a5a5a',0,7,16);px(x,'#5a5a5a',0,15,16);px(x,'#5a5a5a',7,0,1,7);px(x,'#5a5a5a',3,8,1,7);px(x,'#5a5a5a',12,8,1,7);px(x,'rgba(255,255,255,.18)',0,0,16);px(x,'rgba(255,255,255,.18)',0,8,16)});
+  make('smooth',48,(x,r)=>{nf(x,['#a0a0a0','#a6a6a6','#9b9b9b'],r);px(x,'#777',0,0,16);px(x,'#777',0,15,16);px(x,'#777',0,0,1,16);px(x,'#777',15,0,1,16)});
+  make('edge',49,x=>{x.drawImage(TEX.stoneBricks,0,0);px(x,'#f2c61f',0,0,16,3);px(x,'#b8900e',0,3,16)});
+  make('bench',50,(x,r)=>{nf(x,PL,r,0,8,16,3);nf(x,PL,r,12,1,3,8);px(x,'#7a5a32',0,10,16);px(x,'#6b4f2c',1,11,2,5);px(x,'#6b4f2c',13,11,2,5)});
+  make('sign',51,(x,r)=>{px(x,'#444',3,0,1,4);px(x,'#444',12,0,1,4);nf(x,PL,r,0,4,16,9);px(x,'#7a5a32',0,4,16);px(x,'#7a5a32',0,12,16)});
+  make('lever',52,(x,r)=>{nf(x,['#777','#888','#6a6a6a'],r,3,12,10,4);px(x,'#555',3,12,10);for(let i=0;i<6;i++)px(x,'#7a5a32',7+i,11-i,2,1);px(x,'#ff3b2b',12,4,3,2)});
+  make('repBase',53,(x,r)=>{nf(x,['#a6a6a6','#9b9b9b','#b0b0b0'],r,0,12,16,4);px(x,'#777',0,12,16);px(x,'#6b4f2c',4,8,2,4);px(x,'#6b4f2c',11,8,2,4);px(x,'#8a1a10',2,13,12,1)});
+  const lamp=(n,frame,fill,grid,glow)=>make(n,54,x=>{px(x,frame,0,0,16,16);px(x,fill,2,2,12,12);for(let i=3;i<14;i+=4){px(x,grid,i,2,1,12);px(x,grid,2,i,12,1)}if(glow)px(x,glow,6,6,4,4)});
+  lamp('lampOff','#4a2c14','#6e4220','#3a210e');
+  lamp('lampOn','#7a4a1c','#ffc85a','#ff8a1a','#fff6c8');
+  make('pistonBody',55,(x,r)=>{nf(x,['#7a7a7a','#868686','#707070'],r,0,4,16,12);px(x,'#555',0,4,16);px(x,'#3a3a3a',6,6,4,8);px(x,'#555',0,15,16)});
+  make('pistonHead',56,(x,r)=>{nf(x,PL,r,0,0,16,4);px(x,'#7a5a32',0,3,16);px(x,'#7ec850',5,0,6,2)});
+  [['woolR','#d13b2e','#b5291e'],['woolY','#f5c518','#d8a90e'],['woolB','#2f5fd0','#2448a8']].forEach(([n,a,b],i)=>make(n,60+i,(x,r)=>{nf(x,[a,a,b],r);for(let k=0;k<6;k++)px(x,'rgba(255,255,255,.2)',r()*16|0,r()*16|0)}));
+  make('pushCobble',64,x=>x.drawImage(TEX.cobble,0,0));
+  make('rtorch',65,x=>{px(x,'#6b4f2c',7,7,2,9);px(x,'#ff2a1a',6,4,4,3);px(x,'#ff9a8a',7,4,1,1)});
+  make('torch',66,x=>{px(x,'#6b4f2c',7,7,2,9);px(x,'#ffb000',6,4,4,3);px(x,'#fff4a0',7,4,2,2)});
+  make('packed',67,(x,r)=>{nf(x,['#8db8e8','#9cc4ef','#83afe0','#a7cdf4'],r);px(x,'rgba(255,255,255,.35)',2,3,5,1);px(x,'rgba(255,255,255,.35)',8,10,6,1)});
+  make('ice',68,x=>{px(x,'rgba(170,215,255,.85)',0,0,16,16);px(x,'rgba(255,255,255,.75)',3,11,1,2);px(x,'rgba(255,255,255,.75)',4,10,1,1);px(x,'rgba(255,255,255,.75)',10,4,1,2);px(x,'rgba(255,255,255,.75)',11,3,1,1);px(x,'rgba(90,150,220,.6)',0,15,16);px(x,'rgba(90,150,220,.6)',15,0,1,16)});
+  make('blueIce',69,(x,r)=>{nf(x,['#6ea0e8','#5d8fdc','#7aaaef','#5288d6'],r);px(x,'rgba(255,255,255,.35)',3,4,4,1)});
+  make('snowGrass',70,(x,r)=>{x.drawImage(TEX.dirt,0,0);nf(x,['#f4f8ff','#e8eef8','#ffffff'],r,0,0,16,3);for(let i=0;i<16;i++)if(r()<.5)px(x,'#eef3fb',i,3,1,1+(r()*2|0))});
+  make('roofIce',71,(x,r)=>{nf(x,['#bfeaff','#aee0fa','#cdf1ff'],r);px(x,'#7ab8d8',0,7,16);px(x,'#7ab8d8',0,15,16);px(x,'#7ab8d8',5,0,1,7);px(x,'#7ab8d8',11,8,1,7)});
+  make('iceStairL',72,x=>{x.drawImage(TEX.roofIce,0,0);x.clearRect(0,0,8,8)});
+  make('iceStairR',73,x=>{x.drawImage(TEX.roofIce,0,0);x.clearRect(8,0,8,8)});
+  make('bars',74,x=>{for(const c of [1,5,9,13]){px(x,'#8a8a8a',c,0,2,16);px(x,'#d0d0d0',c,0,1,16)}px(x,'#8a8a8a',0,1,16,1);px(x,'#8a8a8a',0,14,16,1)});
+  make('gateDark',75,(x,r)=>nf(x,['#141a2a','#18203a','#10162a'],r));
+  make('glowWin',76,x=>{px(x,'#6a8fb0',0,0,16,16);px(x,'#ffe9a8',2,2,12,12);px(x,'#fff8dd',4,4,4,4);px(x,'#6a8fb0',7,2,2,12);px(x,'#6a8fb0',2,7,12,2)});
+  make('seaLantern',77,(x,r)=>{nf(x,['#cfe9e3','#d9f0ea','#c2e2da'],r);px(x,'#9fc9c0',0,0,16);px(x,'#9fc9c0',0,15,16);px(x,'#9fc9c0',0,0,1,16);px(x,'#9fc9c0',15,0,1,16);px(x,'#f4fffb',5,5,6,6);px(x,'#9fc9c0',7,3,2,10);px(x,'#9fc9c0',3,7,10,2)});
+  make('cavebg',78,x=>{x.drawImage(TEX.stone,0,0);px(x,'rgba(10,10,20,.55)',0,0,16,16)});
+  make('ladder',79,x=>{px(x,'#7a5a32',2,0,2,16);px(x,'#7a5a32',12,0,2,16);for(const y of [2,6,10,14])px(x,'#9c7a46',2,y,12,2)});
+  make('trapdoor',80,(x,r)=>{nf(x,PL,r);px(x,'#6b4f2c',0,0,16);px(x,'#6b4f2c',0,15,16);for(const [a,b] of [[3,3],[9,3],[3,9],[9,9]])px(x,'#3a2a14',a,b,4,4)});
+  make('chest',81,(x,r)=>{px(x,'#2a1a0a',1,3,14,13);nf(x,['#a0692b','#93602a','#ab7333'],r,2,4,12,11);px(x,'#2a1a0a',2,8,12,1);px(x,'#cfcfcf',7,7,2,3);px(x,'#555',7,9,2,1)});
+  make('crafting',82,(x,r)=>{nf(x,PL,r);px(x,'#7a5a32',0,0,16,4);px(x,'#5a3a1a',0,4,16);px(x,'#888',3,7,2,6);px(x,'#6b4f2c',3,7,5,2);px(x,'#6b4f2c',10,7,2,7);px(x,'#aaa',9,7,4,2)});
+  make('furnace',83,(x,r)=>{nf(x,['#808080','#8a8a8a','#757575'],r);px(x,'#555',0,0,16);px(x,'#3a3a3a',3,8,10,6);px(x,'#666',2,7,12,1)});
+  make('bedL',84,(x,r)=>{px(x,'#6b4f2c',0,13,2,3);nf(x,['#c8302a','#b52822','#d23a32'],r,0,8,16,5)});
+  make('bedR',85,(x,r)=>{px(x,'#6b4f2c',14,13,2,3);nf(x,['#c8302a','#b52822','#d23a32'],r,0,8,16,5);px(x,'#f2f2f2',8,6,7,4);px(x,'#ddd',8,9,7,1)});
+  make('cobweb',86,x=>{const c='rgba(235,235,235,.8)';for(let i=0;i<16;i++){px(x,c,i,i);px(x,c,15-i,i)}px(x,c,7,0,1,16);px(x,c,0,7,16,1);for(const k of [3,6])for(let i=k;i<16-k;i++){px(x,c,i,k);px(x,c,i,15-k);px(x,c,k,i);px(x,c,15-k,i)}});
+  make('drip',87,x=>{const a='#8a6a4a',b='#a8865e';px(x,a,4,0,8,4);px(x,b,5,0,2,4);px(x,a,5,4,6,4);px(x,a,6,8,4,3);px(x,a,7,11,2,3);px(x,b,7,4,1,8);px(x,a,7,14,1,1)});
+  const ore=(n,seed,c1,c2)=>make(n,seed,x=>{x.drawImage(TEX.stone,0,0);[[3,3],[10,4],[5,10],[11,11],[7,7]].forEach(([a,b])=>{px(x,c1,a,b,2,2);px(x,c2,a,b,1,1)})});
+  ore('oreIron',88,'#d8af93','#f3d5c0');ore('oreGold',89,'#fcee4b','#fff9b0');ore('oreCoal',90,'#262626','#4a4a4a');
+  for(let f=0;f<4;f++)make('lava'+f,91+f,(x,r)=>{nf(x,['#d45a12','#e8761a','#f0941e','#c94a0e'],r);for(let i=0;i<10;i++)px(x,r()<.5?'#ffd23a':'#ffb020',r()*16|0,r()*16|0,1+(r()*2|0),1)});
+  make('slabWood',95,(x,r)=>{nf(x,PL,r,0,8,16,8);px(x,'#7a5a32',0,11,16);px(x,'#7a5a32',0,15,16)});
+})();
+
+function cube(top,side,size=72){
+  const c=cv(size,Math.round(size*1.1));const x=c.getContext('2d');x.imageSmoothingEnabled=false;const s=size/32;
+  x.setTransform(s,s/2,-s,s/2,size/2,0);x.drawImage(top,0,0);
+  x.setTransform(s,s/2,0,s*1.2,0,size/4);x.drawImage(side,0,0);x.fillStyle='rgba(0,0,0,.18)';x.fillRect(0,0,16,16);
+  x.setTransform(s,-s/2,0,s*1.2,size/2,size/2);x.drawImage(side,0,0);x.fillStyle='rgba(0,0,0,.4)';x.fillRect(0,0,16,16);
+  x.setTransform(1,0,0,1,0,0);return c}
+const ICONS={grass:['grassTop','grass'],planks:['planks','planks'],ore:['ore','ore'],shelf:['planks','shelf'],stone:['stone','stone'],iron:['iron','iron'],goldb:['goldb','goldb'],diamond:['diamond','diamond']};
+function paintIcon(canvas,name){const [t,s]=ICONS[name];const c=cube(TEX[t],TEX[s]);canvas.width=c.width;canvas.height=c.height;const x=canvas.getContext('2d');x.drawImage(c,0,0)}
+$$('canvas[data-icon]').forEach(c=>paintIcon(c,c.dataset.icon));
+(function bg(){const c=cv(64,64);const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(TEX.dirt,0,0,64,64);x.fillStyle='rgba(0,0,0,.6)';x.fillRect(0,0,64,64);document.body.style.backgroundImage=`url(${c.toDataURL()})`;document.body.style.backgroundSize='96px 96px'})();
+
+/* ================= KEYBOARD MODEL ================= */
+const ROWS=[
+ ['`','1','2','3','4','5','6','7','8','9','0','-','=',{id:'Backspace',label:'⌫ back',w:2}],
+ [{id:'Tab',label:'tab',w:1.5},'q','w','e','r','t','y','u','i','o','p','[',']',{id:'\\',label:'\\',w:1.5,ch:true}],
+ [{id:'Caps',label:'caps',w:1.8},'a','s','d','f','g','h','j','k','l',';',"'",{id:'Enter',label:'enter',w:2.2}],
+ [{id:'ShiftL',label:'⇧ shift',w:2.3},'z','x','c','v','b','n','m',',','.','/',{id:'ShiftR',label:'shift ⇧',w:2.7}],
+ [{id:'sp1',label:'',w:4,ghost:true},{id:'Space',label:'space',w:7},{id:'sp2',label:'',w:4,ghost:true}]
+];
+const FINGERS={L5:'`1qaz',L4:'2wsx',L3:'3edc',L2:'45rtfgvb',R2:'67yuhjnm',R3:'8ik,',R4:'9ol.',R5:"0-=p[]\\;'/"};
+const KEYFINGER={Tab:'L5',Caps:'L5',ShiftL:'L5',Backspace:'R5',Enter:'R5',ShiftR:'R5',Space:'T'};
+for(const f in FINGERS)for(const c of FINGERS[f])KEYFINGER[c]=f;
+const FTYPE={L5:'pinky',L4:'ring',L3:'middle',L2:'index',R2:'index',R3:'middle',R4:'ring',R5:'pinky',T:'thumb'};
+const SHIFTED={'~':'`','!':'1','@':'2','#':'3','$':'4','%':'5','^':'6','&':'7','*':'8','(':'9',')':'0','_':'-','+':'=','{':'[','}':']','|':'\\',':':';','"':"'",'<':',','>':'.','?':'/'};
+const SHIFT_OF={};for(const k in SHIFTED)SHIFT_OF[SHIFTED[k]]=k;
+function fingerName(f){if(f==='T')return 'THUMB';return (f[0]==='L'?'LEFT ':'RIGHT ')+FTYPE[f].toUpperCase()}
+function charInfo(ch){
+  if(ch===' ')return{key:'Space',shift:false,finger:'T',label:'SPACE'};
+  let key=ch,shift=false;
+  if(/[A-Z]/.test(ch)){key=ch.toLowerCase();shift=true}
+  else if(SHIFTED[ch]){key=SHIFTED[ch];shift=true}
+  const finger=KEYFINGER[key];if(!finger)return null;
+  const info={key,shift,finger,label:ch};
+  if(shift){info.shiftKey=finger[0]==='L'?'ShiftR':'ShiftL';info.shiftFinger=finger[0]==='L'?'R5':'L5'}
+  return info}
+const KEYEL={};
+(function buildKB(){
+  const kb=$('#kb');
+  for(const row of ROWS){
+    const r=document.createElement('div');r.className='kbrow';
+    for(let k of row){
+      if(typeof k==='string')k={id:k,ch:true};
+      const el=document.createElement('div');
+      if(k.ghost){el.style.flex=`${k.w} ${k.w} 0`;r.appendChild(el);continue}
+      const f=KEYFINGER[k.id];
+      el.className='key f-'+FTYPE[f]+(k.ch?'':' mod')+(k.id==='f'||k.id==='j'?' bump':'');
+      el.style.flex=`${k.w||1} ${k.w||1} 0`;
+      const lab=k.label!==undefined?k.label:(/[a-z]/.test(k.id)?k.id.toUpperCase():k.id);
+      el.innerHTML=(SHIFT_OF[k.id]&&!/[a-z]/.test(k.id)?`<small>${esc(SHIFT_OF[k.id])}</small>`:'')+`<span class="lb">${esc(lab)}</span>`;
+      KEYEL[k.id]=el;r.appendChild(el)}
+    kb.appendChild(r)}
+})();
+const FSHAPE=[{n:5,x:44,y:44,h:56},{n:4,x:72,y:24,h:76},{n:3,x:100,y:14,h:86},{n:2,x:128,y:26,h:74}];
+const HOMEK={L:[['A',56,64],['S',84,46],['D',112,36],['F',140,48]],R:[[';',56,64],['L',84,46],['K',112,36],['J',140,48]]};
+function handG(side){let s=`<rect class="palm" x="40" y="88" width="118" height="64" rx="16"/>`;for(const f of FSHAPE)s+=`<rect class="fg f-${FTYPE[side+f.n]}" data-f="${side}${f.n}" x="${f.x}" y="${f.y}" width="24" height="${f.h}" rx="11"/>`;
+  return s+`<g transform="rotate(-52 164 128)"><rect class="fg f-thumb" data-f="T${side}" x="152" y="98" width="24" height="56" rx="11"/></g>`}
+function handLabels(side,ox,mirror){let s='';for(const [t,x0,y] of HOMEK[side]){const x=mirror?ox-x0:ox+x0;s+=`<text class="hl" x="${x}" y="${y}">${esc(t)}</text>`;if(t==='F'||t==='J')s+=`<rect x="${x-6}" y="${y+5}" width="12" height="3" fill="#222"/>`}return s}
+$('#hands').innerHTML=`<g>${handG('L')}</g><g transform="translate(400,0) scale(-1,1)">${handG('R')}</g>`+handLabels('L',0,false)+handLabels('R',400,true)+`<text class="hcap" x="100" y="172">LEFT HAND</text><text class="hcap" x="300" y="172">RIGHT HAND</text>`;
+$('#sideL svg').innerHTML=handG('L')+handLabels('L',0,false);
+$('#sideR svg').innerHTML=`<g transform="translate(200,0) scale(-1,1)">${handG('R')}</g>`+handLabels('R',200,true);
+function sideUpdate(info,prefix){const verb=prefix==='You pressed'?'YOU USED':'USE ME!';let lt='Rest your fingers on<br><b>A S D F</b>',rt='Rest your fingers on<br><b>J K L ;</b>',la=false,ra=false;
+  if(info){const kl=info.key==='Space'?'SPACE':info.key.length===1?info.key.toUpperCase():String(info.label).toUpperCase();
+    if(info.finger==='T'){lt=rt=`<span class="big">${verb}</span>👍 Either thumb<br>taps <kbd>SPACE</kbd>`;la=ra=true}
+    else{const press=`<span class="big">${verb}</span>${fchip(info.finger)}<br>presses <kbd>${esc(kl)}</kbd>`;if(info.finger[0]==='L'){lt=press;la=true}else{rt=press;ra=true}
+      if(info.shift){const hold=`<span class="big">${verb}</span>${fchip(info.shiftFinger)}<br>holds <kbd>SHIFT</kbd>`;if(info.finger[0]==='L'){rt=hold;ra=true}else{lt=hold;la=true}}}}
+  $('#sideL .stx').innerHTML=lt;$('#sideR .stx').innerHTML=rt;$('#sideL').classList.toggle('active',la);$('#sideR').classList.toggle('active',ra)}
+function clearCoach(){$$('.key.next').forEach(e=>e.classList.remove('next'));$$('.handsvg .fg.next').forEach(e=>e.classList.remove('next'));sideUpdate(null)}
+function lightFinger(f){const sel=f==='T'?'[data-f^="T"]':`[data-f="${f}"]`;$$('.handsvg '+sel).forEach(e=>e.classList.add('next'))}
+function fchip(f){return `<span class="fn" style="background:var(--f-${FTYPE[f]})">${fingerName(f)}</span>`}
+function coachNext(info,prefix='Next'){
+  clearCoach();
+  if(!info){$('#hint').innerHTML='🎉 Done!';return}
+  sideUpdate(info,prefix);
+  KEYEL[info.key]&&KEYEL[info.key].classList.add('next');lightFinger(info.finger);
+  if(info.shift){KEYEL[info.shiftKey].classList.add('next');lightFinger(info.shiftFinger)}
+  let h;
+  if(info.key==='Space')h=`${prefix}: <kbd>SPACE</kbd> → tap with your ${fchip('T')}`;
+  else if(info.shift)h=`${prefix}: <kbd>${esc(info.label)}</kbd> → ${fchip(info.shiftFinger)} holds <kbd>SHIFT</kbd> + ${fchip(info.finger)} presses <kbd>${esc(info.key.toUpperCase())}</kbd>`;
+  else h=`${prefix}: <kbd>${esc(info.label==='Enter'||info.label==='Backspace'?info.label.toUpperCase():info.label.toUpperCase())}</kbd> → ${fchip(info.finger)} finger`;
+  $('#hint').innerHTML=h}
+function flashKey(id,ok){const el=KEYEL[id];if(!el)return;el.classList.remove('hit','bad');void el.offsetWidth;el.classList.add(ok?'hit':'bad');setTimeout(()=>el.classList.remove('hit','bad'),170)}
+function keyIdFromEvent(k){if(k===' ')return 'Space';const i=charInfo(k);return i?i.key:null}
+
+/* ================= HUD / XP ================= */
+const need=n=>50*n*(n+1);
+function levelOf(xp){let n=1;while(xp>=need(n))n++;return n}
+function levelTitle(n){return n<3?'Wood Builder':n<5?'Stone Builder':n<7?'Iron Builder':n<10?'Gold Builder':n<14?'Diamond Builder':'Legend Builder'}
+function renderHUD(){const n=levelOf(S.xp);const lo=n===1?0:need(n-1),hi=need(n);$('#lvlTxt').textContent=`LV ${n} · ${levelTitle(n)}`;$('#xpFill').style.width=Math.min(100,100*(S.xp-lo)/(hi-lo))+'%';$('#gemTxt').textContent=S.emeralds;
+  const sb=$('#sndBtn');sb.innerHTML='SOUND<br>'+(S.settings.sound?'ON':'OFF');sb.classList.toggle('off',!S.settings.sound);
+  const cb=$('#capsBtn');cb.innerHTML='CAPS +<br>PUNCT '+(S.settings.caps?'ON':'OFF');cb.classList.toggle('off',!S.settings.caps);
+  const hb=$('#hideBtn');hb.innerHTML='KEY<br>LETTERS '+(S.settings.hide?'OFF':'ON');hb.classList.toggle('off',S.settings.hide);
+  $('#kb').classList.toggle('blank',S.settings.hide)}
+function addXP(n){if(n<=0)return;const b=levelOf(S.xp);S.xp+=n;const a=levelOf(S.xp);if(a>b){setTimeout(()=>{SFX.level();toast(`⭐ LEVEL UP! Level ${a}: ${levelTitle(a)}!`);confetti(90)},250)}renderHUD();save()}
+function addGems(n){S.emeralds+=n;renderHUD();save()}
+$('#sndBtn').onclick=()=>{S.settings.sound=!S.settings.sound;renderHUD();renderNP();save()};
+$('#capsBtn').onclick=()=>{S.settings.caps=!S.settings.caps;renderHUD();save();toast(S.settings.caps?'Capitals + punctuation ON (harder)':'Capitals + punctuation OFF (easier)');refreshTextForMode()};
+$('#hideBtn').onclick=()=>{S.settings.hide=!S.settings.hide;renderHUD();save();toast(S.settings.hide?'Expert mode: key letters hidden! 🙈':'Key letters shown')};
+function prep(t){return S.settings.caps?t:t.toLowerCase().replace(/[^a-z ]/g,'').replace(/\s+/g,' ').trim()}
+
+/* ================= UI HELPERS ================= */
+function toast(html,ms=1800){const t=document.createElement('div');t.className='toast';t.innerHTML=html;$('#toasts').appendChild(t);setTimeout(()=>t.remove(),ms)}
+let modalEnter=null;
+function modal(html,buttons){const m=$('#modal');m.innerHTML=html+'<div class="mrow" style="margin-top:16px"></div>';const row=m.lastElementChild;modalEnter=null;
+  buttons.forEach(b=>{const el=document.createElement('button');el.className='btn'+(b.primary?' primary':'')+(b.danger?' danger':'');el.innerHTML=b.label;el.onclick=()=>{closeModal();b.fn&&b.fn()};row.appendChild(el);if(b.primary)modalEnter=el});
+  $('#modalBg').hidden=false;typingLocked=true}
+function closeModal(){$('#modalBg').hidden=true;modalEnter=null;typingLocked=false}
+function starsHTML(n){return [1,2,3].map(i=>`<span class="star${i<=n?'':' off'}">★</span>`).join('')}
+// confetti
+const fx=$('#fx'),fctx=fx.getContext('2d');let parts=[],fxOn=false;
+function confetti(n=140){fx.width=innerWidth;fx.height=innerHeight;const C=['#7be35a','#ffd84a','#4fe3dc','#ff6b5d','#b388ff','#ffffff','#a3402e','#17dd62'];for(let i=0;i<n;i++)parts.push({x:Math.random()*fx.width,y:-20-Math.random()*fx.height*.5,vx:(Math.random()-.5)*3,vy:2+Math.random()*4,s:6+Math.random()*8,c:pick(C),r:Math.random()*6});if(!fxOn){fxOn=true;requestAnimationFrame(fxLoop)}}
+function fxLoop(){fctx.clearRect(0,0,fx.width,fx.height);parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.05;fctx.fillStyle=p.c;fctx.fillRect(p.x,p.y,p.s,p.s);fctx.fillStyle='rgba(0,0,0,.25)';fctx.fillRect(p.x+p.s*.5,p.y+p.s*.5,p.s*.5,p.s*.5)});parts=parts.filter(p=>p.y<fx.height+20);if(parts.length)requestAnimationFrame(fxLoop);else{fxOn=false;fctx.clearRect(0,0,fx.width,fx.height)}}
+
+/* ================= TYPING ENGINE ================= */
+let activeTyper=null,typingLocked=false,current='menu';
+class Typer{
+  constructor(el,text,opt={}){this.el=el;this.text=text;this.o=opt;this.i=0;this.errors=0;this.correct=0;this.streak=0;this.bestStreak=0;this.start=0;this.end=0;this.done=false;this.missMap={};this.missIdx=new Set();this.render();this.mark();coachNext(charInfo(text[0]));$('#oops').textContent=''}
+  render(){this.el.innerHTML='';this.spans=[];let wd=null;
+    for(const ch of this.text){if(!wd){wd=document.createElement('span');wd.className='w';this.el.appendChild(wd)}
+      const s=document.createElement('span');s.className='c';s.textContent=ch===' '?'\u00a0':ch;wd.appendChild(s);this.spans.push(s);if(ch===' ')wd=null}}
+  mark(){const p=this.spans[this.i-1],c=this.spans[this.i];if(p){p.classList.remove('cur');p.classList.add('done');if(this.missIdx.has(this.i-1))p.classList.add('miss')}if(c)c.classList.add('cur')}
+  handle(k){
+    if(this.done)return;
+    if(!this.start)this.start=performance.now();
+    const exp=this.text[this.i];
+    if(k===exp){
+      this.i++;this.correct++;this.streak++;this.bestStreak=Math.max(this.bestStreak,this.streak);
+      flashKey(keyIdFromEvent(k),true);if(musicOn()){if(k!==' ')playNextNote()}else if(this.o.sound)this.o.sound(k,this.i-1,this.text.length);else SFX.click();if(k===' ')setTimeout(SFX.xp,40);this.mark();addXP(1);$('#oops').textContent='';
+      if(this.streak>0&&this.streak%30===0){addGems(1);SFX.snack();toast(`🍗 ${this.streak} in a row! Snack time! +1 emerald`)}
+      this.o.onChar&&this.o.onChar(this.i,this.text.length);
+      if(this.i>=this.text.length){this.done=true;this.end=performance.now();coachNext(null);this.o.onDone&&this.o.onDone(this.stats())}
+      else coachNext(charInfo(this.text[this.i]));
+    }else{
+      this.errors++;this.streak=0;this.missIdx.add(this.i);this.missMap[exp]=(this.missMap[exp]||0)+1;
+      const id=keyIdFromEvent(k);if(id)flashKey(id,false);SFX.err();
+      this.el.classList.remove('shake');void this.el.offsetWidth;this.el.classList.add('shake');
+      const ei=charInfo(exp);let msg;
+      if(exp&&k.toLowerCase()===exp.toLowerCase()&&k!==exp)msg=exp===exp.toUpperCase()?`Capital letter! Hold SHIFT with your other hand’s pinky.`:`Oops, that was a capital. Let go of SHIFT!`;
+      else msg=`Oops! You pressed “${k===' '?'SPACE':k}”. Find “${exp===' '?'SPACE':exp}” with your ${ei?fingerName(ei.finger):''} finger.`;
+      $('#oops').textContent=msg;clearTimeout(window.oopsT);window.oopsT=setTimeout(()=>{$('#oops').textContent=''},2600)}
+    this.o.onKey&&this.o.onKey()}
+  stats(){const now=this.end||performance.now();const t=this.start?(now-this.start)/1000:0;const mins=Math.max(t/60,1/120);
+    return{time:t,wpm:this.start?Math.round((this.correct/5)/mins):0,acc:Math.round(100*this.correct/Math.max(1,this.correct+this.errors)),errors:this.errors,correct:this.correct,bestStreak:this.bestStreak,missMap:this.missMap}}
+}
+function liveStats(){if(!activeTyper)return;const sc=$('#'+current);if(!sc)return;const st=activeTyper.stats();const set=(c,v)=>{const e=sc.querySelector(c);if(e)e.textContent=v};
+  set('.st-time',Math.floor(st.time)+'s');set('.st-wpm',st.wpm);set('.st-acc',st.acc+'%');set('.st-streak',activeTyper.streak)}
+setInterval(()=>{if(activeTyper&&!activeTyper.done&&activeTyper.start)liveStats()},250);
+function resetStats(){const sc=$('#'+current);if(!sc)return;sc.querySelectorAll('.st-time').forEach(e=>e.textContent='0s');sc.querySelectorAll('.st-wpm').forEach(e=>e.textContent='0');sc.querySelectorAll('.st-acc').forEach(e=>e.textContent='100%');sc.querySelectorAll('.st-streak').forEach(e=>e.textContent='0')}
+function missList(mm){const arr=Object.entries(mm).sort((a,b)=>b[1]-a[1]).slice(0,4);if(!arr.length)return '<p>No mistakes — perfect fingers! 🏆</p>';
+  return '<p>Keys to practise: '+arr.map(([c])=>{const i=charInfo(c);return `<b>${c===' '?'SPACE':esc(c.toUpperCase())}</b> (${i?fingerName(i.finger).toLowerCase():''})`}).join(', ')+'</p>'}
+
+document.addEventListener('keydown',e=>{
+  capsCheck(e);
+  if(!$('#modalBg').hidden){if(e.key==='Enter'&&modalEnter){e.preventDefault();modalEnter.click()}return}
+  if(current==='story')return;
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+  if(e.key==='Unidentified'||e.isComposing||e.keyCode===229)return; // phone keyboards: handled by the input event below
+  if(current==='speed'&&!SP.running&&!SP.counting&&e.key==='Enter'){e.preventDefault();startSpeed();return}
+  if(!activeTyper)return;
+  if(e.key==='Backspace'||e.key==="'"||e.key==='/'||e.key===' ')e.preventDefault();
+  if(typingLocked||e.key.length!==1)return;
+  e.preventDefault();activeTyper.handle(e.key);
+});
+/* phone / tablet on-screen keyboards send letters through this hidden box */
+const CAP=$('#cap');
+CAP.addEventListener('input',()=>{const v=CAP.value;CAP.value='';if(current==='story'||!activeTyper||typingLocked||!$('#modalBg').hidden)return;for(const ch of v){if(activeTyper.done)break;activeTyper.handle(ch)}});
+CAP.addEventListener('focus',()=>document.body.classList.add('capfocus'));
+CAP.addEventListener('blur',()=>document.body.classList.remove('capfocus'));
+function focusCap(){try{CAP.focus({preventScroll:true})}catch(e){CAP.focus()}}
+$('#tapType').addEventListener('click',()=>{focusCap();ac()});
+document.addEventListener('click',e=>{if(e.target.closest('.typebox')&&['lesson','build','speed'].includes(current))focusCap()});
+const IS_TOUCH=matchMedia('(pointer:coarse)').matches||('ontouchstart' in window&&!matchMedia('(pointer:fine)').matches);
+if(IS_TOUCH)document.body.classList.add('touch');
+$('#gearBtn').onclick=e=>{e.stopPropagation();$('#sets').classList.toggle('open')};
+document.addEventListener('click',e=>{if(!e.target.closest('#sets')&&!e.target.closest('#gearBtn'))$('#sets').classList.remove('open')});
+/* shrink extras step by step until the typing screen fits without scrolling */
+function fitScreen(){const b=document.body;['fit1','fit2','fit3','fit4','fit5'].forEach(c=>b.classList.remove(c));
+  if(!['lesson','build','speed'].includes(current))return;
+  if(innerWidth>760&&!(innerHeight<=560&&innerWidth>innerHeight))return;
+  for(const c of ['fit1','fit2','fit3','fit4','fit5']){if(document.documentElement.scrollHeight<=innerHeight+2)break;b.classList.add(c)}}
+let fitT=null;const fitSoon=()=>{clearTimeout(fitT);fitT=setTimeout(()=>requestAnimationFrame(fitScreen),60)};
+addEventListener('resize',fitSoon);addEventListener('orientationchange',()=>setTimeout(fitSoon,250));
+if(window.visualViewport)visualViewport.addEventListener('resize',fitSoon);
+function capsCheck(e){if(e.getModifierState)$('#capsNote').hidden=!e.getModifierState('CapsLock')}
+function focusCheck(){const typing=['lesson','build','speed'].includes(current);$('#focusNote').hidden=!(typing&&!document.hasFocus())}
+addEventListener('focus',focusCheck);addEventListener('blur',focusCheck);
+$('#focusNote').onclick=()=>{window.focus();focusCheck()};
+document.addEventListener('mousedown',()=>setTimeout(focusCheck,50));
+
+/* ================= NAVIGATION ================= */
+function show(id){
+  try{if(window.speechSynthesis)speechSynthesis.cancel()}catch(e){}
+  $$('.screen').forEach(s=>s.hidden=s.id!==id);current=id;activeTyper=null;typingLocked=false;
+  const slot=$('#'+id+' .coach-slot');if(slot)slot.appendChild($('#coach'));$('#coach').hidden=!slot;
+  const sl=$('#'+id+' .side-l-slot'),sr=$('#'+id+' .side-r-slot');if(sl&&sr){sl.appendChild($('#sideL'));sr.appendChild($('#sideR'))}else $('#parking').append($('#sideL'),$('#sideR'));
+  $('#oops').textContent='';clearCoach();$('#hint').innerHTML='Put your fingers on the home row! 🏠';
+  scrollTo(0,0);focusCheck();
+  if(['lesson','build','speed'].includes(id)){if(!IS_TOUCH||document.body.classList.contains('capfocus'))setTimeout(focusCap,30)}else if(document.activeElement===CAP)CAP.blur();
+  if(id==='camp')renderCamp();if(id==='builds')renderBuilds();if(id==='build')openBuild();if(id==='speed')openSpeed();if(id==='story')openStory();
+  fitSoon();
+}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g){SFX.click();show(g.dataset.go)}});
+$('#logo').onclick=()=>show('menu');
+function refreshTextForMode(){if(current==='build'&&activeTyper&&!activeTyper.start)startBuildStage();if(current==='speed'&&!SP.running&&!SP.counting)newSentence(true)}
+
+/* ================= WORDS & LESSONS ================= */
+const WORDS=[...new Set(`a ad add ads all as ask asks dad sad lad fad had has hall fall lag gag jag flag flask glass gas dash flash slash sash lash ash salad alfalfa shall half falls flags
+he she his her hi hide side aside slide glide ski skis sled slid desk seek see sea feed feel field shield fish dish kid life file like lake hike leaf deal heal seal kill fill hill skill sell shell less lead jelly said idea ideas egg eggs fake jade shade head
+dig mine craft block stone dirt sand wood log axe pick sword bow ore gold iron coal gem jump run hop sky sun moon star rain snow ice lava fire water rock cave fish boat raft seed farm wheat cake bread apple carrot melon pumpkin pig cow sheep wolf cat dog bee fox owl hut house roof wall door gate fence path torch lamp brick tower castle bridge bed chest map key quest team friend build dream mob zombie spider slime night day dark light hide seek win play game fun cool epic super happy funny silly giant tiny magic potion table window stairs slab wool red blue green pink gray white black big small fast slow brave quiet loud
+the and you that was for are with they at be this have from or one had by word but not what all were we when your can there use an each which do how their if will up other about out many then them these so some would make him into time look two more write go number no way could people my than first been call who its now find long down did get come made may part over new sound take only little work know place year live me back give most very after thing our just name good man think say great where help through much before line right too mean old any same tell boy follow came want show also around three set put end does another well large must even such turn here why went men read need land different home us move try kind hand picture again change off spell air away animal point page letter mother answer found study still learn should world high every near add food between own below plant last school father keep tree never start city earth eye thought under story saw left few while along might close something seem next hard open example begin life always those both paper together got group often important until children side feet car mile walk began grow took river four carry once book hear stop without second later miss enough eat face watch far really almost let above girl sometimes mountain cut young talk soon list song leave family
+jelly yak quiz box wax zap zoo zip jazz quick quack jog jet joke joy kit kite skid pizza queen exit extra next`.split(/\s+/).filter(Boolean))];
+const STEPS=[
+ ['F & J','fj','Feel the bumps on F and J? Your pointer fingers live there. Press with them!'],
+ ['D & K','dk','Middle fingers rest on D and K.'],
+ ['S & L','sl','Ring fingers rest on S and L.'],
+ ['A & ;','a;','Pinkies rest on A and ; — the whole home row!'],
+ ['G & H','gh','Stretch your pointer fingers sideways, then slide back home.'],
+ ['Home Row Words','','Real words using only the home row!','words'],
+ ['E & I','ei','Middle fingers reach UP to E and I.'],
+ ['R & U','ru','Pointer fingers reach up to R and U.'],
+ ['T & Y','ty','Pointer fingers stretch up and over to T and Y.'],
+ ['W & O','wo','Ring fingers reach up to W and O.'],
+ ['Q & P','qp','Pinkies reach up to Q and P.'],
+ ['Top Row Words','','Words using the home row and the top row!','words'],
+ ['V & M','vm','Pointer fingers reach DOWN to V and M.'],
+ ['B & N','bn','Pointer fingers reach down and over to B and N.'],
+ ['C & ,','c,','Middle fingers reach down to C and comma.'],
+ ['X & .','x.','Ring fingers reach down to X and period.'],
+ ['Z & /','z/','Pinkies reach down to Z and slash.'],
+ ['All Letters','','Words from the whole keyboard!','words'],
+ ['Capital Letters','','Hold SHIFT with the pinky of your OTHER hand, then press the letter.','caps'],
+ ['Number Row','1234567890','Reach up two rows to the numbers, then come back home.','nums']
+];
+const LESSONS=[];(function(){let keys='';for(const [name,nk,tip,mode] of STEPS){if(mode!=='nums')keys+=nk;LESSONS.push({name,newk:nk,tip,mode:mode||'',keys:mode==='nums'?keys+nk:keys})}})();
+function makeLine(ls,target=30){
+  const letters=ls.keys.replace(/[^a-z]/g,'');
+  let pool=WORDS.filter(w=>[...w].every(c=>letters.includes(c)));
+  const nkL=ls.newk.replace(/[^a-z]/g,'');
+  if(nkL){const pr=pool.filter(w=>[...nkL].some(c=>w.includes(c)));if(pr.length>=4)pool=pr.concat(pr,pool)}
+  if(ls.mode==='caps')pool=pool.filter(w=>w.length>2);
+  const out=[];let len=0;
+  while(len<target){let tok;
+    if(ls.mode==='nums'){tok=Math.random()<.55?Array.from({length:randInt(1,3)},()=>pick([...ls.newk])).join(''):randInt(2,99)+' '+pick(['blocks','pigs','cows','gold','logs','eggs','torches','apples'])}
+    else if(ls.mode==='caps'){tok=pick(pool);tok=tok[0].toUpperCase()+tok.slice(1)}
+    else if(ls.mode==='words'||(pool.length>=8&&Math.random()<.45))tok=pick(pool);
+    else{const n=randInt(2,4);tok='';const nk=[...ls.newk];for(let i=0;i<n;i++)tok+=(nk.length&&Math.random()<.55)?pick(nk):pick([...ls.keys])}
+    out.push(tok);len+=tok.length+1}
+  let s=out.join(' ');if(ls.mode==='caps')s+='.';return s}
+function unlocked(i){return S.unlockAll||i===0||(S.lessons[i-1]||0)>=1}
+function renderCamp(){const g=$('#lgrid');g.innerHTML='';LESSONS.forEach((l,i)=>{const d=document.createElement('div');const ok=unlocked(i);d.className='ltile'+(ok?'':' locked');
+  d.innerHTML=`<div class="n">LESSON ${i+1}</div><div class="t">${esc(l.name)}</div><div class="st">${ok?starsHTML(S.lessons[i]||0):'🔒'}</div>`;
+  d.onclick=()=>{if(ok)startLesson(i);else{SFX.err();toast('Get a star on the lesson before to unlock this one!')}};g.appendChild(d)})}
+$('#unlockAll').onclick=e=>{e.preventDefault();S.unlockAll=true;save();renderCamp();toast('All lessons unlocked')};
+let LS=null;
+function startLesson(i){const l=LESSONS[i];LS={idx:i,line:0,lines:[makeLine(l),makeLine(l),makeLine(l)],agg:{correct:0,errors:0,time:0,best:0,miss:{}}};
+  show('lesson');$('#lsTitle').textContent=`Lesson ${i+1}: ${l.name}`;$('#lsTip').textContent=l.tip;
+  const nk=[...new Set([...l.newk])];$('#lsKeys').innerHTML=nk.length?'<b style="font-size:22px">New keys:</b> '+nk.map(c=>{const f=KEYFINGER[c];return `<span class="kcap" style="background:var(--f-${FTYPE[f]})">${esc(c.toUpperCase())}</span><span style="font-size:20px">${fingerName(f).toLowerCase()}</span>`}).join(' '):'';
+  lessonLine()}
+function lessonLine(){fitSoon();$('#lsRound').textContent=`LINE ${LS.line+1} OF 3`;resetStats();
+  activeTyper=new Typer($('#lsText'),LS.lines[LS.line],{sound:k=>{if(k!==' ')(Math.random()<.65?SFX.stone:SFX.dirt)()},onDone:st=>{const a=LS.agg;a.correct+=st.correct;a.errors+=st.errors;a.time+=st.time;a.best=Math.max(a.best,st.bestStreak);for(const k in st.missMap)a.miss[k]=(a.miss[k]||0)+st.missMap[k];liveStats();
+    LS.line++;if(LS.line<3){SFX.gem();setTimeout(SFX.pop,150);toast('⛏ Line done!',1000);typingLocked=true;setTimeout(()=>{typingLocked=false;if(current==='lesson')lessonLine()},700)}else finishLesson()}})}
+function finishLesson(){const a=LS.agg,i=LS.idx;const acc=Math.round(100*a.correct/Math.max(1,a.correct+a.errors));const wpm=Math.round((a.correct/5)/Math.max(a.time/60,1/120));
+  const stars=acc>=97?3:acc>=90?2:acc>=80?1:0;const prev=S.lessons[i]||0;if(stars>prev)S.lessons[i]=stars;
+  if(stars){addGems(stars);addXP(stars*10);SFX.win();if(stars>1)SFX.fireworks(stars-1);confetti(stars*50)}else SFX.err();save();
+  const msg=stars===3?'PERFECT BUILDER!':stars===2?'GREAT JOB!':stars===1?'YOU PASSED!':'SO CLOSE — TRY AGAIN!';
+  const btns=[{label:'↺ Again',fn:()=>startLesson(i)},{label:'Lessons',fn:()=>show('camp')}];
+  if(stars&&i<LESSONS.length-1)btns.push({label:'Next ▶',primary:true,fn:()=>startLesson(i+1)});else btns[0].primary=true;
+  modal(`<div class="big">${msg}</div><div class="stars">${starsHTML(stars)}</div><div class="mrow"><div class="mstat">Correct<b>${acc}%</b></div><div class="mstat">Speed<b>${wpm} WPM</b></div><div class="mstat">Best streak<b>${a.best}</b></div>${stars?`<div class="mstat">Emeralds<b>+${stars}</b></div>`:''}</div>${stars?'':'<p>You need 80% correct to pass. Go slow and use the right finger — speed comes later!</p>'}${missList(a.miss)}`,btns)}
+
+/* ================= BUILD SCHOOL ================= */
+const GW=27,GH=20,CW=GW*16,CH=GH*16;
+const box=(x1,y1,x2,y2,t)=>{const a=[];for(let y=y2;y>=y1;y--)for(let x=x1;x<=x2;x++)a.push([x,y,typeof t==='function'?t(x,y):t]);return a};
+// overlay layers: 0 = on the floor (rails, dust), 1 = normal, 2 = on top of others, 3 = drawn after darkness (glowing eyes)
+const L0=new Set(['rail','railPOn','railD','dust','repeater']);
+const L2=new Set(['crossbuck','gatebox','clock']);
+const L3=new Set(['eyes']);
+const OVER=new Set([...L0,...L2,...L3,'lantern','flower','flower2','smoke','post','flashA','flashB','bench','sign','lever','bars','flag','ladder','chest','bedL','bedR','cobweb','drip','slabWood','torch','rtorch']);
+const LIGHT={lantern:4.5,torch:3.6,rtorch:2,furnace:2.6,lava0:3,lava:3.2,glowWin:2.6,seaLantern:4.5,railPOn:1,redblock:1.3};
+const PST={}; // per-build animation memory
+
+/* ---------- terrain ---------- */
+function groundDay(b){for(let x=0;x<GW;x++){b[x+',17']='grass';b[x+',18']='dirt';b[x+',19']='dirt'}}
+function groundSnow(b){for(let x=0;x<GW;x++){b[x+',17']='snowGrass';b[x+',18']='dirt';b[x+',19']='dirt'}}
+function underground(b,top){const r=rng(99);for(let x=0;x<GW;x++){b[x+','+top]='grass';b[x+','+(top+1)]='dirt';b[x+','+(top+2)]='dirt';for(let y=top+3;y<GH;y++)b[x+','+y]=r()<.05?'oreCoal':'stone'}}
+
+/* ---------- sky & backdrops ---------- */
+const STARS=(()=>{const r=rng(5);return Array.from({length:80},()=>[r()*CW|0,r()*220|0,r()<.2?2:1,r()*6.28])})();
+function drawSky(c,kind,t){
+  if(kind==='night'){const g=c.createLinearGradient(0,0,0,CH);g.addColorStop(0,'#070b26');g.addColorStop(1,'#283062');c.fillStyle=g;c.fillRect(0,0,CW,CH);
+    STARS.forEach(([x,y,s,ph])=>{c.fillStyle=`rgba(255,255,255,${(.55+.45*Math.sin(t/520+ph)).toFixed(2)})`;c.fillRect(x,y,s,s)});
+    c.fillStyle='#f4f1d8';c.fillRect(372,22,28,28);c.fillStyle='#d9d4b0';c.fillRect(378,28,6,6);c.fillRect(388,38,5,5);return}
+  const g=c.createLinearGradient(0,0,0,CH);g.addColorStop(0,'#6fb6ff');g.addColorStop(1,'#cfe9ff');c.fillStyle=g;c.fillRect(0,0,CW,CH);
+  c.fillStyle='#fff3a0';c.fillRect(24,24,32,32);c.fillStyle='#ffe066';c.fillRect(28,28,24,24);
+  c.fillStyle='rgba(255,255,255,.9)';const d=t/90;[[96,30,64,12],[112,22,32,10],[300,46,80,12],[320,38,40,10],[200,16,48,10]].forEach(([x,y,w,h])=>c.fillRect(((x+d)%(CW+100))-60,y,w,h));
+}
+function bgTree(c,x,y){c.globalAlpha=.85;for(let k=0;k<3;k++)c.drawImage(TEX.log,x*16,(y+k)*16);for(let dx=-1;dx<=1;dx++)for(let dy=-2;dy<=-1;dy++)c.drawImage(TEX.leaves,(x+dx)*16,(y+dy)*16);c.drawImage(TEX.leaves,x*16,(y-3)*16);c.globalAlpha=1}
+function hills(c){c.fillStyle='#8cc47a';[[0,13,6],[5,12,5],[9,13,4],[13,11,6],[18,12,5],[22,13,5]].forEach(([x,y,w])=>c.fillRect(x*16,y*16,w*16,CH));c.fillStyle='#78b466';[[2,14,7],[11,14,5],[19,14,8]].forEach(([x,y,w])=>c.fillRect(x*16,y*16,w*16,CH));[[2,12],[7,12],[20,12],[25,12]].forEach(([x,y])=>bgTree(c,x,y))}
+function aurora(c,t){for(let b=0;b<3;b++)for(let x=0;x<CW;x+=8){const y=36+b*22+16*Math.sin(x/55+t/1600+b*1.7);c.fillStyle=b===1?'rgba(120,200,255,.10)':'rgba(90,255,180,.11)';c.fillRect(x,y,8,30)}}
+const FLAKES=(()=>{const r=rng(17);return Array.from({length:70},()=>[r()*CW,r()*CH,8+r()*14,r()*6.28])})();
+function snow(c,t){c.fillStyle='rgba(255,255,255,.9)';for(const [x,y,sp,ph] of FLAKES){const yy=(y+t/1000*sp)%CH,xx=(x+Math.sin(t/900+ph)*6+CW)%CW;c.fillRect(xx|0,yy|0,2,2)}}
+
+/* ---------- animated blocks ---------- */
+function lampX(c,px,py,on){c.fillStyle='#111';c.fillRect(px+2,py+2,12,12);c.fillStyle=on?'#ff2a1a':'#4a0e0a';c.fillRect(px+4,py+4,8,8);
+  if(on){c.fillStyle='#ffc0b0';c.fillRect(px+5,py+5,3,3);c.save();c.globalCompositeOperation='lighter';const g=c.createRadialGradient(px+8,py+8,0,px+8,py+8,24);g.addColorStop(0,'rgba(255,40,20,.6)');g.addColorStop(1,'rgba(255,40,20,0)');c.fillStyle=g;c.fillRect(px-16,py-16,48,48);c.restore()}}
+function lampOn(t,x,y,i){if(!i.power)return false;const tick=Math.floor(t/500),mode=Math.floor(tick/8)%3,a=x-9,b=y-12;
+  if(mode===0)return (a+b+tick)%4===0||(a+b+tick)%4===1;if(mode===1)return (a+b+tick)%2===0;return (4-b)<=tick%6}
+function pistonExt(t,x,i){if(!i.power||i.done<6)return 0;const tick=Math.floor(t/500),k=(x-17)/2;const on=(tick+k)%2===0?1:0,prev=(tick-1+k)%2===0?1:0;return prev+(on-prev)*Math.min(1,(t%500)/90)}
+function drawCart(c,x,y,engine){
+  if(engine){c.drawImage(TEX.furnace,x+2,y-4,12,12);c.fillStyle='#ffb020';c.fillRect(x+5,y+3,6,2)}
+  c.fillStyle='#2e2e2e';c.fillRect(x+1,y+2,14,8);c.fillStyle='#6d6d6d';c.fillRect(x+2,y+3,12,6);c.fillStyle='#8f8f8f';c.fillRect(x+1,y+2,14,1);c.fillStyle='#3a3a3a';c.fillRect(x+3,y+5,10,1);
+  c.fillStyle='#111';c.fillRect(x+3,y+9,3,2);c.fillRect(x+10,y+9,3,2)}
+const ANIM={
+  smoke:(c,px,py,t,x)=>{const o=(t/70+x*7)%16;c.globalAlpha=Math.max(0,.8*(1-o/16));c.drawImage(TEX.smoke,px,py-o);c.globalAlpha=1},
+  flashA:(c,px,py,t,x,y,i)=>lampX(c,px,py,i.cross&&Math.floor(t/420)%2===0),
+  flashB:(c,px,py,t,x,y,i)=>lampX(c,px,py,i.cross&&Math.floor(t/420)%2===1),
+  dust:(c,px,py,t,x,y,i)=>{const b=i.power?.5+.5*(Math.sin(t/140-x*.9)+1)/2:.2;c.fillStyle=`rgb(${110+145*b|0},${18*b|0},${10*b|0})`;c.fillRect(px,py+13,16,2);c.fillRect(px+3,py+12,2,1);c.fillRect(px+10,py+12,3,1)},
+  repeater:(c,px,py,t,x,y,i)=>{c.drawImage(TEX.repBase,px,py);const lit=i.power&&(Math.floor(t/500)+x)%2===0;c.fillStyle=lit?'#ff2a1a':'#5a1410';c.fillRect(px+3,py+5,4,3);c.fillRect(px+10,py+5,4,3)},
+  lamp:(c,px,py,t,x,y,i)=>c.drawImage(TEX[lampOn(t,x,y,i)?'lampOn':'lampOff'],px,py),
+  piston:(c,px,py,t,x,y,i)=>{const e=pistonExt(t,x,i);c.drawImage(TEX.pistonBody,px,py);const hy=py-e*16;c.fillStyle='#9a8a62';c.fillRect(px+6,hy+4,4,Math.max(0,py+4-(hy+4)));c.drawImage(TEX.pistonHead,px,hy)},
+  lava:(c,px,py,t,x)=>c.drawImage(TEX['lava'+((Math.floor(t/260)+x)%4)],px,py),
+  furnace:(c,px,py,t,x)=>{c.drawImage(TEX.furnace,px,py);const f=.6+.4*Math.sin(t/90+x);c.fillStyle=`rgb(255,${120+80*f|0},20)`;c.fillRect(px+4,py+10,8,3);c.fillStyle='#ffe08a';c.fillRect(px+5+(Math.floor(t/150)%4),py+10,2,2)},
+  eyes:(c,px,py,t,x,y)=>{if((t+x*977+y*331)%3400<180)return;c.fillStyle='#ff2020';c.fillRect(px+3,py+7,3,2);c.fillRect(px+10,py+7,3,2);c.fillStyle='#ffc0c0';c.fillRect(px+4,py+7,1,1);c.fillRect(px+11,py+7,1,1)},
+  flag:(c,px,py,t)=>{c.fillStyle='#cfcfcf';c.fillRect(px,py-6,2,22);for(let k=0;k<11;k++){const w=Math.round(Math.sin(t/180-k*.7)*1.6);c.fillStyle=k%4===3?'#2a5fd8':'#3b7cf0';c.fillRect(px+2+k,py-5+w,1,8)}c.fillStyle='#fff';c.fillRect(px+6,py-3+Math.round(Math.sin(t/180-2.8)*1.6),2,2)},
+  clock:(c,px,py)=>{const d=new Date();c.fillStyle='#d4a017';c.fillRect(px+1,py+1,14,14);c.fillStyle='#fafafa';c.fillRect(px+2,py+2,12,12);c.fillStyle='#333';[[7,2],[12,7],[7,12],[2,7]].forEach(([a,b])=>c.fillRect(px+a,py+b,2,2));
+    const cx=px+8,cy=py+8,m=d.getMinutes()/60*6.283,h=(d.getHours()%12+d.getMinutes()/60)/12*6.283,s=d.getSeconds()/60*6.283;
+    c.strokeStyle='#222';c.lineWidth=1.6;c.beginPath();c.moveTo(cx,cy);c.lineTo(cx+Math.sin(h)*3.5,cy-Math.cos(h)*3.5);c.moveTo(cx,cy);c.lineTo(cx+Math.sin(m)*5.5,cy-Math.cos(m)*5.5);c.stroke();
+    c.strokeStyle='#d22';c.lineWidth=1;c.beginPath();c.moveTo(cx,cy);c.lineTo(cx+Math.sin(s)*5.5,cy-Math.cos(s)*5.5);c.stroke()}
+};
+['pushCobble','woolR','woolY','woolB'].forEach(n=>ANIM[n]=(c,px,py,t,x,y,i)=>c.drawImage(TEX[n],px,py-pistonExt(t,x,i)*16));
+const LIGHTFN={lamp:(t,i,x,y)=>lampOn(t,x,y,i)?2.4:0,lava:()=>3.2};
+
+/* ---------- the builds ---------- */
+const HOME_TIPS=[
+ ['Start with a stone floor so your house looks strong.','This is called a FOUNDATION. A different block along the bottom makes a house look solid.'],
+ ['Put logs on the corners so the walls stand out.','Corner pillars give your build a frame, like the bones of the house.'],
+ ['Fill the walls with planks and mix in some cobblestone.','Mixing similar blocks adds TEXTURE, so the walls don’t look flat and boring.'],
+ ['Push your windows one block in to give the wall depth.','DEPTH means not everything is flat. The shadows make your build look real.'],
+ ['Put the door in the middle and frame it with logs.','A frame around the door shows everyone where to go in.'],
+ ['Use stairs to build a slanted roof, not a flat one.','Stair blocks make smooth slopes. A slanted roof looks way better than a flat top.'],
+ ['Let the roof hang past the walls by one block.','This is called an OVERHANG. It adds shadow and makes the roof look finished.'],
+ ['Hang lanterns by the door so you can see at night.','Lights keep your door safe and cozy after dark.'],
+ ['Plant leaves, flowers, and a tree to make it feel alive.','Plants around a build make it look lived-in. This is called LANDSCAPING.'],
+ ['Add a chimney so the shape is not just a box.','Breaking up the shape with a chimney or tower makes any build more interesting.']];
+const HOME_BLOCKS=(function(){const st=[];const r=rng(77);
+  st.push(Array.from({length:13},(_,i)=>[7+i,16,'stone']));
+  let s=[];for(let y=15;y>=11;y--){s.push([7,y,'log'],[19,y,'log'])}st.push(s);
+  s=[];for(let y=15;y>=11;y--)for(let x=8;x<=18;x++)s.push([x,y,(y===15||r()<.2)?'cobble':'planks']);st.push(s);
+  st.push([[9,13],[10,13],[9,12],[10,12],[16,13],[17,13],[16,12],[17,12]].map(([x,y])=>[x,y,'glass']));
+  st.push([[12,15,'log'],[14,15,'log'],[13,15,'doorBot'],[12,14,'log'],[14,14,'log'],[13,14,'doorTop'],[12,13,'log'],[13,13,'log'],[14,13,'log']]);
+  const roof=o=>{const a=[];for(let k=0;;k++){const y=10-k,L=7-o+k,R=19+o-k;if(L>R)break;if(L===R){a.push([L,y,'roof']);break}a.push([L,y,'stairL'],[R,y,'stairR']);for(let x=L+1;x<R;x++)a.push([x,y,'darkplanks'])}return a};
+  st.push(roof(0));st.push(roof(1));
+  st.push([[11,14,'lantern'],[15,14,'lantern']]);
+  st.push([[2,16,'leaves'],[3,16,'leaves'],[4,16,'leaves'],[3,15,'leaves'],[5,16,'flower'],[6,16,'flower2'],[24,16,'log'],[24,15,'log'],[24,14,'log'],[23,13,'leaves'],[24,13,'leaves'],[25,13,'leaves'],[22,12,'leaves'],[23,12,'leaves'],[24,12,'leaves'],[25,12,'leaves'],[26,12,'leaves'],[23,11,'leaves'],[24,11,'leaves'],[25,11,'leaves'],[24,10,'leaves'],[20,16,'flower'],[21,16,'flower2'],[22,16,'flower']]);
+  st.push([[16,6,'brick'],[16,5,'brick'],[16,4,'brick'],[17,3,'smoke'],[16,2,'smoke'],[17,1,'smoke']]);
+  return st})();
+
+const CAVE=(()=>{const r=rng(321);const tunnel=[],room=[],tops={},bots={};
+  for(let x=0;x<=8;x++){const top=3+Math.floor(x*.75);for(let y=top;y<=top+2;y++)tunnel.push([x,y,'cavebg'])}
+  for(let x=9;x<=25;x++){const top=8+Math.floor(r()*2)+(x<11||x>23?1:0),bot=15+(r()<.45?1:0);tops[x]=top;bots[x]=bot;if(x===15)continue;for(let y=top;y<=bot;y++)room.push([x,y,'cavebg'])}
+  return{tunnel,room,tops,bots}})();
+
+const PROJ_LIST=[
+ {id:'home',name:'Cozy Home',sky:'day',terrain:groundDay,
+  stages:HOME_TIPS.map(([tip,why],k)=>({tip,why,blocks:HOME_BLOCKS[k]}))},
+
+ {id:'rail',name:'Railroad Crossing',sky:'day',terrain:groundDay,backdrop:hills,
+  stages:[
+   {tip:'Lay gravel under the tracks so they sit up off the grass.',why:'Real railways sit on a raised bed of stones called BALLAST. It keeps the track level.',blocks:[...box(0,16,10,16,'gravel'),...box(16,16,26,16,'gravel')]},
+   {tip:'Make the road out of dark blocks where the cars cross.',why:'Using a different block for the road shows exactly where cars drive over the tracks.',blocks:box(11,16,15,17,'road')},
+   {tip:'Lay rails in one long straight line across the road.',why:'Straight track is the fastest. Plan the whole line before you start placing rails!',blocks:box(0,15,26,15,'rail')},
+   {tip:'Use powered rails with redstone so carts never stop.',why:'Powered rails push carts forward. A block of redstone underneath keeps them switched on.',blocks:[[4,16,'redblock'],[4,15,'railPOn'],[22,16,'redblock'],[22,15,'railPOn']]},
+   {tip:'Build a tall post on each side of the road for signals.',why:'Signals on both sides warn drivers coming from either direction.',blocks:[...box(10,10,10,15,'post'),...box(16,10,16,15,'post')]},
+   {tip:'Put a white X sign at the top of each post.',why:'The X sign is called a CROSSBUCK. It means: look out for trains!',blocks:[[10,10,'crossbuck'],[16,10,'crossbuck']]},
+   {tip:'Add two red lights on each post that flash in turns.',why:'Lights that take turns flashing are easy to see from far away, even in the rain.',blocks:[[9,12,'flashA'],[11,12,'flashB'],[15,12,'flashA'],[17,12,'flashB']]},
+   {tip:'Add striped gates that swing down to block the road.',why:'Gates stop cars from driving onto the tracks while the train goes by.',blocks:[[10,14,'gatebox'],[16,14,'gatebox']]},
+   {tip:'Add detector rails so the crossing knows a cart is coming.',why:'A detector rail sends a redstone signal when a cart rolls over it. That is how the crossing switches on!',blocks:[[3,15,'railD'],[23,15,'railD']]}],
+  pre(i){i.cross=i.done>=7&&i.done<9;i.carts=[];
+    if(i.done>=9){const ph=i.t%9000,lead=-40+(ph/6000)*(CW+120);i.carts=[lead,lead-18,lead-36];i.cross=i.carts.some(x=>x>11*16-170&&x<15*16+40)}
+    const st=PST.rail=PST.rail||{gate:1,bell:0};
+    if(i.live&&i.cross&&i.done>=7&&i.t-st.bell>650){st.bell=i.t;SFX.bell()}},
+  extra(c,t,i){
+    if(i.done>=8){const st=PST.rail,target=i.cross?0:1;if(i.live){st.gate+=(target-st.gate)*.25}const a=(i.live?st.gate:target)*Math.PI/2;
+      [[10,1],[16,-1]].forEach(([gx,dir])=>{c.save();c.translate(gx*16+8,14*16+7);c.rotate(-dir*a);c.fillStyle='#222';c.fillRect(-dir*10-(dir>0?0:4),-3,4,6);
+        for(let k=0;k<9;k++){c.fillStyle=k%2?'#f4f4f4':'#d42a1e';c.fillRect(dir>0?k*6:-(k+1)*6,-2,6,4)}c.restore()})}
+    i.carts.forEach((x,k)=>drawCart(c,x,15*16,k===0))}},
+
+ {id:'station',name:'Train Station',sky:'day',terrain:groundDay,backdrop:hills,
+  stages:[
+   {tip:'Lay gravel and a long line of rails along the ground.',why:'Every station starts with the track. Keep it straight where the trains will stop.',blocks:Array.from({length:GW},(_,x)=>[[x,17,'gravel'],[x,16,'rail']]).flat()},
+   {tip:'Build a raised platform out of stone bricks.',why:'A raised platform makes it easy to climb into the cart. Stone bricks look clean and strong.',blocks:box(3,15,23,16,'stoneBricks')},
+   {tip:'Add a yellow line on the edge so people stand back.',why:'Real stations paint the edge yellow. Little details like this make builds look real!',blocks:box(3,15,23,15,'edge')},
+   {tip:'Put up pillars every few blocks to hold up the roof.',why:'Pillars at even spaces give a build RHYTHM, so it looks planned and neat.',blocks:[...box(4,10,4,14,'log'),...box(8,10,8,14,'log'),...box(18,10,18,14,'log'),...box(22,10,22,14,'log')]},
+   {tip:'Build a long roof with stairs on the ends to keep rain off.',why:'A roof that sticks out past the platform keeps everyone dry. Stairs shape the edges.',blocks:[[2,9,'stairL'],...box(3,9,23,9,'roof'),[24,9,'stairR'],[6,8,'stairL'],...box(7,8,19,8,'roof'),[20,8,'stairR']]},
+   {tip:'Hang lanterns under the roof so the station glows.',why:'Lanterns hanging on chains add light AND decoration at the same time.',blocks:[[6,10,'lantern'],[10,10,'lantern'],[16,10,'lantern'],[20,10,'lantern']]},
+   {tip:'Add benches and a big sign so riders know where they are.',why:'Benches made from stair blocks are a classic builder trick!',blocks:[[11,14,'bench'],[12,14,'bench'],[14,14,'bench'],[15,14,'bench'],...box(11,10,15,10,'sign')]},
+   {tip:'Put a clock tower on top so the trains run on time.',why:'A tower in the middle breaks up a long flat roof and gives the station a center.',blocks:[...box(12,6,14,7,'stoneBricks'),[12,5,'stairL'],[13,5,'roof'],[14,5,'stairR'],[13,6,'clock']]},
+   {tip:'Add a powered rail in the middle so carts can stop and go.',why:'A powered rail can stop a cart when it is off and launch it when it is on.',blocks:[[13,17,'redblock'],[13,16,'railPOn']]}],
+  pre(i){i.carts=[];if(i.done<9)return;const ph=i.t%12000,stop=13*16+26,start=-60,end=CW+80;let x;
+    if(ph<4000){const k=ph/4000;x=start+(stop-start)*(1-Math.pow(1-k,3))}else if(ph<7000)x=stop;else if(ph<11000){const k=(ph-7000)/4000;x=stop+(end-stop)*k*k*k}else x=end+300;
+    i.carts=[x,x-18,x-36];const st=PST.station=PST.station||{};
+    if(i.live&&st.ph!==undefined){if(st.ph<4000&&ph>=4000)SFX.chime();if(st.ph<6800&&ph>=6800)SFX.toot()}st.ph=ph},
+  extra(c,t,i){if(i.done>=7){c.fillStyle='#3a2410';c.font='bold 10px monospace';c.textAlign='center';c.fillText('STATION',13*16+8,10*16+12)}
+    i.carts.forEach((x,k)=>drawCart(c,x,16*16,k===0))}},
+
+ {id:'machine',name:'Redstone Machine',sky:'night',terrain:groundDay,dark:{from:0,alpha:.42},
+  stages:[
+   {tip:'Build a smooth stone floor for your redstone machine.',why:'Redstone dust needs a solid block under it. A smooth floor keeps your wiring neat.',blocks:box(1,17,25,17,'smooth')},
+   {tip:'Place a lever at the start to turn the machine on.',why:'A lever is a power switch. Flip it and the redstone signal starts to flow!',blocks:[[2,16,'lever']]},
+   {tip:'Lay a line of redstone dust to carry the power.',why:'Dust works like a wire. The signal fades after 15 blocks, so keep your lines short.',blocks:[3,4,5,6,7,8,14,15,16,18,20,22].map(x=>[x,16,'dust'])},
+   {tip:'Add repeaters to make the signal tick on and off.',why:'Repeaters boost the signal and add a delay. Loop them and you get a CLOCK that ticks forever.',blocks:[[5,16,'repeater'],[15,16,'repeater']]},
+   {tip:'Stack redstone lamps into a wall that blinks like a show.',why:'Redstone lamps light up when they get power. A grid of them can make patterns!',blocks:box(9,12,13,16,'lamp')},
+   {tip:'Put sticky pistons on the end to push blocks up and down.',why:'Sticky pistons push a block out AND pull it back. That is how doors and elevators move.',blocks:[[17,16,'piston'],[17,15,'pushCobble'],[19,16,'piston'],[19,15,'pushCobble'],[21,16,'piston'],[21,15,'pushCobble']]},
+   {tip:'Use colored wool on the pistons so they look like a dance.',why:'Bright colors make a machine fun to watch, and help you see which part is which.',blocks:[[17,15,'woolR'],[19,15,'woolY'],[21,15,'woolB']]},
+   {tip:'Frame the machine with stone bricks and a redstone torch.',why:'A frame shows where the machine starts and ends, like a picture frame.',blocks:[...box(8,11,8,15,'stoneBricks'),...box(14,11,14,15,'stoneBricks'),...box(9,11,13,11,'stoneBricks'),[11,10,'rtorch']]}],
+  pre(i){i.power=i.done>=3;const st=PST.machine=PST.machine||{};if(i.live&&i.power&&i.done>=6){const tick=Math.floor(i.t/500);if(st.tick!==tick){st.tick=tick;SFX.piston()}}}},
+
+ {id:'ice',name:'Ice Castle',sky:'night',terrain:groundSnow,dark:{from:0,alpha:.3},backdrop:aurora,after:snow,
+  stages:[
+   {tip:'Start with a base of packed ice so the castle is strong.',why:'Packed ice never melts, so it is a safe block for building in the snow.',blocks:box(3,16,23,16,'packed')},
+   {tip:'Build two tall towers on the sides of the castle.',why:'Towers on the corners make a castle look grand. Make them taller than the walls!',blocks:[...box(4,6,7,15,(x,y)=>y%3===0?'blueIce':'packed'),...box(19,6,22,15,(x,y)=>y%3===0?'blueIce':'packed')]},
+   {tip:'Fill the middle wall with ice in a cool pattern.',why:'Repeating two blocks in a checker PATTERN adds detail to a big flat wall.',blocks:box(8,10,18,15,(x,y)=>(x+y)%2?'ice':'packed')},
+   {tip:'Add battlements on top of the wall like a real castle.',why:'Battlements are the bumpy blocks on top: one block up, one block down, over and over.',blocks:[8,10,12,14,16,18].map(x=>[x,9,'packed'])},
+   {tip:'Make a dark gate with iron bars in the middle.',why:'A dark doorway with bars looks deep and mysterious.',blocks:[...box(12,13,14,15,'gateDark'),[13,12,'gateDark'],...box(12,13,14,15,'bars'),[13,12,'bars']]},
+   {tip:'Put glowing windows up high so light shines at night.',why:'Lit windows make a build come alive after dark.',blocks:[[5,8],[6,8],[5,9],[6,9],[20,8],[21,8],[20,9],[21,9],[10,12],[16,12]].map(([x,y])=>[x,y,'glowWin'])},
+   {tip:'Top the towers with pointy roofs and blue flags.',why:'Pointy roofs with an overhang make towers look magical. Flags add movement!',blocks:[[3,5,'iceStairL'],...box(4,5,7,5,'roofIce'),[8,5,'iceStairR'],[4,4,'iceStairL'],...box(5,4,6,4,'roofIce'),[7,4,'iceStairR'],[5,3,'iceStairL'],[6,3,'iceStairR'],[6,2,'flag'],
+     [18,5,'iceStairL'],...box(19,5,22,5,'roofIce'),[23,5,'iceStairR'],[19,4,'iceStairL'],...box(20,4,21,4,'roofIce'),[22,4,'iceStairR'],[20,3,'iceStairL'],[21,3,'iceStairR'],[21,2,'flag']]},
+   {tip:'Add sea lantern posts and an icy path to the gate.',why:'Sea lanterns glow brightly and match the cool colors of ice.',blocks:[...box(11,17,15,17,'blueIce'),[1,16,'post'],[1,15,'post'],[1,14,'seaLantern'],[25,16,'post'],[25,15,'post'],[25,14,'seaLantern']]}]},
+
+ {id:'base',name:'Secret Base',sky:'day',terrain:b=>underground(b,4),dark:{from:5,alpha:.72},
+  stages:[
+   {tip:'Dig a shaft down and place a ladder to climb back up.',why:'Never dig straight down under your feet! Dig beside you and add a ladder as you go.',blocks:Array.from({length:11},(_,k)=>[[4,5+k,'cavebg'],[4,5+k,'ladder']]).flat()},
+   {tip:'Hide the entrance under a trapdoor and some bushes.',why:'A secret base needs a secret door. Bushes and a trapdoor hide it from everyone.',blocks:[[4,4,'trapdoor'],[2,3,'leaves'],[3,3,'leaves'],[5,3,'leaves'],[6,3,'leaves'],[3,2,'leaves'],[5,2,'leaves']]},
+   {tip:'Carve out a big room that is at least ten blocks wide.',why:'Big rooms feel better. Mark the corners first so you know how big it will be.',blocks:[...box(5,13,5,15,'cavebg'),...Array.from({length:17},(_,k)=>box(6+k,10,6+k,15,'cavebg')).flat()]},
+   {tip:'Line the walls with stone bricks so the room looks neat.',why:'Swapping rough stone for bricks makes a cave feel like a real room.',blocks:[...box(5,9,23,9,'stoneBricks'),...box(5,16,23,16,'stoneBricks'),...box(23,10,23,15,'stoneBricks'),...box(5,10,5,12,'stoneBricks')]},
+   {tip:'Cover the back wall with planks so the base feels cozy.',why:'Wood is a warm material. Use it inside to make a space feel cozy.',blocks:box(6,10,22,15,'planks')},
+   {tip:'Hang lanterns on chains so the base is bright and safe.',why:'Light stops mobs from appearing in your base. Lanterns look even cooler than torches!',blocks:[[8,10,'lantern'],[13,10,'lantern'],[19,10,'lantern']]},
+   {tip:'Add chests, a crafting table, and a furnace for supplies.',why:'Keep your work blocks together in one corner. Builders call this a workshop.',blocks:[[7,15,'chest'],[8,15,'chest'],[10,15,'crafting'],[12,15,'furnace']]},
+   {tip:'Add bookshelves and a bed so you can sleep in your base.',why:'A bed sets your spawn point, so you wake up right inside your secret base!',blocks:[...box(15,12,17,15,'shelf'),[20,15,'bedL'],[21,15,'bedR']]}]},
+
+ {id:'cave',name:'Spooky Cave',sky:'day',terrain:b=>underground(b,2),dark:{from:3,alpha:.74},
+  stages:[
+   {tip:'Dig a sloped tunnel into the hill to find a cave.',why:'A sloped tunnel is safe: you can always walk back up and out.',blocks:CAVE.tunnel},
+   {tip:'Open up a huge cave room and leave a pillar to hold it.',why:'Leaving a pillar of stone makes a big cave look natural and strong.',blocks:CAVE.room},
+   {tip:'Place torches on the walls every few blocks.',why:'Mobs appear in the dark. Torches every few blocks keep caves much safer.',blocks:[[5,8,'torch'],[11,13,'torch'],[14,12,'torch'],[25,12,'torch']]},
+   {tip:'Mine the ores you find, like iron, gold, and diamond.',why:'Ores are easy to spot on cave walls. Diamonds are usually found deep down!',blocks:[[10,CAVE.tops[10]-1,'oreIron'],[13,CAVE.tops[13]-1,'oreCoal'],[15,11,'oreGold'],[15,13,'oreIron'],[20,CAVE.tops[20]-1,'oreGold'],[26,12,'ore'],[12,CAVE.bots[12]+1,'ore'],[23,CAVE.tops[23]-1,'oreIron']]},
+   {tip:'Hang cobwebs and pointy dripstone for a spooky look.',why:'Little details on the ceiling make a cave look old and creepy.',blocks:[[9,CAVE.tops[9],'cobweb'],[16,CAVE.tops[16],'cobweb'],[25,CAVE.tops[25],'cobweb'],[12,CAVE.tops[12],'drip'],[18,CAVE.tops[18],'drip'],[21,CAVE.tops[21],'drip'],[14,CAVE.tops[14],'drip']]},
+   {tip:'Make a lava pool, but keep a block between you and it.',why:'Lava is dangerous! Builders leave a gap or a wall so nobody falls in.',blocks:box(19,16,23,16,'lava')},
+   {tip:'Build a plank bridge over the lava so you can cross.',why:'A bridge is a safe path over danger. Slabs make thin, neat bridges.',blocks:box(18,15,24,15,'slabWood')},
+   {tip:'Something is watching you... add glowing eyes in the dark!',why:'Ha! Glowing eyes are a fun spooky detail. In a real cave, keep your sword ready!',blocks:[[7,10,'eyes'],[20,CAVE.tops[20]+1,'eyes'],[24,14,'eyes']]}]}
+];
+const PROJ={};PROJ_LIST.forEach(p=>PROJ[p.id]=p);
+
+/* ---------- rendering ---------- */
+const darkC=cv(CW,CH);
+function buildGrid(p,stage,frac){const base={},over={};p.terrain(base);let placed=0,last=null;
+  for(let s=0;s<p.stages.length&&s<=stage;s++){const list=p.stages[s].blocks;let n=list.length;if(s===stage){n=Math.floor(frac*list.length);placed=n;if(n)last=list[n-1][2]}
+    for(let k=0;k<n;k++){const [x,y,t]=list[k];const key=x+','+y;
+      if(OVER.has(t)){const l=L0.has(t)?0:L2.has(t)?2:L3.has(t)?3:1;(over[key]=over[key]||[])[l]=t}else base[key]=t}}
+  return{base,over,placed,last}}
+function drawCell(c,type,x,y,t,i){const A=ANIM[type];if(A)A(c,x*16,y*16,t,x,y,i);else if(TEX[type])c.drawImage(TEX[type],x*16,y*16)}
+function eachCell(map,fn){for(const k in map){const j=k.indexOf(',');fn(+k.slice(0,j),+k.slice(j+1),map[k])}}
+function drawDark(c,p,g,t,i){const d=darkC.getContext('2d');d.globalCompositeOperation='source-over';d.clearRect(0,0,CW,CH);
+  d.fillStyle=`rgba(4,6,20,${p.dark.alpha})`;d.fillRect(0,p.dark.from*16,CW,CH);d.globalCompositeOperation='destination-out';
+  const L=[];const scan=(x,y,tp)=>{let r=LIGHTFN[tp]?LIGHTFN[tp](t,i,x,y):LIGHT[tp];if(r)L.push([x*16+8,y*16+8,r*16*(1+.05*Math.sin(t/110+x*3))])};
+  eachCell(g.base,scan);eachCell(g.over,(x,y,ls)=>ls.forEach(tp=>tp&&scan(x,y,tp)));
+  for(const [lx,ly,lr] of L){const gr=d.createRadialGradient(lx,ly,0,lx,ly,lr);gr.addColorStop(0,'rgba(0,0,0,1)');gr.addColorStop(.5,'rgba(0,0,0,.8)');gr.addColorStop(1,'rgba(0,0,0,0)');d.fillStyle=gr;d.fillRect(lx-lr,ly-lr,lr*2,lr*2)}
+  c.drawImage(darkC,0,0);
+  c.save();c.globalCompositeOperation='lighter';for(const [lx,ly,lr] of L){const gr=c.createRadialGradient(lx,ly,0,lx,ly,lr*.7);gr.addColorStop(0,'rgba(255,170,60,.16)');gr.addColorStop(1,'rgba(255,170,60,0)');c.fillStyle=gr;c.fillRect(lx-lr,ly-lr,lr*2,lr*2)}c.restore()}
+function renderScene(c,p,stage,frac,t,live){
+  const g=buildGrid(p,stage,frac);const i={t,live,done:Math.min(stage,p.stages.length),g};
+  c.imageSmoothingEnabled=false;drawSky(c,p.sky,t);if(p.backdrop)p.backdrop(c,t,i);if(p.pre)p.pre(i);
+  eachCell(g.base,(x,y,tp)=>drawCell(c,tp,x,y,t,i));
+  for(let l=0;l<3;l++)eachCell(g.over,(x,y,ls)=>{if(ls[l])drawCell(c,ls[l],x,y,t,i)});
+  if(p.extra)p.extra(c,t,i);
+  if(p.dark)drawDark(c,p,g,t,i);
+  eachCell(g.over,(x,y,ls)=>{if(ls[3])drawCell(c,ls[3],x,y,t,i)});
+  if(p.after)p.after(c,t,i);
+  return g}
+
+/* ---------- build screens ---------- */
+let BP=null,lastPlaced=0;
+const bstage=p=>Math.min((S.builds||{})[p.id]||0,p.stages.length);
+function liveRender(){if(current!=='build'||!BP)return null;const st=bstage(BP);const frac=(activeTyper&&!activeTyper.done&&activeTyper.text)?activeTyper.i/activeTyper.text.length:0;return renderScene($('#house').getContext('2d'),BP,st,frac,performance.now(),true)}
+setInterval(()=>{if(current==='build'&&!document.hidden)liveRender()},100);
+function renderBuilds(){const g=$('#bgrid');g.innerHTML='';
+  PROJ_LIST.forEach(p=>{const n=p.stages.length,st=bstage(p);const d=document.createElement('button');d.className='bcard';
+    d.innerHTML=`<canvas width="${CW}" height="${CH}"></canvas><span class="bname">${esc(p.name)}</span><span class="bprog">${st>=n?'✅ FINISHED!':st?`TIP ${st} OF ${n}`:`${n} TIPS`}</span><span class="prog"><i style="width:${100*st/n}%"></i></span>`;
+    renderScene(d.querySelector('canvas').getContext('2d'),p,n,0,2600,false);
+    d.onclick=()=>{SFX.door();S.bproj=p.id;save();show('build')};g.appendChild(d)})}
+function openBuild(){BP=PROJ[S.bproj]||PROJ.home;$('#bdName').textContent=BP.name;startBuildStage()}
+function startBuildStage(){
+  resetStats();const n=BP.stages.length,st=bstage(BP);$('#buildProg').style.width=(100*st/n)+'%';lastPlaced=0;activeTyper=null;liveRender();
+  if(st>=n){$('#tipNum').textContent=BP.name.toUpperCase()+' COMPLETE! 🏆';$('#tipWhy').textContent=`You learned all ${n} builder tips. Pick another build, or press “Start over” to type it again even faster!`;$('#bdText').innerHTML='<span style="color:#7cf07c">You did it, Master Builder!</span>';clearCoach();$('#hint').innerHTML='🏆 Build complete!';return}
+  fitSoon();const S2=BP.stages[st];$('#tipNum').textContent=`BUILDER TIP ${st+1} OF ${n}`;$('#tipWhy').textContent=S2.why;
+  activeTyper=new Typer($('#bdText'),prep(S2.tip),{sound:k=>{if(k!==' ')SFX.click()},
+    onChar:(i,len)=>{const g=liveRender();if(g&&g.placed>lastPlaced){lastPlaced=g.placed;const s=PLACE_SND[g.last]||'wood';(SFX[s]||SFX.wood)()}$('#buildProg').style.width=(100*(st+i/len)/n)+'%'},
+    onDone:()=>{liveStats();S.builds[BP.id]=st+1;addGems(1);addXP(10);save();SFX.anvil();setTimeout(SFX.gem,350);toast('🧱 Builder tip learned! +1 emerald');typingLocked=true;
+      setTimeout(()=>{typingLocked=false;if(current!=='build')return;if(bstage(BP)>=n)finishBuild();else startBuildStage()},1200)}})}
+function finishBuild(){startBuildStage();addGems(5);addXP(50);SFX.jingle();SFX.fireworks(5);confetti(200);
+  modal(`<div class="big">YOUR ${esc(BP.name.toUpperCase())} IS DONE!</div><p>You learned all ${BP.stages.length} builder tips:</p><ol>${BP.stages.map(s=>`<li>${esc(s.tip)}</li>`).join('')}</ol><p><b>+5 bonus emeralds!</b> Try these tips in your next real build.</p>`,
+    [{label:'Admire it'},{label:'Pick another build',fn:()=>show('builds')},{label:'↺ Build again',primary:true,fn:()=>{S.builds[BP.id]=0;save();startBuildStage()}}])}
+$('#buildRestart').onclick=()=>modal(`<div class="big">START THE ${esc(BP.name.toUpperCase())} OVER?</div><p>Your emeralds and XP stay safe.</p>`,[{label:'No'},{label:'Yes, start over',primary:true,fn:()=>{S.builds[BP.id]=0;save();startBuildStage()}}]);
+
+/* ================= SPEED RUN ================= */
+const PANGRAMS=[
+ 'Six goofy zombies quickly jumped over the brown cow with lava pants.',
+ 'Jack quickly built five dozen wobbly pixel houses for my dog.',
+ 'Twelve jumpy zombies quickly fixed a brown wagon of hot pizza.',
+ 'A dizzy pig with hot sauce jumped over six quick brown blocks of wax.',
+ 'Jumpy chickens quickly fixed the rusty zombie wagon with five big diamonds.',
+ 'My lazy pig quickly jumped over five boxes of frozen waffles at night.',
+ 'The jolly zombie quickly waxed six purple frogs in a big oven.',
+ 'Quick! The sheep wore fuzzy jam boxes to a very glitchy dance party.',
+ 'Six jumpy zombies quickly ate the brown fox and its grilled waffles, very rudely.',
+ 'The quick brown fox jumps over the lazy dog.'
+];
+const RANKS=[{n:'WOOD',min:0,icon:'planks'},{n:'STONE',min:60,icon:'stone'},{n:'IRON',min:120,icon:'iron'},{n:'GOLD',min:180,icon:'goldb'},{n:'DIAMOND',min:260,icon:'diamond'}];
+const SP={text:'',raw:'',running:false,counting:false};
+function openSpeed(){newSentence()}
+function newSentence(keep){if(!keep||!SP.raw){let r;do{r=pick(PANGRAMS)}while(r===SP.raw&&PANGRAMS.length>1);SP.raw=r}
+  SP.text=prep(SP.raw);SP.running=false;SP.counting=false;resetStats();
+  $('#abc').innerHTML='abcdefghijklmnopqrstuvwxyz'.split('').map(c=>`<span data-l="${c}">${c.toUpperCase()}</span>`).join('');
+  $('#bestTxt').textContent=S.best.score?`BEST: ${S.best.score} PTS`:'BEST: —';
+  activeTyper=new Typer($('#spText'),SP.text,{sound:(k,i,n)=>{const sc=[0,2,4,5,7,9,11,12,14,16,17,19];SFX.note(sc[Math.min(sc.length-1,Math.floor(i/n*sc.length))]+[0,4,7][i%3])},onChar:i=>{const ch=SP.text[i-1].toLowerCase();const t=$(`#abc [data-l="${ch}"]`);if(t)t.classList.add('on')},onDone:finishSpeed});
+  typingLocked=true;$('#spStart').disabled=false;$('#hint').innerHTML+=' &nbsp;— press <kbd>ENTER</kbd> to start!'}
+function startSpeed(){if(SP.running||SP.counting)return;if(!activeTyper||activeTyper.done)newSentence(true);SP.counting=true;$('#spStart').disabled=true;const el=$('#count');el.hidden=false;let n=3;
+  const step=()=>{if(current!=='speed'){el.hidden=true;SP.counting=false;return}if(n>0){el.textContent=n;SFX.tick();n--;setTimeout(step,650)}else{el.textContent='GO!';SFX.go();SP.counting=false;SP.running=true;typingLocked=false;coachNext(charInfo(SP.text[activeTyper?activeTyper.i:0]));setTimeout(()=>el.hidden=true,450)}};step()}
+$('#spStart').onclick=()=>startSpeed();
+$('#spNew').onclick=()=>{if(SP.counting)return;newSentence()};
+function finishSpeed(st){SP.running=false;liveStats();const score=Math.round(st.wpm*10*Math.pow(st.acc/100,2));let ri=0;RANKS.forEach((r,i)=>{if(score>=r.min)ri=i});const rank=RANKS[ri];
+  const rec=score>S.best.score;if(rec)S.best={score,wpm:st.wpm,acc:st.acc};addGems(ri+1);addXP(20);save();SFX.jingle();SFX.fireworks(ri+1);confetti(60+ri*40);
+  const next=RANKS[ri+1];
+  modal(`<div class="big">${rank.n} RANK!${rec?'<br><span style="color:#b8860b">★ NEW RECORD ★</span>':''}</div><canvas id="rankIcon" style="width:88px;image-rendering:pixelated"></canvas>
+   <div class="mrow"><div class="mstat">Score<b>${score}</b></div><div class="mstat">Speed<b>${st.wpm} WPM</b></div><div class="mstat">Correct<b>${st.acc}%</b></div><div class="mstat">Time<b>${st.time.toFixed(1)}s</b></div><div class="mstat">Emeralds<b>+${ri+1}</b></div></div>
+   ${next?`<p>Reach <b>${next.min}</b> points for <b>${next.n}</b> rank. Fewer mistakes = way more points!</p>`:'<p>DIAMOND! The top rank. Can you beat your record?</p>'}${missList(st.missMap)}`,
+   [{label:'🎲 New sentence',fn:()=>newSentence()},{label:'↺ Same again',primary:true,fn:()=>{newSentence(true);startSpeed()}}]);
+  paintIcon($('#rankIcon'),rank.icon)}
+
+/* ================= STORY BOOK ================= */
+const PROMPTS=[
+ 'One morning, a pig knocked on my door and said…',
+ 'I dug straight down and found a secret room full of…',
+ 'My best friend and I built a giant treehouse, but then…',
+ 'A friendly zombie wanted to learn how to dance, so I…',
+ 'I found a glowing diamond that could talk. It told me…',
+ 'Our castle was almost finished when it started raining lava…',
+ 'I tamed a wolf named Biscuit, and together we…',
+ 'All the sheep in my village turned rainbow colours overnight because…',
+ 'I built a rocket out of blocks and flew to the moon. On the moon I saw…',
+ 'The chicken laid a golden egg, and when it hatched…',
+ 'I opened a treasure chest and a tiny dragon jumped out and said…',
+ 'My little cave house got flooded with chocolate milk, so…'
+];
+const GOALS=[10,25,50,100];let storyMax=0;
+function openStory(){if(!S.draftPrompt)S.draftPrompt=pick(PROMPTS);$('#promptTxt').textContent='💡 '+S.draftPrompt;$('#storyText').value=S.draft||'';storyMax=wc(S.draft||'');updateWords(true);renderStories();
+  if(!('speechSynthesis' in window))$('#readStory').hidden=true;$('#hint').innerHTML='Type your story! Each key lights up to show which finger to use.';if(!IS_TOUCH)setTimeout(()=>$('#storyText').focus(),50)}
+const wc=t=>t.trim()?t.trim().split(/\s+/).length:0;
+function updateWords(silent){const n=wc($('#storyText').value);$('#wordCount').textContent=n+(n===1?' word':' words');
+  const goal=GOALS.find(g=>n<g)||GOALS[GOALS.length-1];$('#goalTxt').textContent=n>=100?'🏆 100+!':'Goal: '+goal;$('#storyProg').style.width=Math.min(100,100*n/goal)+'%';
+  if(!silent&&n>storyMax){const before=storyMax;storyMax=n;addXP((n-before)*2);GOALS.forEach(g=>{if(before<g&&n>=g){addGems(1);SFX.gem();toast(`📖 ${g} words! +1 emerald`);if(g>=50)confetti(80)}})}}
+$('#storyText').addEventListener('keydown',e=>{capsCheck(e);if(e.ctrlKey||e.metaKey||e.altKey)return;let info=null;
+  if(e.key.length===1)info=charInfo(e.key);else if(e.key==='Enter')info={key:'Enter',finger:'R5',label:'Enter'};else if(e.key==='Backspace')info={key:'Backspace',finger:'R5',label:'Backspace'};
+  if(!info)return;coachNext(info,'You pressed');flashKey(info.key,true);if(info.shiftKey)flashKey(info.shiftKey,true);storySound(e.key);kdHandled=true});
+let kdHandled=false;
+function storySound(k){if(k==='Backspace'){SFX.dirt();return}if(k==='Enter'){SFX.pop();return}if(musicOn()){if(k!==' ')playNextNote();return}if(k===' '){SFX.note(-12);return}
+  const P=[0,2,4,7,9];const c=k.toLowerCase().charCodeAt(0);const idx=c%10;SFX.note(P[idx%5]+12*Math.floor(idx/5)+(k!==k.toLowerCase()?12:0))}
+$('#storyText').addEventListener('input',e=>{if(!kdHandled&&e.data){const ch=e.data.slice(-1);const info=charInfo(ch);if(info){coachNext(info,'You pressed');flashKey(info.key,true)}storySound(ch)}kdHandled=false});
+$('#storyText').addEventListener('input',()=>{S.draft=$('#storyText').value;save();updateWords()});
+$('#newPrompt').onclick=()=>{let p;do{p=pick(PROMPTS)}while(p===S.draftPrompt);S.draftPrompt=p;save();$('#promptTxt').textContent='💡 '+p;$('#storyText').focus()};
+function speak(text){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.rate=.95;u.pitch=1.1;speechSynthesis.speak(u)}catch(e){toast('Reading out loud isn’t available here')}}
+$('#readStory').onclick=()=>{const t=$('#storyText').value.trim();if(!t){toast('Type a story first!');return}speak(t)};
+$('#copyStory').onclick=()=>{const t=$('#storyText').value;if(!t.trim()){toast('Nothing to copy yet');return}
+  const fb=()=>{const ta=$('#storyText');ta.select();try{document.execCommand('copy');toast('📋 Copied!')}catch(e){toast('Select the text and copy it')}};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(()=>toast('📋 Copied!')).catch(fb);else fb()};
+$('#saveStory').onclick=()=>{const t=$('#storyText').value.trim();const n=wc(t);if(n<3){toast('Write a few more words first!');return}
+  S.stories.unshift({prompt:S.draftPrompt,text:t,words:n,date:new Date().toLocaleDateString()});S.stories=S.stories.slice(0,40);addXP(10);SFX.chest();setTimeout(SFX.jingle,450);
+  S.draft='';S.draftPrompt=pick(PROMPTS);save();$('#storyText').value='';storyMax=0;$('#promptTxt').textContent='💡 '+S.draftPrompt;updateWords(true);renderStories();toast('💾 Story saved in your book! +10 XP');confetti(60)};
+$('#clearStory').onclick=()=>{if(!$('#storyText').value.trim()){return}modal('<div class="big">ERASE THIS STORY?</div><p>Save it first if you want to keep it!</p>',[{label:'Keep it',primary:true},{label:'Erase',danger:true,fn:()=>{S.draft='';save();$('#storyText').value='';storyMax=0;updateWords(true)}}])};
+function renderStories(){const l=$('#slist');if(!S.stories.length){l.innerHTML='<p>No saved stories yet. Write one above and press “Save story”!</p>';return}
+  l.innerHTML=S.stories.map((s,i)=>`<div class="sitem"><div class="p">💡 ${esc(s.prompt||'')} · ${s.words} words · ${esc(s.date)}</div><div class="tx">${esc(s.text)}</div><div class="row"><button class="btn small" data-read="${i}">🔊 Read</button><button class="btn small" data-open="${i}">✏️ Open</button><button class="btn small danger" data-del="${i}">🗑</button></div></div>`).join('')}
+$('#slist').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.read)speak(S.stories[+b.dataset.read].text);
+  if(b.dataset.open){const s=S.stories[+b.dataset.open];const go=()=>{$('#storyText').value=s.text;S.draft=s.text;S.draftPrompt=s.prompt;$('#promptTxt').textContent='💡 '+s.prompt;storyMax=wc(s.text);updateWords(true);save();scrollTo(0,0);$('#storyText').focus()};
+    if($('#storyText').value.trim()&&$('#storyText').value!==s.text)modal('<div class="big">OPEN THIS STORY?</div><p>What you are typing now will be replaced.</p>',[{label:'Cancel'},{label:'Open',primary:true,fn:go}]);else go()}
+  if(b.dataset.del){const i=+b.dataset.del;modal('<div class="big">DELETE THIS STORY?</div>',[{label:'Keep it',primary:true},{label:'Delete',danger:true,fn:()=>{S.stories.splice(i,1);save();renderStories()}}])}});
+
+/* ================= START ================= */
+$('#resetAll').onclick=()=>modal('<div class="big">RESET EVERYTHING?</div><p>Stars, XP, emeralds, the house and saved stories will all be erased.</p>',[{label:'Cancel',primary:true},{label:'Reset',danger:true,fn:()=>{const st=S.settings;S=fresh();S.settings=st;save();renderHUD();toast('Progress reset')}}]);
+$('#musicBtn').onclick=()=>{$('#sets').classList.remove('open');openMusic()};
+$('#np').onclick=()=>openMusic();
+renderNP();renderHUD();show('menu');
+</script>
+</body>
+</html>
