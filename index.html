@@ -596,33 +596,33 @@ const PLACE_SND={gravel:'dirt',road:'stone',rail:'metal',railPOn:'metal',railD:'
 addEventListener('pointerdown',()=>ac(),{passive:true});
 /* ================= TYPING MUSIC ================= */
 const SONGS=[
- {id:'sunrise',group:'orig',name:'Blocky Sunrise',notes:'G4 B4 D5 G5 F#5 D5 B4 D5 G4 B4 D5 E5 D5 B4 A4 B4 E4 G4 B4 E5 D5 B4 G4 A4 D4 G4 B4 D5 C5 B4 A4 G4'},
- {id:'cave',group:'orig',name:'Cozy Cave',notes:'A3 C4 E4 A4 G4 E4 C4 E4 F3 A3 C4 F4 E4 C4 A3 B3 C4 E4 G4 C5 B4 G4 E4 G4 E3 G#3 B3 E4 D4 B3 G#3 B3'},
- {id:'village',group:'orig',name:'Village Stroll',notes:'C4 E4 G4 E4 F4 A4 G4 E4 D4 F4 E4 C4 D4 G3 B3 D4 C4 E4 G4 C5 B4 G4 A4 F4 E4 G4 F4 D4 C4 G3 C4 C4'},
- {id:'night',group:'orig',name:'Starry Night Watch',notes:'E4 B4 E5 D5 B4 G4 A4 B4 D4 A4 D5 C#5 A4 F#4 G4 A4 C4 G4 C5 B4 G4 E4 F#4 G4 B3 F#4 B4 A4 F#4 D#4 E4 E4'},
- {id:'twinkle',group:'pop',name:'Twinkle Twinkle Little Star',notes:'C4 C4 G4 G4 A4 A4 G4 F4 F4 E4 E4 D4 D4 C4 G4 G4 F4 F4 E4 E4 D4 G4 G4 F4 F4 E4 E4 D4 C4 C4 G4 G4 A4 A4 G4 F4 F4 E4 E4 D4 D4 C4'},
- {id:'mary',group:'pop',name:'Mary Had a Little Lamb',notes:'E4 D4 C4 D4 E4 E4 E4 D4 D4 D4 E4 G4 G4 E4 D4 C4 D4 E4 E4 E4 E4 D4 D4 E4 D4 C4'},
+ {id:'sunrise',group:'orig',name:'Blocky Sunrise',notes:'G4 B4 D5 G5 F#5 D5 B4 D5 G4 B4 D5 E5 D5 B4 A4 B4 E4 G4 B4 E5 D5 B4 G4 A4 D4 G4 B4 D5 C5 B4 A4 G4 C5 B4 A4 G4 E4 G4 A4 B4 D5 C5 B4 A4 G4 A4 B4 D5 E5 D5 B4 G4 A4 B4 G4 E4 D4 G4 A4 B4 A4 G4 D4 G4'},
+ {id:'cave',group:'orig',name:'Cozy Cave',notes:'A3 C4 E4 A4 G4 E4 C4 E4 F3 A3 C4 F4 E4 C4 A3 B3 C4 E4 G4 C5 B4 G4 E4 G4 E3 G#3 B3 E4 D4 B3 G#3 B3 A3 E4 A4 B4 C5 B4 A4 E4 F3 C4 F4 G4 A4 G4 F4 C4 G3 D4 G4 A4 B4 A4 G4 D4 E3 B3 E4 G#4 B4 G#4 E4 A3'},
+ {id:'village',group:'orig',name:'Village Stroll',notes:'C4 E4 G4 E4 F4 A4 G4 E4 D4 F4 E4 C4 D4 G3 B3 D4 C4 E4 G4 C5 B4 G4 A4 F4 E4 G4 F4 D4 C4 G3 C4 C4 E4 E4 F4 G4 A4 G4 F4 E4 D4 D4 E4 F4 G4 F4 E4 D4 E4 G4 C5 G4 A4 G4 F4 E4 D4 F4 E4 D4 C4 G3 C4 C4'},
+ {id:'night',group:'orig',name:'Starry Night Watch',notes:'E4 B4 E5 D5 B4 G4 A4 B4 D4 A4 D5 C#5 A4 F#4 G4 A4 C4 G4 C5 B4 G4 E4 F#4 G4 B3 F#4 B4 A4 F#4 D#4 E4 E4 G4 A4 B4 E5 D5 B4 A4 G4 F#4 G4 A4 D5 C5 A4 G4 F#4 E4 F#4 G4 C5 B4 G4 F#4 E4 D#4 F#4 B4 A4 F#4 D#4 E4 E4'},
+ {id:'twinkle',group:'pop',name:'Twinkle Twinkle Little Star',notes:'C4 C4 G4 G4 A4 A4 G4 F4 F4 E4 E4 D4 D4 C4 G4 G4 F4 F4 E4 E4 D4 G4 G4 F4 F4 E4 E4 D4 C4 C4 G4 G4 A4 A4 G4 F4 F4 E4 E4 D4 D4 C4 C4 C4 G4 G4 A4 A4 G4 F4 F4 E4 E4 D4 D4 C4 G4 G4 F4 F4 E4 E4 D4 G4 G4 F4 F4 E4 E4 D4 C4 C4 G4 G4 A4 A4 G4 F4 F4 E4 E4 D4 D4 C4'},
+ {id:'mary',group:'pop',name:'Mary Had a Little Lamb',notes:'E4 D4 C4 D4 E4 E4 E4 D4 D4 D4 E4 G4 G4 E4 D4 C4 D4 E4 E4 E4 E4 D4 D4 E4 D4 C4 E4 D4 C4 D4 E4 E4 E4 D4 D4 D4 E4 G4 G4 E4 D4 C4 D4 E4 E4 E4 E4 D4 D4 E4 D4 C4'},
  {id:'ode',group:'pop',name:'Ode to Joy',notes:'E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 E4 D4 D4 E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 D4 C4 C4 D4 D4 E4 C4 D4 E4 F4 E4 C4 D4 E4 F4 E4 D4 C4 D4 G3 E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 D4 C4 C4'},
- {id:'jacques',group:'pop',name:'Frère Jacques',notes:'C4 D4 E4 C4 C4 D4 E4 C4 E4 F4 G4 E4 F4 G4 G4 A4 G4 F4 E4 C4 G4 A4 G4 F4 E4 C4 C4 G3 C4 C4 G3 C4'},
- {id:'jingle',group:'pop',name:'Jingle Bells',notes:'E4 E4 E4 E4 E4 E4 E4 G4 C4 D4 E4 F4 F4 F4 F4 F4 E4 E4 E4 E4 E4 D4 D4 E4 D4 G4 E4 E4 E4 E4 E4 E4 E4 G4 C4 D4 E4 F4 F4 F4 F4 F4 E4 E4 E4 E4 G4 G4 F4 D4 C4'},
- {id:'birthday',group:'pop',name:'Happy Birthday',notes:'G4 G4 A4 G4 C5 B4 G4 G4 A4 G4 D5 C5 G4 G4 G5 E5 C5 B4 A4 F5 F5 E5 C5 D5 C5'},
- {id:'row',group:'pop',name:'Row, Row, Row Your Boat',notes:'C4 C4 C4 D4 E4 E4 D4 E4 F4 G4 C5 C5 C5 G4 G4 G4 E4 E4 E4 C4 C4 C4 G4 F4 E4 D4 C4'},
- {id:'farm',group:'pop',name:'Old MacDonald',notes:'C4 C4 C4 G3 A3 A3 G3 E4 E4 D4 D4 C4 G3 C4 C4 C4 G3 A3 A3 G3 E4 E4 D4 D4 C4'},
- {id:'bridge',group:'pop',name:'London Bridge',notes:'G4 A4 G4 F4 E4 F4 G4 D4 E4 F4 E4 F4 G4 G4 A4 G4 F4 E4 F4 G4 D4 G4 E4 C4'},
- {id:'doodle',group:'pop',name:'Yankee Doodle',notes:'C4 C4 D4 E4 C4 E4 D4 G3 C4 C4 D4 E4 C4 B3 C4 C4 D4 E4 F4 E4 D4 C4 B3 G3 A3 B3 C4 C4'},
- {id:'elise',group:'pop',name:'Für Elise',notes:'E5 D#5 E5 D#5 E5 B4 D5 C5 A4 C4 E4 A4 B4 E4 G#4 B4 C5 E4 E5 D#5 E5 D#5 E5 B4 D5 C5 A4 C4 E4 A4 B4 E4 C5 B4 A4'},
- {id:'king',group:'pop',name:'Hall of the Mountain King',notes:'A3 B3 C4 D4 E4 C4 E4 D#4 B3 D#4 D4 A#3 D4 A3 B3 C4 D4 E4 C4 E4 A4 G4 E4 C4 E4 G4'}
+ {id:'jacques',group:'pop',name:'Frère Jacques',notes:'C4 D4 E4 C4 C4 D4 E4 C4 E4 F4 G4 E4 F4 G4 G4 A4 G4 F4 E4 C4 G4 A4 G4 F4 E4 C4 C4 G3 C4 C4 G3 C4 C4 D4 E4 C4 C4 D4 E4 C4 E4 F4 G4 E4 F4 G4 G4 A4 G4 F4 E4 C4 G4 A4 G4 F4 E4 C4 C4 G3 C4 C4 G3 C4'},
+ {id:'jingle',group:'pop',name:'Jingle Bells',notes:'G3 E4 D4 C4 G3 G3 G3 E4 D4 C4 A3 A3 A3 F4 E4 D4 B3 G4 G4 F4 D4 E4 G3 E4 D4 C4 G3 G3 G3 E4 D4 C4 A3 A3 A3 F4 E4 D4 G4 G4 G4 G4 A4 G4 F4 D4 C4 E4 E4 E4 E4 E4 E4 E4 G4 C4 D4 E4 F4 F4 F4 F4 F4 E4 E4 E4 E4 E4 D4 D4 E4 D4 G4 E4 E4 E4 E4 E4 E4 E4 G4 C4 D4 E4 F4 F4 F4 F4 F4 E4 E4 E4 E4 G4 G4 F4 D4 C4'},
+ {id:'birthday',group:'pop',name:'Happy Birthday',notes:'G4 G4 A4 G4 C5 B4 G4 G4 A4 G4 D5 C5 G4 G4 G5 E5 C5 B4 A4 F5 F5 E5 C5 D5 C5 G4 G4 A4 G4 C5 B4 G4 G4 A4 G4 D5 C5 G4 G4 G5 E5 C5 B4 A4 F5 F5 E5 C5 D5 C5'},
+ {id:'row',group:'pop',name:'Row, Row, Row Your Boat',notes:'C4 C4 C4 D4 E4 E4 D4 E4 F4 G4 C5 C5 C5 G4 G4 G4 E4 E4 E4 C4 C4 C4 G4 F4 E4 D4 C4 C4 C4 C4 D4 E4 E4 D4 E4 F4 G4 C5 C5 C5 G4 G4 G4 E4 E4 E4 C4 C4 C4 G4 F4 E4 D4 C4'},
+ {id:'farm',group:'pop',name:'Old MacDonald',notes:'C4 C4 C4 G3 A3 A3 G3 E4 E4 D4 D4 C4 G3 C4 C4 C4 G3 A3 A3 G3 E4 E4 D4 D4 C4 G3 G3 C4 C4 C4 G3 G3 C4 C4 C4 C4 C4 C4 C4 C4 C4 C4 C4 C4 C4 C4 C4 C4 C4 C4 C4 G3 A3 A3 G3 E4 E4 D4 D4 C4'},
+ {id:'bridge',group:'pop',name:'London Bridge',notes:'G4 A4 G4 F4 E4 F4 G4 D4 E4 F4 E4 F4 G4 G4 A4 G4 F4 E4 F4 G4 D4 G4 E4 C4 G4 A4 G4 F4 E4 F4 G4 D4 E4 F4 E4 F4 G4 G4 A4 G4 F4 E4 F4 G4 D4 G4 E4 C4'},
+ {id:'doodle',group:'pop',name:'Yankee Doodle',notes:'C4 C4 D4 E4 C4 E4 D4 G3 C4 C4 D4 E4 C4 B3 C4 C4 D4 E4 F4 E4 D4 C4 B3 G3 A3 B3 C4 C4 A3 B3 A3 G3 A3 B3 C4 G3 A3 G3 F3 E3 G3 A3 B3 A3 G3 A3 B3 C4 A3 G3 C4 B3 D4 C4 C4'},
+ {id:'elise',group:'pop',name:'Für Elise',notes:'E5 D#5 E5 D#5 E5 B4 D5 C5 A4 C4 E4 A4 B4 E4 G#4 B4 C5 E4 E5 D#5 E5 D#5 E5 B4 D5 C5 A4 C4 E4 A4 B4 E4 C5 B4 A4 B4 C5 D5 E5 G4 F5 E5 D5 F4 E5 D5 C5 E4 D5 C5 B4 E4 E5 D#5 E5 D#5 E5 B4 D5 C5 A4 C4 E4 A4 B4 E4 C5 B4 A4'},
+ {id:'king',group:'pop',name:'Hall of the Mountain King',notes:'A3 B3 C4 D4 E4 C4 E4 D#4 B3 D#4 D4 A#3 D4 A3 B3 C4 D4 E4 C4 E4 A4 G4 E4 C4 E4 G4 E4 F#4 G4 A4 B4 G4 B4 A#4 F#4 A#4 A4 F4 A4 E4 F#4 G4 A4 B4 G4 B4 E5 D5 B4 G4 B4 D5'}
 ];
 const NOTE_IDX={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
 SONGS.forEach(s=>{s.seq=s.notes.split(/\s+/).map(n=>{const m=n.match(/^([A-G])([#b]?)(\d)$/);return NOTE_IDX[m[1]]+(m[2]==='#'?1:m[2]==='b'?-1:0)+(+m[3]-4)*12})});
 const SONG={};SONGS.forEach(s=>SONG[s.id]=s);
 const INSTR={
-  harp:{name:'🎵 Note block',play:(t,s,v)=>plingAt(t,s,v)},
-  piano:{name:'🎹 Piano',play:(t,s,v)=>{const f=NOTE(s);osc('triangle',f,t,1.1,v*.95,{a:.003});osc('sine',f*2,t,.6,v*.3);osc('sine',f*3,t,.25,v*.12)}},
-  box:{name:'🎁 Music box',play:(t,s,v)=>{const f=NOTE(s+12);osc('sine',f,t,.9,v*.85,{a:.002});osc('sine',f*2.01,t,.35,v*.25);osc('sine',f*4.2,t,.08,v*.1)}},
-  bell:{name:'🔔 Bells',play:(t,s,v)=>{const f=NOTE(s+12);[1,2.76,5.4].forEach((m,i)=>osc('sine',f*m,t,1.3/(i+1),v*.55/(i+1)))}},
-  flute:{name:'🎶 Flute',play:(t,s,v)=>{const f=NOTE(s+12);osc('sine',f,t,.5,v*.8,{a:.05});osc('triangle',f,t,.4,v*.2,{a:.05});nz(t,.08,v*.08,'bandpass',f*2,{Q:3,a:.02})}},
-  retro:{name:'👾 Retro 8-bit',play:(t,s,v)=>{const f=NOTE(s);osc('square',f,t,.22,v*.35);osc('square',f*2,t,.08,v*.1)}}
+  harp:{name:'🎵 Note block',play:(t,s,v)=>{const f=NOTE(s);osc('triangle',f,t,1.3,v,{a:.003});osc('sine',f*2,t,.7,v*.32);osc('sine',f*4,t,.12,v*.1)}},
+  piano:{name:'🎹 Piano',play:(t,s,v)=>{const f=NOTE(s);osc('triangle',f,t,1.8,v*.95,{a:.003});osc('sine',f*2,t,1,v*.3);osc('sine',f*3,t,.4,v*.12)}},
+  box:{name:'🎁 Music box',play:(t,s,v)=>{const f=NOTE(s+12);osc('sine',f,t,1.6,v*.85,{a:.002});osc('sine',f*2.01,t,.6,v*.25);osc('sine',f*4.2,t,.12,v*.1)}},
+  bell:{name:'🔔 Bells',play:(t,s,v)=>{const f=NOTE(s+12);[1,2.76,5.4].forEach((m,i)=>osc('sine',f*m,t,2.2/(i+1),v*.55/(i+1)))}},
+  flute:{name:'🎶 Flute',play:(t,s,v)=>{const f=NOTE(s+12);osc('sine',f,t,.9,v*.8,{a:.05});osc('triangle',f,t,.7,v*.2,{a:.05});nz(t,.08,v*.08,'bandpass',f*2,{Q:3,a:.02})}},
+  retro:{name:'👾 Retro 8-bit',play:(t,s,v)=>{const f=NOTE(s);osc('square',f,t,.45,v*.33);osc('square',f*2,t,.12,v*.1)}}
 };
 const MEL={idx:0,shuffleId:null};
 const musicOn=()=>S.settings.sound&&S.settings.song&&S.settings.song!=='off';
@@ -636,7 +636,7 @@ function renderNP(){const el=$('#np');if(!el)return;if(!musicOn()){el.innerHTML=
   const s=curSong();el.innerHTML=`<span>🎵 <b>${esc(s.name)}</b>${S.settings.song==='shuffle'?' (shuffle)':''}</span><span class="bar"><i style="width:${100*MEL.idx/s.seq.length}%"></i></span><span class="chg">CHANGE</span>`}
 let previewT=[];
 function previewSong(id,inst){previewT.forEach(clearTimeout);previewT=[];const s=id==='shuffle'?pick(SONGS):SONG[id];if(!s)return;
-  s.seq.slice(0,8).forEach((n,k)=>previewT.push(setTimeout(()=>playNote(n,inst),k*260)))}
+  s.seq.slice(0,16).forEach((n,k)=>previewT.push(setTimeout(()=>playNote(n,inst),k*280)))}
 function openMusic(){const item=s=>`<div class="song${S.settings.song===s.id?' on':''}" data-song="${s.id}"><span>${esc(s.name)}</span><button class="pv" data-pv="${s.id}" title="Listen">▶</button></div>`;
   modal(`<div class="big">🎵 TYPING MUSIC</div><p>Every letter you get right plays the next note. Play a whole song to earn a bonus emerald!</p>
    <div class="songs">
