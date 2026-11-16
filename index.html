@@ -207,6 +207,24 @@ details li{font-size:21px;margin:4px 0}
 @media (max-width:760px),(orientation:landscape) and (max-height:560px){.vstart{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.7)}.vsbox{padding:8px}.vsbox p{font-size:16px}.vjoke{font-size:17px}.vsh{font-size:9px}.vword{font-size:24px;padding:4px 10px}.vhearts{font-size:14px}}
 @media (orientation:landscape) and (max-height:560px){#vcanvas{max-height:44vh;width:auto;max-width:100%;margin:0 auto}}
 
+/* ---------- progression ---------- */
+.bsec{grid-column:1/-1;font-family:'Press Start 2P';font-size:11px;color:#2f5f16;margin-top:10px;line-height:1.5}
+.bthumb{position:relative;display:block}
+.block{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:40px}
+.bcard.locked{background:#555}.bcard.locked:hover{background:#6a5a3a}
+.bneed{font-family:'Press Start 2P';font-size:8px;color:#ffd84a;line-height:1.5}
+.bphead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:'Press Start 2P';font-size:10px;color:#3a3a3a;margin:6px 0}
+.bphead .prog{flex:1;min-width:120px;margin:0}
+#bprogress p{font-size:20px}
+.pg{display:grid;grid-template-columns:34px 1fr auto;gap:4px 8px;align-items:center;background:#e8e8e8;border:2px solid #000;padding:6px 10px;margin:6px 0}
+.pg .prog{grid-column:1/-1;margin:0}
+.pgi{font-size:24px}.pgn{font-size:22px;color:#333}.pgv{font-family:'Press Start 2P';font-size:10px;color:#2f5f16;text-align:right}
+.pgh{font-family:'Press Start 2P';font-size:11px;margin:14px 0 4px;color:#3a3a3a}
+.achs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.ach{background:#9a9a9a;border:2px solid #000;padding:8px;text-align:center;color:#444;opacity:.6;filter:grayscale(1)}
+.ach.ok{background:#fff2b0;opacity:1;filter:none;box-shadow:0 0 0 2px #ffd84a}
+.ach .ai{display:block;font-size:30px}.ach b{display:block;font-family:'Press Start 2P';font-size:9px;margin:4px 0;line-height:1.4}.ach small{font-size:17px;line-height:1}
+
 /* ---------- build picker ---------- */
 .bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:10px}
 .bcard{display:flex;flex-direction:column;gap:5px;text-align:left;cursor:pointer;background:#8b8b8b;border:3px solid #000;box-shadow:inset 3px 3px 0 #b5b5b5, inset -3px -3px 0 #555;padding:8px;color:#fff;transition:transform .1s}
@@ -409,6 +427,7 @@ body.touch.capfocus #tapType{display:none}
     <div class="card" data-go="story"><canvas data-icon="shelf"></canvas><div><h3>4. Story Book</h3><p>Write your own adventure stories. Then hear the computer read them out loud!</p></div></div>
     <div class="card wide" data-go="village"><canvas data-icon="pumpkin"></canvas><div><h3>5. Protect the Villagers</h3><p>Silly mobs are sneaking up on the village! Type the word on each one to snowball it into a snack. 20 levels that follow Finger Camp — plus jokes!</p></div></div>
   </div>
+  <div class="row" style="margin-top:14px;justify-content:center"><button class="btn primary" data-go="progress">📊 MY PROGRESS &amp; BADGES</button></div>
   <div class="panel tips">
     <h2>Before you type</h2>
     <div class="posture">
@@ -428,6 +447,12 @@ body.touch.capfocus #tapType{display:none}
     </ul>
     <button class="btn small danger" id="resetAll">Reset all progress</button></div>
   </details>
+</section>
+
+<!-- ================= MY PROGRESS ================= -->
+<section class="screen" id="progress" hidden>
+  <button class="btn small back" data-go="menu">◀ Menu</button>
+  <div class="panel"><h2>📊 My Progress</h2><div id="progBody"></div></div>
 </section>
 
 <!-- ================= CAMP (lesson list) ================= -->
@@ -460,7 +485,8 @@ body.touch.capfocus #tapType{display:none}
   <button class="btn small back" data-go="menu">◀ Menu</button>
   <div class="panel">
     <h2>Build School — pick a build!</h2>
-    <p>Type each builder tip to add blocks. Finish every tip to complete the build and see it come alive!</p>
+    <p>Type each builder tip to add blocks. Finish builds to unlock bigger adventure worlds — or buy them with emeralds!</p>
+    <div id="bprogress"></div>
     <div class="bgrid" id="bgrid"></div>
   </div>
 </section>
@@ -575,9 +601,9 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 
 /* ================= SAVE DATA ================= */
 const SAVE_KEY='bbtq-v1';
-const fresh=()=>({xp:0,emeralds:0,lessons:{},village:{},builds:{},bproj:'home',best:{score:0,wpm:0,acc:0},stories:[],draft:'',draftPrompt:'',settings:{sound:true,caps:true,hide:false,song:'sunrise',inst:'harp'},unlockAll:false});
+const fresh=()=>({stats:{chars:0,tips:0,songs:0},completed:{},owned:{},xp:0,emeralds:0,lessons:{},village:{},builds:{},bproj:'home',best:{score:0,wpm:0,acc:0},stories:[],draft:'',draftPrompt:'',settings:{sound:true,caps:true,hide:false,song:'sunrise',inst:'harp'},unlockAll:false});
 let S=fresh();
-try{const raw=localStorage.getItem(SAVE_KEY);if(raw){const o=JSON.parse(raw);const f=fresh();S=Object.assign(f,o);S.settings=Object.assign(fresh().settings,o.settings||{});S.best=Object.assign(fresh().best,o.best||{});if(!Array.isArray(S.stories))S.stories=[];if(!S.builds||typeof S.builds!=='object')S.builds={};if(!S.village||typeof S.village!=='object')S.village={};if(typeof o.build==='number'&&S.builds.home===undefined)S.builds.home=o.build;}}catch(e){}
+try{const raw=localStorage.getItem(SAVE_KEY);if(raw){const o=JSON.parse(raw);const f=fresh();S=Object.assign(f,o);S.settings=Object.assign(fresh().settings,o.settings||{});S.best=Object.assign(fresh().best,o.best||{});if(!Array.isArray(S.stories))S.stories=[];if(!S.builds||typeof S.builds!=='object')S.builds={};if(!S.village||typeof S.village!=='object')S.village={};S.stats=Object.assign({chars:0,tips:0,songs:0},o.stats||{});S.completed=o.completed||{};S.owned=o.owned||{};if(typeof o.build==='number'&&S.builds.home===undefined)S.builds.home=o.build;}}catch(e){}
 let saveT=null;
 function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}},150)}
 
@@ -681,7 +707,7 @@ const musicOn=()=>S.settings.sound&&S.settings.song&&S.settings.song!=='off';
 function curSong(){if(S.settings.song==='shuffle'){if(!MEL.shuffleId||!SONG[MEL.shuffleId])MEL.shuffleId=pick(SONGS).id;return SONG[MEL.shuffleId]}return SONG[S.settings.song]||SONGS[0]}
 const playNote=play((t,semi,inst)=>(INSTR[inst||S.settings.inst]||INSTR.harp).play(t,semi,.13));
 function playNextNote(){const s=curSong();playNote(s.seq[MEL.idx%s.seq.length]);MEL.idx++;
-  if(MEL.idx>=s.seq.length){MEL.idx=0;setTimeout(()=>{addGems(1);SFX.xp();toast(`🎵 You played all of “${esc(s.name)}”! +1 emerald`)},350);
+  if(MEL.idx>=s.seq.length){MEL.idx=0;S.stats.songs=(S.stats.songs||0)+1;setTimeout(()=>{addGems(1);SFX.xp();toast(`🎵 You played all of “${esc(s.name)}”! +1 emerald`)},350);
     if(S.settings.song==='shuffle'){let n;do{n=pick(SONGS).id}while(n===s.id);MEL.shuffleId=n}}
   renderNP()}
 function renderNP(){const el=$('#np');if(!el)return;if(!musicOn()){el.innerHTML=`<span>🎵 Typing music: <b>${S.settings.sound?'off':'sound is off'}</b> — tap to pick a song</span>`;return}
@@ -802,6 +828,171 @@ const TEX={};
   make('pumpkinTop',98,(x,r)=>{nf(x,['#f08a1c','#e47e14','#f59a30'],r);px(x,'#4a7a2a',6,6,4,4);px(x,'#6b4f2c',7,7,2,2)});
   make('slabWood',95,(x,r)=>{nf(x,PL,r,0,8,16,8);px(x,'#7a5a32',0,11,16);px(x,'#7a5a32',0,15,16)});
 })();
+
+/* ================= ADVENTURE WORLD TEXTURES ================= */
+(function worldTextures(){
+  const make=(n,seed,fn)=>{const c=cv();const x=c.getContext('2d');fn(x,rng(seed));TEX[n]=c};
+  const px=(x,c,a,b,w=1,h=1)=>{x.fillStyle=c;x.fillRect(a,b,w,h)};
+  const PL=['#b8945f','#ad8a55','#c29d66','#a7834f'];
+  [['whiteC',['#e9ecec','#e2e6e6','#eef1f1']],['grayC',['#5a5e62','#55595d','#606468']],['lightGrayC',['#a8a8a0','#a2a29a','#aeaea6']],['blackC',['#1c1e22','#202226','#18191d']],['redC',['#a52a24','#9c2621','#ad2f28']],['blueC',['#2e3d9a','#2a3893','#3242a2']],['yellowC',['#f1af15','#e9a812','#f6b81e']],['siloBack',['#3a3d42','#36393e','#3e4146']]].forEach(([n,c],i)=>make(n,200+i,(x,r)=>nf(x,c,r)));
+  make('quartz',220,(x,r)=>{nf(x,['#ece6dd','#e7e1d8','#f1ebe2'],r);px(x,'#d8d0c4',0,15,16);px(x,'#d8d0c4',15,0,1,16);px(x,'#fff',0,0,16,1)});
+  make('quartzPillar',221,(x,r)=>{nf(x,['#ece6dd','#e7e1d8'],r);px(x,'#d5cdbf',2,0,1,16);px(x,'#d5cdbf',13,0,1,16);px(x,'#fff',4,0,1,16)});
+  make('sand',222,(x,r)=>nf(x,['#dbd3a0','#d6cd96','#e0d8a8','#cfc690'],r));
+  make('sandstone',223,(x,r)=>{nf(x,['#d8cc8c','#d2c585','#ddd193'],r);px(x,'#bdae6c',0,4,16);px(x,'#bdae6c',0,11,16)});
+  for(let f=0;f<4;f++)make('water'+f,224+f,(x,r)=>{nf(x,['#2f64d8','#3069dc','#2a5ccc','#3570e0'],r);for(let i=0;i<5;i++)px(x,'rgba(170,215,255,.55)',(i*5+f*3)%14,(i*3+f*2)%16,3,1)});
+  make('farmland',228,(x,r)=>{nf(x,['#5a3a20','#4e321b','#653f22'],r);for(const y of [4,9,14])px(x,'#3a2410',0,y,16,1);px(x,'#7a5534',0,0,16,2)});
+  const crop=(n,stalk,head,seed)=>make(n,seed,x=>{for(const cx of [2,7,12]){px(x,stalk,cx,5,1,11);px(x,stalk,cx+1,9,1,7);px(x,head,cx-1,2,3,4)}});
+  crop('wheat','#6d8f2a','#d8b84a',229);crop('carrotCrop','#4f9a2e','#f08a1c',230);crop('potato','#4f9a2e','#c8a060',231);
+  make('hay',232,(x,r)=>{nf(x,['#c9a227','#d6ae2e','#bf981f'],r);px(x,'#8a1f1a',0,4,16,2);px(x,'#8a1f1a',0,11,16,2);for(let i=0;i<10;i++)px(x,'#e8c24a',r()*16|0,r()*16|0,1,2)});
+  make('redPlanks',233,(x,r)=>{nf(x,['#9e2b25','#93271f','#a8312a'],r);for(const y of [3,7,11,15])px(x,'#6a1712',0,y,16)});
+  make('whitePlanks',234,(x,r)=>{nf(x,['#efeae0','#e6e0d4','#f4f0e8'],r);px(x,'#c9c0b0',0,7,16);px(x,'#c9c0b0',0,15,16)});
+  make('barnDoor',235,(x,r)=>{nf(x,['#9e2b25','#93271f'],r);px(x,'#eee',0,0,16,1);px(x,'#eee',0,15,16,1);px(x,'#eee',0,0,1,16);px(x,'#eee',15,0,1,16);for(let i=1;i<15;i++){px(x,'#eee',i,i);px(x,'#eee',15-i,i)}});
+  make('scarecrow',236,x=>{px(x,'#6b4f2c',7,6,2,10);px(x,'#6b4f2c',1,7,14,2);px(x,'#c9a227',3,6,10,4);px(x,'#3b6dc2',5,6,6,5);px(x,'#f08a1c',5,0,6,6);px(x,'#4a2a00',6,2,1,1);px(x,'#4a2a00',9,2,1,1);px(x,'#4a2a00',6,4,4,1);px(x,'#6b4f2c',4,0,8,1)});
+  make('sunflower',237,x=>{px(x,'#3e8a2a',7,6,2,10);px(x,'#3e8a2a',9,10,3,2);px(x,'#ffd23a',3,0,10,8);px(x,'#ffe56a',4,0,8,1);px(x,'#6b3f10',6,2,4,4)});
+  make('honeycomb',238,(x,r)=>{nf(x,['#e5941e','#d9881a','#ee9f28'],r);for(const [a,b] of [[1,1],[7,1],[4,6],[10,6],[1,11],[7,11],[13,1],[13,11]]){px(x,'#b8650c',a,b,4,1);px(x,'#b8650c',a,b+3,4,1);px(x,'#b8650c',a,b,1,4)}});
+  make('beehive',239,(x,r)=>{nf(x,['#c99a50','#bf9046','#d2a35a'],r);px(x,'#8a6a30',0,4,16);px(x,'#8a6a30',0,11,16);px(x,'#3a2410',6,6,4,4);px(x,'#f0a020',7,10,2,3);px(x,'#e5941e',0,0,16,2)});
+  make('honeyBlock',240,x=>{px(x,'rgba(240,160,30,.9)',0,0,16,16);px(x,'rgba(255,210,100,.9)',2,2,12,2);px(x,'rgba(200,110,10,.9)',0,15,16);px(x,'rgba(200,110,10,.9)',15,0,1,16)});
+  make('honeyGlass',241,x=>{px(x,'#a8650c',0,0,16,16);px(x,'#ffc24a',2,2,12,12);px(x,'#ffe7a0',3,3,4,2);px(x,'#a8650c',7,2,2,12);px(x,'#a8650c',2,7,12,2)});
+  make('honeyLantern',242,x=>{x.drawImage(TEX.lantern,0,0);px(x,'#ffd24a',5,7,6,6);px(x,'#fff3b0',6,8,3,3)});
+  make('flower3',243,x=>{px(x,'#3e8a2a',7,8,2,8);px(x,'#4a7ce0',5,4,6,4);px(x,'#9ac0ff',7,5,2,1)});
+  make('flower4',244,x=>{px(x,'#3e8a2a',7,8,2,8);px(x,'#f07ab0',5,3,6,5);px(x,'#ffd0e8',7,4,2,2)});
+  make('campfireBase',245,x=>{px(x,'#6b4f2c',1,13,14,3);px(x,'#4a3420',3,12,10,1)});
+  make('checker',246,x=>{for(let a=0;a<2;a++)for(let b=0;b<2;b++)px(x,(a+b)%2?'#1c1c1c':'#f2f2f2',a*8,b*8,8,8)});
+  make('wallpaper',247,(x,r)=>{nf(x,['#8e2a2a','#862626'],r);for(const c of [2,6,10,14])px(x,'#a83a34',c,0,1,16)});
+  make('cabinetW',249,(x,r)=>{nf(x,['#f2f2ee','#ebebe6'],r);px(x,'#c8c8c0',0,0,16,1);px(x,'#c8c8c0',7,1,2,15);px(x,'#c8c8c0',0,15,16);px(x,'#888',5,7,1,3);px(x,'#888',10,7,1,3)});
+  make('cabinetO',248,(x,r)=>{nf(x,['#7a5534','#70502f','#83603a'],r);px(x,'#4a3420',0,0,16,2);px(x,'#4a3420',7,2,2,14);px(x,'#d0c0a0',5,7,1,3);px(x,'#d0c0a0',10,7,1,3)});
+  make('counterTop',250,(x,r)=>{x.drawImage(TEX.cabinetW,0,0);nf(x,['#3a3a3e','#444448','#2f2f33'],r,0,0,16,4);px(x,'#666',0,0,16,1)});
+  make('marble',251,(x,r)=>{nf(x,['#f4f4f2','#eeeeec','#f8f8f6'],r);px(x,'#c8c8d0',2,3,5,1);px(x,'#c8c8d0',6,4,3,1);px(x,'#c8c8d0',9,10,5,1);px(x,'#bbb',0,15,16,1)});
+  make('subway',252,x=>{px(x,'#f6f6f2',0,0,16,16);for(const y of [4,9,14])px(x,'#c8ccd0',0,y,16,1);for(const [a,b] of [[4,0],[12,0],[8,5],[0,5],[4,10],[12,10]])px(x,'#c8ccd0',a,b,1,4)});
+  make('drywall',253,(x,r)=>nf(x,['#efe2c8','#ebdec4','#f2e6cd'],r));
+  make('woodFloor',254,(x,r)=>{nf(x,['#a0703c','#986a38','#a87842'],r);for(const y of [3,7,11,15])px(x,'#6b4a26',0,y,16);px(x,'#6b4a26',5,0,1,3);px(x,'#6b4a26',11,4,1,3)});
+  make('fridgeTop',255,x=>{px(x,'#d8dce0',0,0,16,16);px(x,'#b8bcc0',0,15,16);px(x,'#9aa0a6',12,4,2,8);px(x,'#fff',1,1,14,1)});
+  make('fridgeBot',256,x=>{px(x,'#d8dce0',0,0,16,16);px(x,'#b8bcc0',0,0,16,2);px(x,'#9aa0a6',12,3,2,10);px(x,'#e23b3b',3,4,3,3);px(x,'#ffd23a',4,9,3,3)});
+  make('ovenBase',257,x=>{px(x,'#2a2a2e',0,0,16,16);px(x,'#555',0,0,16,3);px(x,'#ccc',2,4,12,1);px(x,'#111',2,6,12,8)});
+  make('hood',258,x=>{px(x,'#9aa0a6',0,0,16,16);px(x,'#c8cdd2',2,0,12,10);px(x,'#7a8086',0,14,16,2)});
+  make('sinkTop',259,x=>{x.drawImage(TEX.counterTop,0,0);px(x,'#9aa0a6',3,0,10,3);px(x,'#c8cdd2',7,0,2,1)});
+  make('winNight',260,x=>{px(x,'#e8e8e8',0,0,16,16);px(x,'#14183a',2,2,12,12);px(x,'#fff',4,4,1,1);px(x,'#fff',10,5,1,1);px(x,'#fff',5,11,1,1);px(x,'#e8e8e8',7,2,2,12);px(x,'#e8e8e8',2,7,12,2)});
+  make('shelfJar',261,(x,r)=>{nf(x,['#7a5534','#70502f'],r);px(x,'#4a3420',0,7,16,2);px(x,'#4a3420',0,15,16,1);[['#e23b3b',2],['#ffd23a',6],['#5fa83a',10]].forEach(([c,a])=>{px(x,'#cfe8ff',a,1,3,6);px(x,c,a,3,3,4);px(x,'#888',a,1,3,1)});[['#f08a1c',3],['#b05ad0',9]].forEach(([c,a])=>{px(x,'#cfe8ff',a,9,4,6);px(x,c,a,11,4,4)})});
+  const food=(n,fn)=>make(n,262,fn);
+  food('pizza',x=>{px(x,'#d8a253',2,12,12,3);px(x,'#e8c050',3,12,10,2);px(x,'#c0302a',4,12,2,1);px(x,'#c0302a',9,13,2,1);px(x,'#fff',1,15,14,1)});
+  food('burger',x=>{px(x,'#d8a253',4,8,8,3);px(x,'#5fa83a',3,11,10,1);px(x,'#6b3a1a',4,12,8,2);px(x,'#d8a253',4,14,8,1);px(x,'#fff',2,15,12,1)});
+  food('cakeO',x=>{px(x,'#c98a4a',2,10,12,5);px(x,'#fff',2,8,12,3);px(x,'#e23b3b',4,8,1,1);px(x,'#e23b3b',8,8,1,1);px(x,'#e23b3b',11,8,1,1);px(x,'#ddd',1,15,14,1)});
+  food('cupcake',x=>{px(x,'#e07ab0',4,7,8,4);px(x,'#ffd0e8',5,7,3,1);px(x,'#c98a4a',5,11,6,5);px(x,'#e23b3b',7,5,2,2)});
+  food('iceCream',x=>{px(x,'#d8a253',6,10,4,6);px(x,'#c08a43',7,13,2,3);px(x,'#ffd0e8',5,6,6,4);px(x,'#9ad0ff',6,3,4,3)});
+  food('donut',x=>{px(x,'#c98a4a',3,10,10,6);px(x,'#f07ab0',3,10,10,3);px(x,'#4a2a10',7,12,2,2);px(x,'#fff',5,10,1,1);px(x,'#ffd23a',10,11,1,1)});
+  food('cookies',x=>{for(const [a,b] of [[2,12],[8,12],[5,8]]){px(x,'#c98a4a',a,b,6,4);px(x,'#4a2a10',a+1,b+1,1,1);px(x,'#4a2a10',a+4,b+2,1,1)}});
+  food('pie',x=>{px(x,'#d8a253',2,11,12,5);px(x,'#e8b860',2,11,12,2);px(x,'#9a2a5a',4,13,8,1)});
+  food('cookieJar',x=>{px(x,'#cfe8ff',3,5,10,11);px(x,'#c98a4a',4,9,8,6);px(x,'#4a2a10',6,11,1,1);px(x,'#4a2a10',9,13,1,1);px(x,'#e23b3b',3,3,10,2)});
+  food('toasterB',x=>{px(x,'#c8cdd2',2,9,12,7);px(x,'#9aa0a6',2,9,12,1);px(x,'#333',5,10,2,1);px(x,'#333',9,10,2,1);px(x,'#333',13,12,2,1)});
+  make('tableCloth',264,x=>{px(x,'#f2f2f2',0,0,16,4);for(const a of [0,8])px(x,'#e23b3b',a,0,4,4);px(x,'#5a3a1a',7,4,2,12)});
+  make('table',263,x=>{px(x,'#7a5534',0,0,16,2);px(x,'#5a3a1a',7,2,2,14);px(x,'#5a3a1a',4,14,8,2)});
+  make('chairL',265,x=>{px(x,'#6b4f2c',3,0,2,16);px(x,'#6b4f2c',3,8,10,2);px(x,'#6b4f2c',11,10,2,6)});
+  make('chairR',266,x=>{px(x,'#6b4f2c',11,0,2,16);px(x,'#6b4f2c',3,8,10,2);px(x,'#6b4f2c',3,10,2,6)});
+  make('chandelier',267,x=>{px(x,'#555',7,0,2,6);px(x,'#d4a017',2,6,12,2);[2,7,12].forEach(a=>{px(x,'#d4a017',a,8,2,3);px(x,'#fff3b0',a,4,2,2)})});
+  make('pendant',268,x=>{px(x,'#333',7,0,2,8);px(x,'#2a2a2a',4,8,8,4);px(x,'#fff3b0',5,12,6,2)});
+  make('cord',269,x=>px(x,'#333',7,0,2,16));
+  make('awning',270,x=>{for(let i=0;i<4;i++)px(x,i%2?'#fff':'#d42a1e',i*4,4,4,8);for(let i=0;i<4;i++)px(x,i%2?'#fff':'#d42a1e',i*4+1,12,2,3)});
+  make('pole',271,x=>px(x,'#ccc',7,0,2,16));
+  make('signboard',272,(x,r)=>{nf(x,['#2a1a2a','#241624'],r);px(x,'#111',0,0,16,1);px(x,'#111',0,15,16,1)});
+  make('poolTile',273,x=>{px(x,'#a8e0f0',0,0,16,16);px(x,'#7cc8e0',0,7,16,1);px(x,'#7cc8e0',0,15,16,1);px(x,'#7cc8e0',7,0,1,16);px(x,'#7cc8e0',15,0,1,16)});
+  make('poolEmpty',274,x=>{px(x,'#6aa8bc',0,0,16,16);px(x,'#5a98ac',0,7,16,1);px(x,'#5a98ac',7,0,1,16)});
+  make('poolLight',275,x=>{x.drawImage(TEX.poolTile,0,0);px(x,'#e8ffff',4,4,8,8);px(x,'#9ff8ff',5,5,6,6)});
+  make('deck',276,(x,r)=>{nf(x,['#d8b07a','#cfa670','#e0b884'],r);px(x,'#a07848',0,5,16);px(x,'#a07848',0,11,16);px(x,'#a07848',8,0,1,5)});
+  make('palmLog',277,(x,r)=>{nf(x,['#8a6a40','#7a5c36','#96764a'],r,4,0,8,16);for(const y of [2,7,12])px(x,'#5a4022',4,y,8,1)});
+  make('palmLeaf',278,x=>{const g='#3fa83a',d='#2a7a26';px(x,g,0,6,16,3);px(x,d,0,8,16,1);px(x,g,0,9,3,4);px(x,g,13,9,3,4);px(x,g,5,9,2,2);px(x,g,9,9,2,2)});
+  make('boardPlank',279,x=>{px(x,'#f2f2f2',0,6,16,3);px(x,'#c8c8c8',0,9,16,1)});
+  make('boardBase',280,x=>{px(x,'#9aa0a6',3,6,10,10);px(x,'#f2f2f2',0,6,16,3)});
+  make('slideTube',281,x=>{px(x,'rgba(60,180,255,.95)',0,0,16,16);px(x,'rgba(200,240,255,.9)',2,2,12,3);px(x,'#2a8ad8',0,15,16,1)});
+  make('lounger',282,x=>{px(x,'#ccc',1,12,2,4);px(x,'#ccc',13,12,2,4);px(x,'#2a9ad8',0,9,16,3);px(x,'#2a9ad8',0,5,4,4);px(x,'#fff',4,10,12,1)});
+  make('floatRing',283,x=>{px(x,'#ff5a5a',2,0,12,4);px(x,'#fff',4,0,2,4);px(x,'#fff',10,0,2,4);px(x,'#2a5ccc',5,1,6,2)});
+  make('beachBall',284,x=>{px(x,'#fff',4,-1+0,8,6);px(x,'#e23b3b',4,0,3,5);px(x,'#2a5ccc',9,0,3,5);px(x,'#ffd23a',7,0,2,1)});
+  make('radio',285,x=>{px(x,'#2a2a2e',1,8,14,8);px(x,'#555',3,10,4,4);px(x,'#555',9,10,4,4);px(x,'#888',4,6,8,2);px(x,'#ff5ad8',7,12,2,1)});
+  make('garageDoor',286,x=>{px(x,'#e8e8e8',0,0,16,16);for(const y of [3,7,11,15])px(x,'#b8b8b8',0,y,16,1)});
+  make('bell',287,x=>{px(x,'#6b4f2c',2,0,12,2);px(x,'#d4a017',5,2,6,8);px(x,'#f2c94a',6,3,2,6);px(x,'#d4a017',4,10,8,2);px(x,'#8a6a10',7,12,2,2)});
+  make('hydrant',288,x=>{px(x,'#d42a1e',5,5,6,11);px(x,'#d42a1e',4,3,8,3);px(x,'#ffd23a',6,2,4,2);px(x,'#a81e14',3,8,2,3);px(x,'#a81e14',11,8,2,3)});
+  make('cone',289,x=>{px(x,'#f06a1a',6,4,4,4);px(x,'#fff',5,8,6,2);px(x,'#f06a1a',4,10,8,4);px(x,'#333',2,14,12,2)});
+  make('hoseReel',290,x=>{px(x,'#555',2,2,12,12);px(x,'#d42a1e',3,3,10,10);px(x,'#a81e14',5,5,6,6);px(x,'#555',7,7,2,2)});
+  make('winCool',291,x=>{px(x,'#c8ccd0',0,0,16,16);px(x,'#d8f0ff',2,2,12,12);px(x,'#ffffff',3,3,5,4);px(x,'#c8ccd0',7,2,2,12)});
+  make('glassDoor',292,x=>{px(x,'#7a8086',0,0,16,16);px(x,'#a8d8f0',1,1,14,15);px(x,'#e8faff',3,3,3,8);px(x,'#7a8086',7,1,2,15)});
+  make('helipad',293,(x,r)=>{nf(x,['#3a3d42','#36393e'],r);px(x,'#f1af15',0,0,16,2)});
+  make('helipadH',294,x=>{px(x,'#fff',3,4,2,10);px(x,'#fff',11,4,2,10);px(x,'#fff',3,8,10,2)});
+  make('redCrossBlk',295,x=>{px(x,'#e01e1e',0,0,16,16);px(x,'#ff6a6a',2,2,12,2)});
+  make('beaconBase',296,x=>{px(x,'#555',6,10,4,6)});
+  make('mossyBricks',297,(x,r)=>{x.drawImage(TEX.stoneBricks,0,0);for(let i=0;i<14;i++)px(x,['#5f8a3a','#4f7a2e'][i%2],r()*16|0,r()*16|0,2,1)});
+  make('polished',298,(x,r)=>{nf(x,['#8a8a8a','#868686','#909090'],r);px(x,'#6a6a6a',0,15,16);px(x,'#6a6a6a',15,0,1,16);px(x,'#aaa',0,0,16,1)});
+  make('darkBricks',299,(x,r)=>{nf(x,['#3a3a44','#34343e','#40404a'],r);px(x,'#22222a',0,7,16);px(x,'#22222a',0,15,16);px(x,'#22222a',7,0,1,7);px(x,'#22222a',3,8,1,7);px(x,'#22222a',12,8,1,7)});
+  const sword=(n,blade,hi)=>make(n,300,x=>{for(let i=0;i<9;i++)px(x,blade,3+i,11-i,2,2);for(let i=0;i<8;i++)px(x,hi,4+i,11-i,1,1);px(x,'#6b4f2c',1,13,3,2);px(x,'#4a3420',2,11,4,1);px(x,'#4a3420',4,12,1,3)});
+  sword('swordIron','#c8cdd2','#fff');sword('swordGold','#f2c94a','#fff6b0');sword('swordDia','#4fe3dc','#d6fffc');
+  make('axe',301,x=>{for(let i=0;i<11;i++)px(x,'#6b4f2c',3+i,14-i,2,1);px(x,'#c8cdd2',8,1,6,6);px(x,'#fff',13,1,1,6)});
+  make('bow',302,x=>{for(let i=0;i<13;i++){const dx=Math.round(Math.sin(i/12*Math.PI)*5);px(x,'#7a5a32',3+dx,2+i,2,1)}px(x,'#ddd',3,2,1,13)});
+  const shield=(n,c1,c2,seed)=>make(n,seed,x=>{px(x,'#6b4f2c',2,1,12,12);px(x,c1,3,2,10,10);px(x,'#6b4f2c',4,13,8,1);px(x,'#6b4f2c',6,14,4,1);px(x,c2,7,2,2,10);px(x,c2,3,6,10,2)});
+  shield('shieldR','#c23b3b','#ffd23a',303);shield('shieldB','#2f5fd0','#fff',304);shield('shieldG','#3f8f3f','#ffd23a',305);
+  const armor=(n,c,d)=>{make(n+'Top',306,x=>{px(x,'#6b4f2c',7,12,2,4);px(x,c,4,0,8,6);px(x,'#222',5,3,6,1);px(x,c,2,7,12,6);px(x,d,7,7,2,6);px(x,c,0,7,2,5);px(x,c,14,7,2,5)});
+    make(n+'Bot',307,x=>{px(x,c,4,0,8,4);px(x,c,4,4,3,8);px(x,c,9,4,3,8);px(x,d,4,11,3,2);px(x,d,9,11,3,2);px(x,'#888',3,14,10,2)})};
+  armor('armorI','#c8cdd2','#8a9096');armor('armorG','#f2c94a','#b88a10');armor('armorD','#4fe3dc','#1f9b93');
+  make('anvil',308,x=>{px(x,'#3a3a3a',1,5,14,3);px(x,'#3a3a3a',5,8,6,4);px(x,'#3a3a3a',3,12,10,4);px(x,'#5a5a5a',1,5,14,1)});
+  make('grindstone',309,x=>{px(x,'#6b4f2c',2,7,2,9);px(x,'#6b4f2c',12,7,2,9);px(x,'#9a9a9a',4,3,8,10);px(x,'#7a7a7a',4,8,8,1)});
+  make('carpetRed',310,x=>{px(x,'#b52822',0,13,16,3);px(x,'#e2c94a',0,13,16,1)});
+  make('lectern',311,(x,r)=>{nf(x,PL,r,5,6,6,10);px(x,'#7a5534',2,3,12,4);px(x,'#efe6c8',3,2,10,2);px(x,'#4a3420',3,15,10,1)});
+  make('composter',312,(x,r)=>{nf(x,PL,r);px(x,'#4a3420',2,2,12,3);px(x,'#5fa83a',2,2,12,1)});
+  make('barrel',313,(x,r)=>{nf(x,['#7a5534','#70502f'],r);px(x,'#3a3a3a',0,3,16,1);px(x,'#3a3a3a',0,12,16,1);px(x,'#4a3420',6,0,1,16);px(x,'#4a3420',10,0,1,16)});
+  make('smoker',314,(x,r)=>{nf(x,['#5a5a5a','#666'],r);px(x,'#6b4f2c',0,0,16,3);px(x,'#2a2a2a',4,8,8,5);px(x,'#ff9a2a',5,11,6,2)});
+  make('loom',315,(x,r)=>{nf(x,PL,r);px(x,'#e8e0d0',2,2,12,6);px(x,'#c23b3b',4,3,2,4);px(x,'#3b6dc2',9,3,2,4)});
+  make('cartography',316,(x,r)=>{nf(x,PL,r);px(x,'#efe6c8',1,1,14,6);px(x,'#5fa83a',3,2,4,3);px(x,'#3b6dc2',8,3,5,3)});
+  make('emeraldBlock',317,(x,r)=>{nf(x,['#2ecc71','#27b863','#38d87c'],r);px(x,'#a8ffd0',2,2,4,1);px(x,'#1a8a48',0,15,16);px(x,'#1a8a48',15,0,1,16)});
+  make('glassPane',318,x=>{px(x,'rgba(190,230,250,.7)',6,0,4,16);px(x,'rgba(255,255,255,.8)',7,2,1,5)});
+  const frame=(n,fn)=>make(n,319,x=>{px(x,'#7a5534',2,2,12,12);px(x,'#c8a46a',3,3,10,10);fn(x)});
+  frame('frameBook',x=>{px(x,'#7a3a1a',5,5,6,7);px(x,'#efe6c8',6,6,4,5)});frame('frameWheat',x=>{px(x,'#d8b84a',6,4,1,8);px(x,'#d8b84a',8,4,1,8);px(x,'#e8c860',5,4,5,3)});
+  frame('frameFish',x=>{px(x,'#6aa8d8',4,7,7,3);px(x,'#3a78a8',10,6,2,5)});frame('frameMeat',x=>{px(x,'#c84a3a',5,5,6,6);px(x,'#fff',9,9,3,2)});
+  frame('frameWool',x=>{px(x,'#f2f2f2',4,5,8,6);px(x,'#ddd',5,6,2,2)});frame('frameMap',x=>{px(x,'#efe6c8',4,4,8,8);px(x,'#5fa83a',5,5,3,3);px(x,'#3b6dc2',8,8,3,3)});
+  make('prismarine',320,(x,r)=>nf(x,['#63a596','#5a9c8e','#6eb0a0','#4f8c80'],r));
+  make('darkPrism',321,(x,r)=>{nf(x,['#2f5a4a','#2a5243','#336050'],r);px(x,'#1d3a30',0,0,16,1);px(x,'#1d3a30',0,0,1,16);px(x,'#1d3a30',8,0,1,16)});
+  make('domeGlass',322,x=>{px(x,'rgba(150,230,255,.35)',0,0,16,16);px(x,'rgba(255,255,255,.6)',3,3,1,3);px(x,'rgba(255,255,255,.6)',4,2,2,1);px(x,'rgba(100,200,230,.85)',0,0,16,1);px(x,'rgba(100,200,230,.85)',0,0,1,16)});
+  make('roomBack',323,(x,r)=>nf(x,['#2a4a56','#264450','#2e5060'],r));
+  make('ironDoorT',324,x=>{px(x,'#c8cdd2',1,0,14,16);px(x,'#9aa0a6',3,2,10,6);px(x,'#fff',4,3,3,2)});
+  make('ironDoorB',325,x=>{px(x,'#c8cdd2',1,0,14,16);px(x,'#9aa0a6',3,2,10,11);px(x,'#555',11,6,2,2)});
+  const coral=(n,c,d,s)=>make(n,s,x=>{px(x,c,7,4,2,12);px(x,c,3,6,2,6);px(x,c,11,3,2,7);px(x,c,3,11,6,2);px(x,c,9,9,4,2);px(x,d,7,4,1,12);px(x,c,2,4,2,2);px(x,c,12,1,2,2)});
+  coral('coralR','#e0485a','#ff8a9a',326);coral('coralY','#f2c94a','#fff0a0',327);coral('coralP','#c060e0','#e8a8ff',328);coral('coralB','#3a7ae0','#9ac0ff',329);
+  make('seaPickle',330,x=>{px(x,'#5a8a2a',4,10,3,6);px(x,'#5a8a2a',9,8,3,8);px(x,'#d8ff9a',5,9,1,1);px(x,'#d8ff9a',10,7,1,1)});
+  make('conduitB',331,x=>{px(x,'#c8a46a',4,4,8,8);px(x,'#7a5a32',5,5,6,6)});
+  make('tnt',332,(x,r)=>{nf(x,PL,r);px(x,'#6b4f2c',0,0,16,2);px(x,'#6b4f2c',0,14,16,2);px(x,'#6b4f2c',0,0,2,16);px(x,'#6b4f2c',14,0,2,16);for(const a of [3,7,11]){px(x,'#d42a1e',a,4,3,8);px(x,'#ff6a5a',a,4,1,8);px(x,'#222',a+1,2,1,2)}px(x,'#f1af15',2,12,12,2);for(const a of [3,7,11])px(x,'#222',a,12,2,2)});
+  make('obsidian',333,(x,r)=>{nf(x,['#14101e','#1a1428','#100c18','#241c34'],r);for(let i=0;i<4;i++)px(x,'#5a3a8a',r()*16|0,r()*16|0)});
+  make('blastGlass',334,x=>{px(x,'#3a3a3a',0,0,16,16);px(x,'rgba(150,200,220,.95)',2,2,12,12);px(x,'#fff',4,4,2,2);px(x,'#3a3a3a',7,2,2,12)});
+  make('hazard',335,x=>{for(let k=0;k<16;k++)for(let i=0;i<16;i++)px(x,((i+k)%8)<4?'#f1af15':'#1c1c1c',i,k)});
+  make('warnSign',336,x=>{px(x,'#555',7,10,2,6);for(let i=0;i<8;i++)px(x,'#f1af15',8-i,1+i,i*2,1);px(x,'#222',7,3,2,4);px(x,'#222',7,8,2,1)});
+  make('redFlag',337,x=>{px(x,'#ccc',2,0,2,16);px(x,'#e01e1e',4,1,9,6)});
+  make('consoleB',338,x=>{px(x,'#3a3d42',0,5,16,11);px(x,'#555',0,5,16,1)});
+  make('bigButton',339,x=>{px(x,'#555',4,9,8,7);px(x,'#777',3,8,10,2);px(x,'#e01e1e',5,4,6,4);px(x,'#ff7a6a',6,4,2,1)});
+  make('metal',340,(x,r)=>{nf(x,['#8a9096','#848a90','#90969c'],r);px(x,'#5a6066',0,0,16,1);px(x,'#5a6066',0,0,1,16);for(const [a,b] of [[2,2],[13,2],[2,13],[13,13]])px(x,'#b0b6bc',a,b,1,1)});
+  make('metalFloor',341,(x,r)=>{nf(x,['#6a7076','#646a70'],r);for(let i=0;i<16;i+=4)px(x,'#80868c',i,i%8?2:6,2,1);px(x,'#888',0,0,16,1)});
+  make('pipeH',342,x=>{px(x,'#9aa0a6',0,5,16,6);px(x,'#c8cdd2',0,6,16,1);px(x,'#6a7076',0,10,16,1);px(x,'#6a7076',7,4,2,8)});
+  make('pipeV',343,x=>{px(x,'#9aa0a6',5,0,6,16);px(x,'#c8cdd2',6,0,1,16);px(x,'#6a7076',10,0,1,16);px(x,'#6a7076',4,7,8,2)});
+  make('vatB',344,x=>{px(x,'#6a7076',1,0,14,16);px(x,'#9aa0a6',1,0,14,2);px(x,'#555',2,2,12,13)});
+  make('crate',345,(x,r)=>{nf(x,PL,r);px(x,'#6b4f2c',0,0,16,2);px(x,'#6b4f2c',0,14,16,2);px(x,'#6b4f2c',0,0,2,16);px(x,'#6b4f2c',14,0,2,16);for(let i=2;i<14;i++)px(x,'#6b4f2c',i,i,1,1)});
+  make('chain',346,x=>{for(let y=0;y<16;y+=4){px(x,'#6a7076',6,y,4,3);px(x,'#2a2a2a',7,y+1,2,1)}});
+  make('crystal',347,x=>{px(x,'#9a5ad8',6,2,4,14);px(x,'#c89aff',7,2,1,12);px(x,'#9a5ad8',2,8,3,8);px(x,'#9a5ad8',11,6,3,10);px(x,'#e0c8ff',12,6,1,3)});
+  make('cherryLeaves',348,(x,r)=>{nf(x,['#f0a8c8','#e898bc','#f8b8d4','#d888ac'],r);for(let i=0;i<10;i++)px(x,'#fff0f6',r()*16|0,r()*16|0)});
+  make('cherryLog',349,(x,r)=>{for(let i=0;i<16;i++){const b=['#3a2028','#4a2a34','#33181f'][(i+(r()*2|0))%3];for(let j=0;j<16;j++)px(x,r()<.1?'#24101a':b,i,j)}});
+  make('dragonEgg',350,x=>{px(x,'#3a1a5a',4,5,8,11);px(x,'#3a1a5a',5,3,6,2);px(x,'#9a5ad8',6,5,2,3);px(x,'#c89aff',6,10,1,2)});
+  make('reinforced',351,(x,r)=>{nf(x,['#4a4e52','#44484c','#50545a'],r);px(x,'#2a2d30',0,0,16,1);px(x,'#2a2d30',0,0,1,16);for(const [a,b] of [[2,2],[13,2],[2,13],[13,13]])px(x,'#8a9096',a,b,1,1)});
+  make('bunkTop',352,x=>{px(x,'#6a7076',0,9,16,2);px(x,'#3b6dc2',1,6,14,3);px(x,'#fff',12,5,3,2);px(x,'#6a7076',0,0,1,16);px(x,'#6a7076',15,0,1,16)});
+  make('bunkBot',353,x=>{px(x,'#6a7076',0,12,16,2);px(x,'#3b6dc2',1,9,14,3);px(x,'#fff',12,8,3,2);px(x,'#6a7076',0,0,1,16);px(x,'#6a7076',15,0,1,16)});
+  make('coreBase',354,x=>{px(x,'#3a3d42',0,0,16,16);px(x,'#6a7076',0,0,16,2);px(x,'#6a7076',0,14,16,2)});
+  make('pathTile',355,(x,r)=>{nf(x,['#c8784a','#bc6e42','#d08250'],r);px(x,'#8a4a2a',0,7,16);px(x,'#8a4a2a',0,15,16);px(x,'#8a4a2a',7,0,1,7);px(x,'#8a4a2a',3,8,1,7);px(x,'#8a4a2a',12,8,1,7)});
+  make('beamW',356,x=>{px(x,'#f2f2f2',0,0,2,16);px(x,'#f2f2f2',14,0,2,16);for(let i=0;i<16;i++)px(x,'#d0d0d0',i,i,2,1);px(x,'#f2f2f2',0,0,16,2)});
+  make('stripeRW',357,x=>{for(let i=0;i<4;i++)px(x,i%2?'#fff':'#d42a1e',i*4,0,4,16)});
+  make('stripeBY',358,x=>{for(let i=0;i<4;i++)px(x,i%2?'#ffd23a':'#2f5fd0',i*4,0,4,16)});
+  make('cottonCandy',359,x=>{px(x,'#f2f2f2',7,8,2,8);px(x,'#ff9ad0',3,1,10,8);px(x,'#ffd0ea',5,2,4,3)});
+  make('popcorn',360,x=>{px(x,'#d42a1e',4,7,8,9);px(x,'#fff',6,7,2,9);px(x,'#fff6d0',3,3,10,5);px(x,'#ffe08a',5,2,3,2)});
+  make('marqueeBase',361,x=>{px(x,'#2a1a3a',0,0,16,16);px(x,'#d4a017',0,0,16,2);px(x,'#d4a017',0,14,16,2)});
+  make('fencePost',362,x=>{px(x,'#9c7a46',6,0,4,16);px(x,'#7a5a32',9,0,1,16)});
+  make('signpost',363,x=>{px(x,'#7a5a32',7,8,2,8);px(x,'#9c7a46',1,1,14,8);px(x,'#6b4f2c',1,1,14,1);px(x,'#3a2410',3,4,10,1);px(x,'#3a2410',3,6,7,1)});
+  make('planter',364,x=>{px(x,'#7a5534',0,10,16,6);px(x,'#4a3420',0,10,16,1);px(x,'#e23b3b',2,6,3,4);px(x,'#ffd23a',7,5,3,5);px(x,'#f07ab0',12,6,3,4);px(x,'#3e8a2a',1,8,14,2)});
+  make('balloonCart',365,x=>{px(x,'#d42a1e',1,9,14,5);px(x,'#fff',1,9,14,1);px(x,'#222',3,14,3,2);px(x,'#222',10,14,3,2)});
+  make('fireworkBox',366,x=>{px(x,'#7a2aa8',2,8,12,8);px(x,'#ffd23a',2,10,12,1);for(const a of [3,7,11]){px(x,'#e23b3b',a,3,2,6);px(x,'#ccc',a,2,2,1)}});
+  make('screenOff',367,x=>{px(x,'#222',0,0,16,16);px(x,'#111',1,1,14,13)});
+})();
+TEX.fenceO=TEX.fence;TEX.bellO=TEX.bell;
 
 function cube(top,side,size=72){
   const c=cv(size,Math.round(size*1.1));const x=c.getContext('2d');x.imageSmoothingEnabled=false;const s=size/32;
@@ -929,7 +1120,7 @@ class Typer{
     const exp=this.text[this.i];
     if(k===exp){
       this.i++;this.correct++;this.streak++;this.bestStreak=Math.max(this.bestStreak,this.streak);
-      flashKey(keyIdFromEvent(k),true);if(musicOn()){if(k!==' ')playNextNote()}else if(this.o.sound)this.o.sound(k,this.i-1,this.text.length);else SFX.click();if(k===' ')setTimeout(SFX.xp,40);this.mark();addXP(1);$('#oops').textContent='';
+      S.stats.chars++;flashKey(keyIdFromEvent(k),true);if(musicOn()){if(k!==' ')playNextNote()}else if(this.o.sound)this.o.sound(k,this.i-1,this.text.length);else SFX.click();if(k===' ')setTimeout(SFX.xp,40);this.mark();addXP(1);$('#oops').textContent='';
       if(this.streak>0&&this.streak%30===0){addGems(1);SFX.snack();toast(`🍗 ${this.streak} in a row! Snack time! +1 emerald`)}
       this.o.onChar&&this.o.onChar(this.i,this.text.length);
       if(this.i>=this.text.length){this.done=true;this.end=performance.now();coachNext(null);this.o.onDone&&this.o.onDone(this.stats())}
@@ -1001,7 +1192,7 @@ function show(id){
   $('#oops').textContent='';clearCoach();$('#hint').innerHTML='Put your fingers on the home row! 🏠';
   scrollTo(0,0);focusCheck();
   if(['lesson','build','speed','vplay'].includes(id)){if(!IS_TOUCH||document.body.classList.contains('capfocus'))setTimeout(focusCap,30)}else if(document.activeElement===CAP)CAP.blur();
-  if(id==='camp')renderCamp();if(id==='builds')renderBuilds();if(id==='village')renderVillageLevels();if(id==='build')openBuild();if(id==='speed')openSpeed();if(id==='story')openStory();
+  if(id==='camp')renderCamp();if(id==='builds')renderBuilds();if(id==='progress')renderProgress();if(id==='village')renderVillageLevels();if(id==='build')openBuild();if(id==='speed')openSpeed();if(id==='story')openStory();
   fitSoon();
 }
 document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g){SFX.click();show(g.dataset.go)}});
@@ -1073,7 +1264,7 @@ function finishLesson(){const a=LS.agg,i=LS.idx;const acc=Math.round(100*a.corre
   modal(`<div class="big">${msg}</div><div class="stars">${starsHTML(stars)}</div><div class="mrow"><div class="mstat">Correct<b>${acc}%</b></div><div class="mstat">Speed<b>${wpm} WPM</b></div><div class="mstat">Best streak<b>${a.best}</b></div>${stars?`<div class="mstat">Emeralds<b>+${stars}</b></div>`:''}</div>${stars?'':'<p>You need 80% correct to pass. Go slow and use the right finger — speed comes later!</p>'}${missList(a.miss)}`,btns)}
 
 /* ================= BUILD SCHOOL ================= */
-const GW=27,GH=20,CW=GW*16,CH=GH*16;
+let GW=27,GH=20,CW=GW*16,CH=GH*16;
 const box=(x1,y1,x2,y2,t)=>{const a=[];for(let y=y2;y>=y1;y--)for(let x=x1;x<=x2;x++)a.push([x,y,typeof t==='function'?t(x,y):t]);return a};
 // overlay layers: 0 = on the floor (rails, dust), 1 = normal, 2 = on top of others, 3 = drawn after darkness (glowing eyes)
 const L0=new Set(['rail','railPOn','railD','dust','repeater']);
@@ -1089,7 +1280,7 @@ function groundSnow(b){for(let x=0;x<GW;x++){b[x+',17']='snowGrass';b[x+',18']='
 function underground(b,top){const r=rng(99);for(let x=0;x<GW;x++){b[x+','+top]='grass';b[x+','+(top+1)]='dirt';b[x+','+(top+2)]='dirt';for(let y=top+3;y<GH;y++)b[x+','+y]=r()<.05?'oreCoal':'stone'}}
 
 /* ---------- sky & backdrops ---------- */
-const STARS=(()=>{const r=rng(5);return Array.from({length:80},()=>[r()*CW|0,r()*220|0,r()<.2?2:1,r()*6.28])})();
+const STARS=(()=>{const r=rng(5);return Array.from({length:120},()=>[r()*640|0,r()*300|0,r()<.2?2:1,r()*6.28])})();
 function drawSky(c,kind,t){
   if(kind==='night'){const g=c.createLinearGradient(0,0,0,CH);g.addColorStop(0,'#070b26');g.addColorStop(1,'#283062');c.fillStyle=g;c.fillRect(0,0,CW,CH);
     STARS.forEach(([x,y,s,ph])=>{c.fillStyle=`rgba(255,255,255,${(.55+.45*Math.sin(t/520+ph)).toFixed(2)})`;c.fillRect(x,y,s,s)});
@@ -1101,7 +1292,7 @@ function drawSky(c,kind,t){
 function bgTree(c,x,y){c.globalAlpha=.85;for(let k=0;k<3;k++)c.drawImage(TEX.log,x*16,(y+k)*16);for(let dx=-1;dx<=1;dx++)for(let dy=-2;dy<=-1;dy++)c.drawImage(TEX.leaves,(x+dx)*16,(y+dy)*16);c.drawImage(TEX.leaves,x*16,(y-3)*16);c.globalAlpha=1}
 function hills(c){c.fillStyle='#8cc47a';[[0,13,6],[5,12,5],[9,13,4],[13,11,6],[18,12,5],[22,13,5]].forEach(([x,y,w])=>c.fillRect(x*16,y*16,w*16,CH));c.fillStyle='#78b466';[[2,14,7],[11,14,5],[19,14,8]].forEach(([x,y,w])=>c.fillRect(x*16,y*16,w*16,CH));[[2,12],[7,12],[20,12],[25,12]].forEach(([x,y])=>bgTree(c,x,y))}
 function aurora(c,t){for(let b=0;b<3;b++)for(let x=0;x<CW;x+=8){const y=36+b*22+16*Math.sin(x/55+t/1600+b*1.7);c.fillStyle=b===1?'rgba(120,200,255,.10)':'rgba(90,255,180,.11)';c.fillRect(x,y,8,30)}}
-const FLAKES=(()=>{const r=rng(17);return Array.from({length:70},()=>[r()*CW,r()*CH,8+r()*14,r()*6.28])})();
+const FLAKES=(()=>{const r=rng(17);return Array.from({length:90},()=>[r()*640,r()*384,8+r()*14,r()*6.28])})();
 function snow(c,t){c.fillStyle='rgba(255,255,255,.9)';for(const [x,y,sp,ph] of FLAKES){const yy=(y+t/1000*sp)%CH,xx=(x+Math.sin(t/900+ph)*6+CW)%CW;c.fillRect(xx|0,yy|0,2,2)}}
 
 /* ---------- animated blocks ---------- */
@@ -1272,39 +1463,648 @@ function drawDark(c,p,g,t,i){const d=darkC.getContext('2d');d.globalCompositeOpe
   c.drawImage(darkC,0,0);
   c.save();c.globalCompositeOperation='lighter';for(const [lx,ly,lr] of L){const gr=c.createRadialGradient(lx,ly,0,lx,ly,lr*.7);gr.addColorStop(0,'rgba(255,170,60,.16)');gr.addColorStop(1,'rgba(255,170,60,0)');c.fillStyle=gr;c.fillRect(lx-lr,ly-lr,lr*2,lr*2)}c.restore()}
 function renderScene(c,p,stage,frac,t,live){
-  const g=buildGrid(p,stage,frac);const i={t,live,done:Math.min(stage,p.stages.length),g};
-  c.imageSmoothingEnabled=false;drawSky(c,p.sky,t);if(p.backdrop)p.backdrop(c,t,i);if(p.pre)p.pre(i);
+  GW=p.gw||27;GH=p.gh||20;CW=GW*16;CH=GH*16;
+  if(c.canvas.width!==CW||c.canvas.height!==CH){c.canvas.width=CW;c.canvas.height=CH}
+  if(darkC.width!==CW||darkC.height!==CH){darkC.width=CW;darkC.height=CH}
+  const g=buildGrid(p,stage,frac);const i={t,live,done:Math.min(stage,p.stages.length),n:p.stages.length,stage,frac,g,lights:[],p};
+  c.setTransform(1,0,0,1,0,0);c.imageSmoothingEnabled=false;if(p.pre)p.pre(i);
+  const sh=p.shake?p.shake(i):0;if(sh){c.fillStyle='#000';c.fillRect(0,0,CW,CH);c.translate(Math.round((Math.random()-.5)*sh*2),Math.round((Math.random()-.5)*sh*2))}
+  drawSky(c,p.sky,t);if(p.backdrop)p.backdrop(c,t,i);
   eachCell(g.base,(x,y,tp)=>drawCell(c,tp,x,y,t,i));
+  if(p.mid)p.mid(c,t,i);
   for(let l=0;l<3;l++)eachCell(g.over,(x,y,ls)=>{if(ls[l])drawCell(c,ls[l],x,y,t,i)});
   if(p.extra)p.extra(c,t,i);
   if(p.dark)drawDark(c,p,g,t,i);
   eachCell(g.over,(x,y,ls)=>{if(ls[3])drawCell(c,ls[3],x,y,t,i)});
   if(p.after)p.after(c,t,i);
+  c.setTransform(1,0,0,1,0,0);
   return g}
+
 
 /* ---------- build screens ---------- */
 let BP=null,lastPlaced=0;
 const bstage=p=>Math.min((S.builds||{})[p.id]||0,p.stages.length);
 function liveRender(){if(current!=='build'||!BP)return null;const st=bstage(BP);const frac=(activeTyper&&!activeTyper.done&&activeTyper.text)?activeTyper.i/activeTyper.text.length:0;return renderScene($('#house').getContext('2d'),BP,st,frac,performance.now(),true)}
 setInterval(()=>{if(current==='build'&&!document.hidden)liveRender()},100);
-function renderBuilds(){const g=$('#bgrid');g.innerHTML='';
-  PROJ_LIST.forEach(p=>{const n=p.stages.length,st=bstage(p);const d=document.createElement('button');d.className='bcard';
-    d.innerHTML=`<canvas width="${CW}" height="${CH}"></canvas><span class="bname">${esc(p.name)}</span><span class="bprog">${st>=n?'✅ FINISHED!':st?`TIP ${st} OF ${n}`:`${n} TIPS`}</span><span class="prog"><i style="width:${100*st/n}%"></i></span>`;
-    renderScene(d.querySelector('canvas').getContext('2d'),p,n,0,2600,false);
-    d.onclick=()=>{SFX.door();S.bproj=p.id;save();show('build')};g.appendChild(d)})}
-function openBuild(){BP=PROJ[S.bproj]||PROJ.home;$('#bdName').textContent=BP.name;startBuildStage()}
+
+function openBuild(){BP=PROJ[S.bproj]||PROJ.home;if(!worldOpen(BP))BP=PROJ.home;$('#bdName').textContent=BP.name;startBuildStage()}
 function startBuildStage(){
   resetStats();const n=BP.stages.length,st=bstage(BP);$('#buildProg').style.width=(100*st/n)+'%';lastPlaced=0;activeTyper=null;liveRender();
   if(st>=n){$('#tipNum').textContent=BP.name.toUpperCase()+' COMPLETE! 🏆';$('#tipWhy').textContent=`You learned all ${n} builder tips. Pick another build, or press “Start over” to type it again even faster!`;$('#bdText').innerHTML='<span style="color:#7cf07c">You did it, Master Builder!</span>';clearCoach();$('#hint').innerHTML='🏆 Build complete!';return}
   fitSoon();const S2=BP.stages[st];$('#tipNum').textContent=`BUILDER TIP ${st+1} OF ${n}`;$('#tipWhy').textContent=S2.why;
   activeTyper=new Typer($('#bdText'),prep(S2.tip),{sound:k=>{if(k!==' ')SFX.click()},
     onChar:(i,len)=>{const g=liveRender();if(g&&g.placed>lastPlaced){lastPlaced=g.placed;const s=PLACE_SND[g.last]||'wood';(SFX[s]||SFX.wood)()}$('#buildProg').style.width=(100*(st+i/len)/n)+'%'},
-    onDone:()=>{liveStats();S.builds[BP.id]=st+1;addGems(1);addXP(10);save();SFX.anvil();setTimeout(SFX.gem,350);toast('🧱 Builder tip learned! +1 emerald');typingLocked=true;
+    onDone:()=>{liveStats();S.builds[BP.id]=st+1;S.stats.tips=(S.stats.tips||0)+1;addGems(1);addXP(10);save();SFX.anvil();setTimeout(SFX.gem,350);toast('🧱 Builder tip learned! +1 emerald');typingLocked=true;
       setTimeout(()=>{typingLocked=false;if(current!=='build')return;if(bstage(BP)>=n)finishBuild();else startBuildStage()},1200)}})}
-function finishBuild(){startBuildStage();addGems(5);addXP(50);SFX.jingle();SFX.fireworks(5);confetti(200);
-  modal(`<div class="big">YOUR ${esc(BP.name.toUpperCase())} IS DONE!</div><p>You learned all ${BP.stages.length} builder tips:</p><ol>${BP.stages.map(s=>`<li>${esc(s.tip)}</li>`).join('')}</ol><p><b>+5 bonus emeralds!</b> Try these tips in your next real build.</p>`,
+function finishBuild(){const before=openWorldIds();S.completed=S.completed||{};S.completed[BP.id]=true;save();startBuildStage();const rw=BP.reward||5;addGems(rw);addXP(50+(BP.tier?BP.diff*25:0));SFX.jingle();SFX.fireworks(5);confetti(200);
+  const fresh2=openWorldIds().filter(id=>!before.includes(id)).map(id=>PROJ[id].name);
+  modal(`<div class="big">YOUR ${esc(BP.name.toUpperCase())} IS DONE!</div><p>You learned all ${BP.stages.length} builder tips:</p><ol>${BP.stages.map(s=>`<li>${esc(s.tip)}</li>`).join('')}</ol><p><b>+${rw} bonus emeralds!</b> Try these tips in your next real build.</p>${fresh2.length?`<div class="vjoke">🔓 <b>New world unlocked:</b> ${fresh2.map(esc).join(', ')}!</div>`:''}`,
     [{label:'Admire it'},{label:'Pick another build',fn:()=>show('builds')},{label:'↺ Build again',primary:true,fn:()=>{S.builds[BP.id]=0;save();startBuildStage()}}])}
 $('#buildRestart').onclick=()=>modal(`<div class="big">START THE ${esc(BP.name.toUpperCase())} OVER?</div><p>Your emeralds and XP stay safe.</p>`,[{label:'No'},{label:'Yes, start over',primary:true,fn:()=>{S.builds[BP.id]=0;save();startBuildStage()}}]);
+
+/* ================= ADVENTURE WORLD ENGINE ================= */
+['fenceO','fencePost','signpost','planter','cone','hoseReel','glassPane','cabinetO','frameBook','frameWheat','frameFish','frameMeat','frameWool','frameMap','cord','bigButton','beachBall','floatRing','radio','balloonCart','fireworkBox',
+ 'wheat','carrotCrop','potato','scarecrow','sunflower','flower3','flower4','campfire','honeyLantern','table','tableCloth','chairL','chairR','chandelier','pendant','awning','pole','pot','pizza','burger','cakeO','cupcake','iceCream','donut','cookies','pie','cookieJar','toasterB','cakeBig',
+ 'boardPlank','lounger','palmLeaf','hydrant','bellO','siren','beaconRed','helipadH','swordIron','swordGold','swordDia','axe','bow','shieldR','shieldB','shieldG','armorITop','armorIBot','armorGTop','armorGBot','armorDTop','armorDBot','anvil','grindstone','goldPile',
+ 'bannerR','bannerB','bannerG','bannerY','lectern','kelp','coralR','coralY','coralP','coralB','seaPickle','conduit','console','warnSign','redFlag','alarm','bunkTop','bunkBot','crystal','dragonEgg','chain','cottonCandy','popcorn','flames','pistonDown','tntO'].forEach(n=>OVER.add(n));
+L0.add('carpetRed');OVER.add('carpetRed');L2.add('helipadH');
+
+const range=(a,b,s=1)=>{const r=[];for(let x=a;x<=b;x+=s)r.push(x);return r};
+const hl=(x1,x2,y,t)=>box(x1,y,x2,y,t), vl=(x,y1,y2,t)=>box(x,y1,x,y2,t);
+const topdown=a=>a.slice().sort((p,q)=>p[1]-q[1]||p[0]-q[0]);
+const tri=(xl,xr,yb,fill,L,R)=>{const a=[];for(let k=0;;k++){const y=yb-k,l=xl+k,r=xr-k;if(l>r)break;if(l===r){a.push([l,y,fill]);break}a.push([l,y,L],[r,y,R]);for(let x=l+1;x<r;x++)a.push([x,y,fill])}return a};
+const tree=(x,yb,h,leaf='leaves',log='log',w=2)=>{const a=[];for(let y=yb;y>yb-h;y--)a.push([x,y,log]);const top=yb-h+1;for(let dy=-2;dy<=0;dy++)for(let dx=-w;dx<=w;dx++){if(Math.abs(dx)===w&&dy===-2)continue;if(dx===0&&dy===0)continue;a.push([x+dx,top+dy,leaf])}a.push([x,top-3,leaf]);return a};
+const line=(x0,y0,x1,y1,t)=>{const a=[];const n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0));for(let k=0;k<=n;k++){const x=Math.round(x0+(x1-x0)*k/n),y=Math.round(y0+(y1-y0)*k/n);if(!a.some(q=>q[0]===x&&q[1]===y))a.push([x,y,t])}return a.sort((p,q)=>q[1]-p[1])};
+const ST=(tip,why,blocks)=>({tip,why,blocks});
+const T40={grass:b=>{for(let x=0;x<40;x++){b[x+',21']='grass';b[x+',22']='dirt';b[x+',23']='dirt'}},
+  sand:b=>{for(let x=0;x<40;x++){b[x+',21']='sand';b[x+',22']='sand';b[x+',23']='sandstone'}},
+  kitchen:b=>{for(let x=0;x<40;x++){for(let y=0;y<21;y++)b[x+','+y]=y<2?'whitePlanks':'drywall';for(const y of [21,22,23])b[x+','+y]='woodFloor'}},
+  none:b=>{},under:b=>underground(b,4)};
+
+/* ---------- small drawing helpers ---------- */
+function spr(c,x,y,dir,fn){c.save();c.translate(Math.round(x),Math.round(y));if(dir<0)c.scale(-1,1);fn((a,b,w,h,col)=>{c.fillStyle=col;c.fillRect(a,b,w,h)},c);c.restore()}
+const pp=(t,P)=>{const p=(t%P)/P;return p<.5?p*2:2-p*2},pd=(t,P)=>((t%P)/P)<.5?1:-1;
+const ease=k=>k<=0?0:k>=1?1:k*k*(3-2*k);
+function steam(c,x,y,t,k){for(let j=0;j<3;j++){const ph=((t/1100)+j/3+k*.17)%1;c.fillStyle=`rgba(255,255,255,${(.55*(1-ph)).toFixed(2)})`;const s=2+ph*3;c.fillRect(Math.round(x+Math.sin(ph*6+j)*3-s/2),Math.round(y-ph*16),s,s)}}
+function puff(c,x,y,r,col){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,6.283);c.fill()}
+function stringLights(c,x1,y1,x2,y2,t,lights,sag=12){c.strokeStyle='#222';c.lineWidth=1;c.beginPath();c.moveTo(x1,y1);c.quadraticCurveTo((x1+x2)/2,(y1+y2)/2+sag*2,x2,y2);c.stroke();
+  const cols=['255,90,90','255,220,90','90,220,255','150,255,120','255,120,230'];const n=Math.max(3,Math.round(Math.hypot(x2-x1,y2-y1)/12));
+  for(let k=1;k<n;k++){const u=k/n,x=(1-u)*(1-u)*x1+2*u*(1-u)*(x1+x2)/2+u*u*x2,y=(1-u)*(1-u)*y1+2*u*(1-u)*((y1+y2)/2+sag*2)+u*u*y2;const col=cols[k%5];const on=(Math.floor(t/400)+k)%4!==0;
+    c.fillStyle=on?`rgb(${col})`:'#444';c.fillRect(Math.round(x)-1,Math.round(y)+1,3,3);if(on&&lights&&k%2===0)lights.push([x,y+2,18,col])}}
+function edgeFx(i,key,ph,at,fn){if(!i.live)return;const st=PST[i.p.id]=PST[i.p.id]||{};const k=key+'@'+at,prev=st[k];st[k]=ph;if(prev!==undefined&&prev<at&&ph>=at&&S.settings.sound)fn()}
+function everyFx(i,key,ms,fn){if(!i.live)return;const st=PST[i.p.id]=PST[i.p.id]||{};if(i.t-(st[key]||0)>ms){st[key]=i.t;if(S.settings.sound)fn()}}
+function fireworks(c,t,area,count,seed,lights,i){for(let k=0;k<count;k++){const P=2600+k*370,tt=t+k*977,ph=tt%P,n=Math.floor(tt/P);const r=rng(seed+k*31+n*7);const x=area[0]+r()*(area[2]-area[0]),y=area[1]+r()*(area[3]-area[1]);const col=['255,80,80','255,220,80','120,220,255','160,255,140','255,120,240'][Math.floor(r()*5)];
+  if(i)edgeFx(i,'fw'+k,ph,600,()=>{SFX.boom(.25);setTimeout(SFX.crackle,200)});
+  if(ph<600){const k2=ph/600;c.fillStyle='rgba(255,240,200,.9)';c.fillRect(Math.round(x),Math.round(CH-(CH-y)*k2),2,5)}
+  else if(ph<2100){const k2=(ph-600)/1500;const rad=6+k2*46;for(let a=0;a<20;a++){const ang=a/20*6.283;c.fillStyle=`rgba(${col},${(1-k2).toFixed(2)})`;c.fillRect(Math.round(x+Math.cos(ang)*rad),Math.round(y+Math.sin(ang)*rad+k2*k2*20),3,3)}if(lights&&k2<.5)lights.push([x,y,110*(1-k2),col])}}}
+
+/* ---------- creatures & vehicles (all original designs) ---------- */
+function elephant(c,x,y,t,dir){const st=Math.floor(t/220)%2;spr(c,x,y,dir,R=>{const g='#8a8f96',d='#6f747b';R(-12,-21,22,13,g);R(-12,-21,22,2,'#9aa0a6');R(-10,-8,4,8-st,d);R(-4,-8,4,8-(1-st),g);R(2,-8,4,8-st,d);R(7,-8,4,8-(1-st),g);R(8,-25,10,11,g);R(5,-23,5,9,d);R(14,-21,2,2,'#222');const sw=Math.round(Math.sin(t/300)*2);R(16,-15,3,4,g);R(17+(sw>0?1:0),-11,3,4,g);R(18+sw,-7,3,4,g);R(13,-14,4,1,'#fff');R(-14,-19,2,6,d)})}
+function giraffe(c,x,y,t,dir){const st=Math.floor(t/260)%2,b=Math.round(Math.sin(t/500)*2);spr(c,x,y,dir,R=>{const Y='#e8b84a',B='#9a5a1a';R(-9,-16,2,16-st,Y);R(-5,-16,2,16,Y);R(4,-16,2,16,Y);R(8,-16,2,16-(1-st),Y);R(-11,-25,22,10,Y);[[-8,-23],[-2,-20],[3,-24],[7,-19],[-6,-18]].forEach(([a,bb])=>R(a,bb,3,3,B));R(7,-46+b,5,22,Y);R(8,-40+b,2,2,B);R(9,-33+b,2,2,B);R(7,-52+b,11,6,Y);R(16,-50+b,3,3,'#d8a040');R(13,-50+b,1,1,'#222');R(8,-55+b,1,3,B);R(11,-55+b,1,3,B);R(-13,-24,2,7,B)})}
+function penguin(c,x,y,t,dir,k){const w=Math.round(Math.sin(t/120+k)*1);spr(c,x,y,dir,R=>{R(-4+w,-13,8,13,'#222');R(-2+w,-11,5,10,'#fff');R(3+w,-11,3,2,'#f0a020');R(1+w,-11,1,1,'#fff');R(-3,0,3,1,'#f0a020');R(1,0,3,1,'#f0a020')})}
+function lion(c,x,y,t){const sw=Math.round(Math.sin(t/400)*2);spr(c,x,y,-1,R=>{R(-10,-11,16,11,'#e0a040');R(-9,-3,3,3,'#e0a040');R(2,-3,3,3,'#e0a040');R(3,-22,13,13,'#9a5a1a');R(5,-20,9,9,'#e8b050');R(7,-17,1,1,'#222');R(11,-17,1,1,'#222');R(8,-14,3,2,'#6a3a1a');R(-16,-6+sw,6,2,'#e0a040');R(-18,-7+sw,3,3,'#9a5a1a')})}
+function cow(c,x,y,t,dir){const st=Math.floor(t/300)%2;spr(c,x,y,dir,R=>{const W='#f2f2f2';R(-11,-17,22,11,W);R(-7,-15,5,4,'#222');R(2,-12,5,4,'#222');R(-9,-6,3,6-st,W);R(-3,-6,3,6,W);R(3,-6,3,6,W);R(8,-6,3,6-(1-st),W);R(9,-20,8,9,W);R(14,-15,5,4,'#f0b0b0');R(12,-18,1,1,'#222');R(9,-22,1,2,'#ccc');R(15,-22,1,2,'#ccc');R(-13,-16,2,6,'#222')})}
+function pig(c,x,y,t,dir){const st=Math.floor(t/250)%2;spr(c,x,y,dir,R=>{const P='#f2a8b8';R(-8,-11,16,8,P);R(-6,-4,3,4-st,P);R(3,-4,3,4-(1-st),P);R(7,-12,6,7,P);R(12,-10,3,3,'#e07a90');R(9,-11,1,1,'#222');R(-10,-10,2,2,P);R(-11,-12,2,2,P)})}
+function chicken(c,x,y,t,dir,k){const peck=((t/700+k)%3)<.4?3:0;spr(c,x,y,dir,R=>{R(-3,-8,7,6,'#fff');R(2,-11+peck,4,4,'#fff');R(3,-12+peck,2,1,'#e23b3b');R(6,-10+peck,2,1,'#f0a020');R(4,-10+peck,1,1,'#222');R(-1,-2,1,2,'#f0a020');R(2,-2,1,2,'#f0a020');R(-5,-8,2,3,'#ddd')})}
+function bee(c,x,y,t,k){const f=Math.floor(t/40+k)%2;x=Math.round(x);y=Math.round(y);vRect(c,x-2,y-1,5,4,'#ffd23a');vRect(c,x-1,y-1,1,4,'#222');vRect(c,x+1,y-1,1,4,'#222');vRect(c,x-1,y-3-f,3,2,'rgba(255,255,255,.85)')}
+function fish(c,x,y,dir,col,col2){spr(c,x,y,dir,R=>{R(-4,-2,9,5,col);R(-7,-3,3,7,col2);R(2,-1,1,1,'#111');R(-1,-2,2,1,col2)})}
+function turtle(c,x,y,t,dir){const f=Math.round(Math.sin(t/300)*2);spr(c,x,y,dir,R=>{R(-8,-6,15,6,'#3f7a3a');R(-6,-8,11,2,'#4f9a4a');R(-5,-5,3,2,'#2a5a26');R(0,-5,3,2,'#2a5a26');R(7,-5,5,3,'#7ab060');R(10,-5,1,1,'#111');R(-6,f,5,2,'#7ab060');R(3,-f,5,2,'#7ab060')})}
+function jelly(c,x,y,t){x=Math.round(x);y=Math.round(y);vRect(c,x-5,y-8,10,6,'rgba(255,140,220,.85)');vRect(c,x-3,y-10,6,2,'rgba(255,170,230,.85)');for(let k=0;k<4;k++){const w=Math.round(Math.sin(t/200+k)*1.5);vRect(c,x-4+k*2+w,y-2,1,6+((k+Math.floor(t/300))%2)*2,'rgba(255,170,230,.7)')}}
+function dragon(c,x,y,t,dir,col,belly){const up=Math.sin(t/150)>0;spr(c,x,y,dir,R=>{R(-16,-5,26,9,col);R(-12,1,18,3,belly);R(8,-11,10,8,col);R(17,-9,7,5,col);R(22,-8,2,1,'#222');R(13,-9,2,2,'#fff');R(14,-9,1,1,'#222');R(10,-14,2,3,'#ffe36a');R(14,-14,2,3,'#ffe36a');
+  for(let k=0;k<6;k++)R(-16-k*3,-3+Math.round(Math.sin(t/200+k*.8)*2),4,k>3?3:4,col);R(-35,-4+Math.round(Math.sin(t/200+5)*2),4,5,belly);
+  for(let k=0;k<5;k++){const h=9-k;R(-7+k*3,up?-5-h:4,3,h,col)}R(-4,4,3,4,col);R(4,4,3,4,col)})}
+function cat(c,x,y,t,dir){const st=Math.floor(t/200)%2;spr(c,x,y,dir,R=>{const O='#e08a3a';R(-7,-8,13,6,O);R(-6,-2,2,2-st,O);R(3,-2,2,2-(1-st),O);R(5,-11,6,6,O);R(5,-13,2,2,O);R(9,-13,2,2,O);R(9,-9,1,1,'#222');R(-10,-12+st,2,6,O)})}
+function fireTruck(c,x,y,t,lights){spr(c,x,y,1,R=>{R(-34,-24,58,18,'#d42a1e');R(24,-28,14,22,'#d42a1e');R(27,-25,8,7,'#9ad0ff');R(-34,-14,72,3,'#fff');R(-32,-29,48,3,'#cfcfcf');for(let k=0;k<8;k++)R(-30+k*6,-30,2,5,'#cfcfcf');R(-30,-21,10,6,'#a81e14');const f=lights&&Math.floor(t/150)%2;R(26,-31,4,3,f?'#ff2a1a':'#5a1410');R(31,-31,4,3,f?'#5a1410':'#ff2a1a');[-24,-6,26].forEach(a=>{R(a,-7,10,7,'#111');R(a+3,-5,4,3,'#888')});R(36,-12,3,3,'#ffd23a')})}
+function ambulance(c,x,y,t,lights,dir){spr(c,x,y,dir,R=>{R(-24,-22,40,17,'#f4f4f4');R(16,-18,10,13,'#f4f4f4');R(18,-16,6,5,'#9ad0ff');R(-24,-13,50,3,'#e01e1e');R(-10,-20,6,2,'#e01e1e');R(-8,-22,2,6,'#e01e1e');const f=lights&&Math.floor(t/140)%2;R(-6,-25,5,3,f?'#ff2a1a':'#5a1410');R(0,-25,5,3,f?'#2a5aff':'#14205a');[-18,14].forEach(a=>{R(a,-7,8,7,'#111');R(a+2,-5,4,3,'#888')})})}
+function helicopter(c,x,y,t,spin){spr(c,x,y,1,R=>{R(-14,-16,28,12,'#f4f4f4');R(-14,-10,28,3,'#e01e1e');R(4,-15,9,6,'#9ad0ff');R(-34,-13,22,3,'#f4f4f4');R(-36,-18,3,9,'#e01e1e');R(-10,0,24,2,'#555');R(-6,-4,2,4,'#555');R(8,-4,2,4,'#555');R(-1,-20,2,4,'#555');const w=Math.round(Math.abs(Math.cos(t/(spin?35:900)))*30+4);R(-w,-21,w*2,2,'#333');R(-37,-14+(spin?Math.round(Math.sin(t/25)*3):0),2,3,'#333')})}
+function rocketDraw(c,cx,bottom,flame){const w=32,h=208,l=Math.round(cx-16),top=Math.round(bottom-h);vRect(c,l,top+40,w,h-40,'#f2f2f2');vRect(c,l+w-6,top+40,6,h-40,'#d8d8d8');
+  for(let k=0;k<40;k+=2){const ww=Math.round(w*k/40);vRect(c,Math.round(cx-ww/2),top+k,ww,2,'#e01e1e')}vRect(c,l,top+80,w,6,'#e01e1e');vRect(c,l+10,top+100,12,12,'#2a3a5a');vRect(c,l+12,top+102,6,6,'#9ad0ff');vRect(c,l,top+150,w,4,'#2a3a5a');
+  vRect(c,l-12,bottom-40,12,40,'#e01e1e');vRect(c,l+w,bottom-40,12,40,'#e01e1e');vRect(c,l-12,bottom-40,4,8,'#f2f2f2');vRect(c,l+w+8,bottom-40,4,8,'#f2f2f2');vRect(c,l+8,bottom,16,6,'#555');
+  if(flame>0){for(let k=0;k<6;k++){const fh=Math.round(16+Math.random()*44*flame);vRect(c,l+7+k*3,bottom+6,3,fh,k%2?'#ffb020':'#ff5a1a')}vRect(c,l+12,bottom+6,8,Math.round(12+22*flame),'#fff3a0')}}
+function personWalk(c,x,y,t,k){drawVillager(c,Math.round(x),y,k,t*1.6)}
+
+/* ---------- skies & backdrops ---------- */
+const _oldSky=drawSky;
+drawSky=function(c,kind,t){
+  const grad=(a,b)=>{const g=c.createLinearGradient(0,0,0,CH);g.addColorStop(0,a);g.addColorStop(1,b);c.fillStyle=g;c.fillRect(0,0,CW,CH)};
+  if(kind==='day'||kind==='night'||!kind){_oldSky(c,kind,t);return}
+  if(kind==='none'){c.fillStyle='#1a1410';c.fillRect(0,0,CW,CH);return}
+  if(kind==='ocean'){grad('#1f6aa8','#031628');c.save();c.globalCompositeOperation='lighter';for(let k=0;k<7;k++){const x0=((k*120+t/45)%(CW+240))-120;c.fillStyle='rgba(120,200,255,.07)';c.beginPath();c.moveTo(x0,0);c.lineTo(x0+36,0);c.lineTo(x0+150,CH);c.lineTo(x0+70,CH);c.fill()}c.restore();
+    c.fillStyle='rgba(200,240,255,.35)';for(let x=0;x<CW;x+=8)c.fillRect(x,4+Math.round(Math.sin(x/30+t/500)*3),8,3);c.fillStyle='rgba(255,255,255,.25)';for(let k=0;k<40;k++){const xx=(k*97+t/60)%CW,yy=(k*53+Math.sin(t/900+k)*10)%CH;c.fillRect(xx|0,yy|0,1,1)}return}
+  const P={sunset:['#ff8a5a','#ffd8a0'],dusk:['#2e2a6a','#e8806a'],desert:['#7ac8ff','#ffeec0'],skyset:['#8a5ad0','#ffb08a']}[kind]||['#6fb6ff','#cfe9ff'];grad(P[0],P[1]);
+  if(kind==='dusk'||kind==='skyset'){STARS.forEach(([x,y,s,ph])=>{if(y<120){c.fillStyle=`rgba(255,255,255,${(.35+.35*Math.sin(t/520+ph)).toFixed(2)})`;c.fillRect(x,y,s,s)}})}
+  if(kind==='sunset'||kind==='skyset'){c.fillStyle='rgba(255,240,170,.95)';c.fillRect(CW-170,CH*.42,52,52);c.fillStyle='rgba(255,200,120,.5)';c.fillRect(CW-176,CH*.42+18,64,6)}
+  else if(kind==='desert'){c.fillStyle='#fff3a0';c.fillRect(40,30,40,40);c.fillStyle='#ffe066';c.fillRect(46,36,28,28)}
+  else if(kind==='dusk'){c.fillStyle='#f4f1d8';c.fillRect(CW-90,30,26,26)}
+  const cl=kind==='desert'?'rgba(255,255,255,.85)':'rgba(255,200,210,.55)';c.fillStyle=cl;[[96,40,72,12],[300,60,90,12],[480,30,60,10],[200,20,50,9]].forEach(([x,y,w,h])=>c.fillRect(((x+t/90)%(CW+120))-80,y,w,h))};
+function hills40(c,t,i){const day=i&&i.p&&i.p.sky==='day';c.fillStyle=day?'#8cc47a':'#c88a6a';[[0,14,8],[7,12,7],[13,13,6],[19,11,8],[27,13,6],[32,12,8]].forEach(([x,y,w])=>c.fillRect(x*16,y*16,w*16,CH));c.fillStyle=day?'#78b466':'#b4785a';[[2,15,9],[13,15,7],[24,16,10],[33,15,7]].forEach(([x,y,w])=>c.fillRect(x*16,y*16,w*16,CH))}
+const CITY=(()=>{const r=rng(77);const a=[];let x=0;while(x<640){const w=24+(r()*40|0),h=50+(r()*120|0);a.push([x,w,h,r()]);x+=w+2}return a})();
+function city(c,t,i){for(const [x,w,h,s] of CITY){const top=21*16-h;c.fillStyle='#2a2440';c.fillRect(x,top,w,h);for(let yy=top+6;yy<21*16-8;yy+=10)for(let xx=x+4;xx<x+w-4;xx+=8){if(((xx*7+yy*3+Math.floor(s*99))%5)<2){c.fillStyle='rgba(255,220,130,.7)';c.fillRect(xx,yy,3,4)}}}}
+function mesas(c){c.fillStyle='#d8925a';[[0,12,6],[6,14,5],[26,11,8],[34,13,6]].forEach(([x,y,w])=>{c.fillRect(x*16,y*16,w*16,CH);c.fillStyle='#c27a46';c.fillRect(x*16,y*16+8,w*16,4);c.fillStyle='#d8925a'})}
+function cloudSea(c,t){for(let k=0;k<3;k++){c.fillStyle=['rgba(255,255,255,.55)','rgba(255,230,240,.6)','rgba(255,255,255,.75)'][k];const yb=CH-70+k*22;for(let x=-80;x<CW+80;x+=26){const xx=((x+t/(40-k*10))%(CW+160))-80;const r=16+((x*7+k*13)%12);c.beginPath();c.arc(xx,yb+Math.sin(x/40)*6,r,0,6.283);c.fill()}}}
+
+/* ---------- colored light support ---------- */
+const LCOL={};
+drawDark=function(c,p,g,t,i){const d=darkC.getContext('2d');d.globalCompositeOperation='source-over';d.clearRect(0,0,CW,CH);
+  const a=typeof p.dark.alpha==='function'?p.dark.alpha(i):p.dark.alpha;d.fillStyle=`rgba(${p.dark.tint||'4,6,20'},${a})`;d.fillRect(0,p.dark.from*16,CW,CH);d.globalCompositeOperation='destination-out';
+  const L=[];const scan=(x,y,tp)=>{const v=LIGHTFN[tp]?LIGHTFN[tp](t,i,x,y):LIGHT[tp];if(!v)return;let r=v,col=LCOL[tp]||'255,170,60';if(Array.isArray(v)){r=v[0];col=v[1]}if(r>0)L.push([x*16+8,y*16+8,r*16*(1+.05*Math.sin(t/110+x*3)),col])};
+  eachCell(g.base,scan);eachCell(g.over,(x,y,ls)=>ls.forEach(tp=>tp&&scan(x,y,tp)));(i.lights||[]).forEach(l=>L.push([l[0],l[1],l[2],l[3]||'255,200,120']));
+  for(const [lx,ly,lr] of L){const gr=d.createRadialGradient(lx,ly,0,lx,ly,lr);gr.addColorStop(0,'rgba(0,0,0,1)');gr.addColorStop(.5,'rgba(0,0,0,.8)');gr.addColorStop(1,'rgba(0,0,0,0)');d.fillStyle=gr;d.fillRect(lx-lr,ly-lr,lr*2,lr*2)}
+  c.drawImage(darkC,0,0);c.save();c.globalCompositeOperation='lighter';for(const [lx,ly,lr,col] of L){const gr=c.createRadialGradient(lx,ly,0,lx,ly,lr*.7);gr.addColorStop(0,`rgba(${col},.2)`);gr.addColorStop(1,`rgba(${col},0)`);c.fillStyle=gr;c.fillRect(lx-lr,ly-lr,lr*2,lr*2)}c.restore()};
+Object.assign(LIGHT,{honeyLantern:[4.5,'255,200,80'],campfire:[3.5,'255,140,40'],chandelier:[5,'255,220,150'],pendant:[4.2,'255,230,170'],poolLight:[4,'90,240,255'],winCool:[.8,'210,230,255'],seaLantern:[4.5,'170,255,240'],
+  seaPickle:[2.2,'200,255,140'],crystal:[3,'190,120,255'],dragonEgg:[2.2,'200,120,255'],oven:[2.4,'255,140,40'],stoveTop:[1.4,'255,90,30'],screen:[2,'80,255,120'],screenMap:[2,'80,255,120'],console:[1.2,'255,220,120'],goldPile:[1.6,'255,210,80'],
+  redCrossBlk:[3,'255,60,60'],marquee:[2.2,'255,220,120'],emeraldBlock:[1.2,'80,255,140'],glowWin:[1.8,'255,220,140'],lava:[3.2,'255,120,30'],furnace:[2.4,'255,140,40'],torch:[3.6,'255,170,60'],lantern:[4.5,'255,190,90'],bigButton:[1.2,'255,60,60']});
+Object.assign(LIGHTFN,{core:t=>[5+Math.sin(t/250),'90,255,120'],beaconRed:(t,i,x)=>Math.floor(t/500+x)%2?[2.6,'255,40,30']:0,siren:(t,i,x)=>i.alarm&&Math.floor(t/180+x)%2?[3.5,'255,40,30']:0,
+  alarm:(t,i)=>i.alarm&&Math.floor(t/150)%2?[4.5,'255,30,30']:0,flames:(t,i)=>{const f=i.fire==null?1:i.fire;return f>0?[3*f,'255,120,30']:0},conduit:t=>[5+Math.sin(t/300),'120,240,255'],campfire:t=>[3.4+Math.sin(t/90)*.3,'255,140,40']});
+
+/* ---------- animated blocks ---------- */
+function cropDraw(c,tp,px,py,t,x,i){const g=Math.max(.3,Math.min(1,(i.done-1)/Math.max(1,(i.n||10)-3)));const hh=Math.max(4,Math.round(16*g));const sw=Math.round(Math.sin(t/450+x*.7)*1);c.drawImage(TEX[tp],0,16-hh,16,hh,px+sw,py+16-hh,16,hh)}
+function bannerDraw(c,px,py,t,x,col,col2){c.fillStyle='#6b4f2c';c.fillRect(px,py,16,2);for(let k=0;k<12;k++){const w=Math.round(Math.sin(t/300+k*.4+x)*1);c.fillStyle=k>8?col2:col;c.fillRect(px+3+w,py+2+k*2,10,2)}c.fillStyle=col2;c.fillRect(px+6,py+8,4,4)}
+const TGT={tgtStone:'stoneBricks',tgtPlank:'planks',tgtCobble:'cobble',tgtGlass:'glass',tgtRoof:'roof',tgtStairL:'stairL',tgtStairR:'stairR'};
+Object.assign(ANIM,{
+  water:(c,px,py,t,x,y)=>c.drawImage(TEX['water'+((Math.floor(t/300)+x+y)%4)],px,py),
+  waterfall:(c,px,py,t,x,y)=>{c.drawImage(TEX['water'+((Math.floor(t/200)+y)%4)],px,py);c.fillStyle='rgba(220,240,255,.7)';for(let k=0;k<4;k++){const yy=(t/6+k*5+x*3+y*7)%16;c.fillRect(px+1+k*4,py+(yy|0),1,4)}},
+  kelp:(c,px,py,t,x,y)=>{for(let k=0;k<16;k+=2){const sw=Math.round(Math.sin(t/500+y*.8+k/5+x)*2);c.fillStyle=k%4?'#3f8a2a':'#2f7a22';c.fillRect(px+6+sw,py+k,4,2)}c.fillStyle='#5fb03a';c.fillRect(px+4+Math.round(Math.sin(t/500+y)*2),py+6,3,2)},
+  campfire:(c,px,py,t,x)=>{c.drawImage(TEX.campfireBase,px,py);for(let k=0;k<4;k++){const h=4+((Math.sin(t/90+k*2+x)+1)*3|0);c.fillStyle=k%2?'#ffb020':'#ff6a1a';c.fillRect(px+3+k*3,py+12-h,3,h)}c.fillStyle='#fff0a0';c.fillRect(px+7,py+9,2,3);steam(c,px+8,py+2,t,x)},
+  wheat:(c,px,py,t,x,y,i)=>cropDraw(c,'wheat',px,py,t,x,i),carrotCrop:(c,px,py,t,x,y,i)=>cropDraw(c,'carrotCrop',px,py,t,x,i),potato:(c,px,py,t,x,y,i)=>cropDraw(c,'potato',px,py,t,x,i),
+  oven:(c,px,py,t,x)=>{c.drawImage(TEX.ovenBase,px,py);const f=.6+.4*Math.sin(t/300+x);c.fillStyle=`rgba(255,${120+60*f|0},40,${(.6+.3*f).toFixed(2)})`;c.fillRect(px+3,py+7,10,6)},
+  stoveTop:(c,px,py,t,x)=>{c.fillStyle='#1c1c1c';c.fillRect(px,py,16,16);c.fillStyle='#444';c.fillRect(px,py,16,3);const f=.5+.5*Math.sin(t/200+x);c.fillStyle=`rgb(255,${60+40*f|0},20)`;c.fillRect(px+3,py+1,10,1);c.fillStyle='#e8e8e8';c.fillRect(px,py+4,16,12)},
+  pot:(c,px,py,t,x)=>{c.fillStyle='#9aa0a6';c.fillRect(px+3,py+8,10,8);c.fillStyle='#c8cdd2';c.fillRect(px+2,py+7,12,2);c.fillStyle='#555';c.fillRect(px,py+9,3,1);steam(c,px+8,py+5,t,x)},
+  console:(c,px,py,t,x)=>{c.drawImage(TEX.consoleB,px,py);for(let k=0;k<4;k++){const on=(Math.floor(t/(300+k*70))+k+x)%3;c.fillStyle=['#ff3b2b','#3bff6a','#ffd23a'][on];c.fillRect(px+2+k*3,py+8,2,2)}c.fillStyle='#2a2a2a';c.fillRect(px+2,py+12,12,2)},
+  screen:(c,px,py,t,x)=>{c.fillStyle='#222';c.fillRect(px,py,16,16);c.fillStyle='#062a12';c.fillRect(px+1,py+1,14,13);c.fillStyle='#3bff6a';for(let k=0;k<14;k++){const v=Math.sin((k+t/120+x*7)/2)*3+Math.sin(k*1.7+t/300)*1.5;c.fillRect(px+1+k,py+7+Math.round(v),1,1)}c.fillStyle='#555';c.fillRect(px+6,py+14,4,2)},
+  screenMap:(c,px,py,t,x)=>{c.fillStyle='#222';c.fillRect(px,py,16,16);c.fillStyle='#062a12';c.fillRect(px+1,py+1,14,13);c.strokeStyle='#1f8a3a';c.beginPath();c.arc(px+8,py+7,5,0,6.283);c.stroke();const a=t/600+x;c.strokeStyle='#5aff8a';c.beginPath();c.moveTo(px+8,py+7);c.lineTo(px+8+Math.cos(a)*6,py+7+Math.sin(a)*6);c.stroke();if(Math.floor(t/700+x)%3===0){c.fillStyle='#ff5a5a';c.fillRect(px+10,py+4,2,2)}},
+  core:(c,px,py,t)=>{const f=.5+.5*Math.sin(t/250);c.drawImage(TEX.coreBase,px,py);c.fillStyle=`rgb(${60+60*f|0},255,${90+60*f|0})`;c.fillRect(px+3,py,10,16);c.fillStyle='#eaffea';c.fillRect(px+6,py,2,16);for(let k=0;k<3;k++){const yy=(t/40+k*5)%16;c.fillStyle='rgba(255,255,255,.75)';c.fillRect(px+4+k*3,py+(15-yy|0),2,2)}},
+  marquee:(c,px,py,t,x,y,i)=>{c.drawImage(TEX.marqueeBase,px,py);const on=i.done>=3;for(let k=0;k<4;k++){const lit=on&&((Math.floor(t/150)+k+x*4)%3===0);c.fillStyle=lit?['#fff3a0','#ff6ad0','#6ad8ff','#ffd23a'][(k+x)%4]:'#5a4a2a';c.fillRect(px+1+k*4,py,2,2);c.fillRect(px+1+k*4,py+14,2,2)}},
+  beaconRed:(c,px,py,t,x)=>{c.drawImage(TEX.beaconBase,px,py);const on=Math.floor(t/500+x)%2;c.fillStyle=on?'#ff3a2a':'#6a1410';c.fillRect(px+5,py+5,6,6);if(on){c.fillStyle='#ffd0c8';c.fillRect(px+6,py+6,3,3)}},
+  siren:(c,px,py,t,x,y,i)=>{const on=i.alarm?Math.floor(t/180+x)%2:0;c.fillStyle='#333';c.fillRect(px+3,py+10,10,6);c.fillStyle=on?'#ff2a1a':'#6a1410';c.fillRect(px+4,py+5,8,5)},
+  alarm:(c,px,py,t,x,y,i)=>{c.fillStyle='#333';c.fillRect(px+4,py,8,4);c.fillStyle=i.alarm&&Math.floor(t/150)%2?'#ff2a1a':'#7a1410';c.fillRect(px+4,py+4,8,6)},
+  bellO:(c,px,py,t,x,y,i)=>{const a=i.ring?Math.sin(t/110)*.5:Math.sin(t/900)*.05;c.save();c.translate(px+8,py+1);c.rotate(a);c.drawImage(TEX.bell,-8,-1);c.restore()},
+  tnt:(c,px,py,t,x,y,i)=>{const b=i.blast;if(b&&b.gone)return;c.drawImage(TEX.tnt,px,py+(b&&b.rise?Math.round((1-b.rise)*16):0));if(b&&b.flash&&Math.floor(t/110)%2){c.fillStyle='rgba(255,255,255,.75)';c.fillRect(px,py,16,16)}},
+  conduit:(c,px,py,t)=>{const f=.6+.4*Math.sin(t/300);c.drawImage(TEX.conduitB,px,py);c.fillStyle=`rgba(150,250,255,${f.toFixed(2)})`;c.fillRect(px+6,py+6,4,4)},
+  crystal:(c,px,py,t,x)=>{c.drawImage(TEX.crystal,px,py);const s=(Math.floor(t/200)+x)%8;if(s<2){c.fillStyle='#fff';c.fillRect(px+7,py+3+s*4,1,1)}},
+  floatRing:(c,px,py,t,x)=>c.drawImage(TEX.floatRing,px,py+Math.round(Math.sin(t/400+x)*1.5)-2),
+  beachBall:(c,px,py,t,x)=>{const y=py-4+Math.round(Math.sin(t/350+x)*1.5);c.fillStyle='#fff';c.fillRect(px+4,y,8,6);c.fillStyle='#e23b3b';c.fillRect(px+4,y,3,6);c.fillStyle='#2a5ccc';c.fillRect(px+9,y,3,6)},
+  toasterB:(c,px,py,t)=>{const ph=(t%4000)/4000;const up=ph>.6&&ph<.8?Math.round(Math.sin((ph-.6)/.2*Math.PI)*9):0;c.fillStyle='#d8a253';c.fillRect(px+4,py+8-up,4,4);c.fillRect(px+9,py+8-up,4,4);c.drawImage(TEX.toasterB,px,py)},
+  cakeBig:(c,px,py,t)=>{c.drawImage(TEX.cakeO,px,py);for(const a of [4,8,11]){c.fillStyle='#fff';c.fillRect(px+a,py+5,1,3);const f=Math.sin(t/80+a)>0;c.fillStyle=f?'#ffd23a':'#ff9a2a';c.fillRect(px+a,py+3-(f?1:0),1,2)}},
+  flames:(c,px,py,t,x,y,i)=>{const k=i.fire==null?1:i.fire;if(k<=0.02)return;for(let j=0;j<5;j++){const h=Math.round((5+((Math.sin(t/80+j*1.7+x)+1)*4))*k);c.fillStyle=j%2?'#ffb020':'#ff5a1a';c.fillRect(px+1+j*3,py+16-h,3,h)}c.fillStyle='#fff0a0';c.fillRect(px+6,py+16-Math.round(4*k),4,Math.round(3*k))},
+  goldPile:(c,px,py,t,x)=>{c.fillStyle='#d4a017';c.fillRect(px+2,py+11,12,5);c.fillRect(px+4,py+8,8,3);c.fillStyle='#ffe36a';c.fillRect(px+5,py+9,2,1);const s=(Math.floor(t/150)+x*3)%10;if(s<3){c.fillStyle='#fff';c.fillRect(px+3+s*3,py+9+s,1,1)}},
+  hatch:(c,px,py,t,x,y,i)=>{const o=i.doorOpen||0;const dx=Math.round((x<31?-1:1)*o*48);c.drawImage(TEX.reinforced,px+dx,py);c.fillStyle='#f1af15';c.fillRect(px+dx,py,16,2)},
+  pistonDown:(c,px,py,t,x,y,i)=>{const e=i.stamp?i.stamp(x,t):0;c.save();c.translate(px,py+16);c.scale(1,-1);c.drawImage(TEX.pistonBody,0,0);const hy=-e*16;c.fillStyle='#9a8a62';c.fillRect(6,hy+4,4,Math.max(0,4-(hy+4)));c.drawImage(TEX.pistonHead,0,hy);c.restore()},
+  conveyor:(c,px,py,t,x,y,i)=>{c.fillStyle='#2a2a2a';c.fillRect(px,py+4,16,8);c.fillStyle='#555';const o=i.power?Math.floor(t/45)%4:0;for(let k=-1;k<5;k++)c.fillRect(px+k*4+o,py+5,2,6);c.fillStyle='#777';c.fillRect(px,py+3,16,1);c.fillRect(px,py+12,16,1);c.fillStyle='#9aa0a6';c.fillRect(px+1,py+13,3,3);c.fillRect(px+12,py+13,3,3)},
+  vat:(c,px,py,t,x,y)=>{c.drawImage(TEX.vatB,px,py);c.fillStyle='#4a6a2a';c.fillRect(px+2,py+3,12,12);for(let k=0;k<3;k++){const ph=(t/700+k*.33+x*.17)%1;c.fillStyle='rgba(190,255,120,.75)';c.fillRect(px+3+k*4,py+14-Math.round(ph*11),2,2)}},
+  smoke:(c,px,py,t,x)=>{const o=(t/70+x*7)%16;c.globalAlpha=Math.max(0,.8*(1-o/16));c.drawImage(TEX.smoke,px,py-o);c.globalAlpha=1},
+  tntO:(c,px,py,t,x,y,i)=>ANIM.tnt(c,px,py,t,x,y,i)
+});
+Object.entries(TGT).forEach(([n,tx])=>{ANIM[n]=(c,px,py,t,x,y,i)=>{const b=i.blast;if(b&&b.gone)return;if(b&&b.rise!=null&&b.rise<1){c.globalAlpha=b.rise;c.drawImage(TEX[tx],px,py+Math.round((1-b.rise)*18));c.globalAlpha=1;return}c.drawImage(TEX[tx],px,py)}});
+[['bannerR','#c23b3b','#ffd23a'],['bannerB','#2f5fd0','#fff'],['bannerG','#3f8f3f','#ffd23a'],['bannerY','#e8b018','#7a3fb0']].forEach(([n,a,b])=>ANIM[n]=(c,px,py,t,x)=>bannerDraw(c,px,py,t,x,a,b));
+
+/* ---------- extra sounds ---------- */
+Object.assign(SFX,{
+  boom:play((t,big=1)=>{nz(t,1.1*big+.2,.9*Math.min(1,big+.3),'lowpass',900,{to:60});osc('sine',72,t,.9*big+.1,.5*Math.min(1,big+.2),{to:28});nz(t,.08,.5*big,'highpass',1500)}),
+  roar:play(t=>{nz(t,.7,.3,'bandpass',300,{Q:2,to:170});osc('sawtooth',110,t,.6,.06,{to:70})}),
+  moo:play(t=>{const o=AC.createOscillator();o.type='sawtooth';o.frequency.setValueAtTime(140,t);o.frequency.linearRampToValueAtTime(105,t+.75);const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=650;const g=AC.createGain();env(g,t,.12,.22,.7);o.connect(f);f.connect(g);g.connect(MASTER);o.start(t);o.stop(t+1)}),
+  cluck:play(t=>{for(let k=0;k<3;k++)osc('square',900+k*120,t+k*.09,.05,.035,{to:600})}),
+  buzz:play(t=>{osc('sawtooth',230,t,.35,.018,{to:250})}),
+  siren:play(t=>{for(let k=0;k<4;k++)osc('square',k%2?740:960,t+k*.3,.28,.025)}),
+  splash:play(t=>{nz(t,.45,.3,'lowpass',2200,{to:400})}),
+  clang:play(t=>{[880,1500,2400].forEach((f,i)=>osc('sine',f,t,.5,.045/(i+1)));nz(t,.03,.12,'highpass',3000)}),
+  chop:play(t=>{for(let k=0;k<6;k++)nz(t+k*.07,.04,.1,'lowpass',300)}),
+  rumble:play((t,d=2)=>{nz(t,d,.35,'lowpass',160,{a:.3})}),
+  crackle:play(t=>{for(let k=0;k<10;k++)nz(t+Math.random()*.4,.02,.08,'highpass',3000)}),
+  trumpet:play(t=>{osc('sawtooth',300,t,.5,.05,{to:520,a:.05})}),
+  beep:play(t=>osc('square',1200,t,.08,.035)),
+  whee:play(t=>{osc('sine',500,t,.6,.06,{to:1400})})
+});
+
+/* ================= ADVENTURE WORLDS ================= */
+const WORLDS=[];
+function W(o){WORLDS.push(Object.assign({gw:40,gh:24,tier:1},o))}
+
+/* ---------- 1. ZOO ---------- */
+W({id:'zoo',name:'Large Zoo',diff:1,sky:'day',terrain:T40.grass,backdrop:hills40,
+ stages:[
+  ST('Lay a gravel path so visitors can walk around the zoo.','Paths guide people through your build. A different block shows where to walk.',hl(0,39,21,'gravel')),
+  ST('Build a tall entrance arch out of white quartz blocks.','A big entrance makes visitors say WOW before they even walk in.',[...vl(1,13,20,'quartzPillar'),...vl(7,13,20,'quartzPillar'),...hl(1,7,12,'quartz'),...hl(2,6,13,'sign')]),
+  ST('Put fences around each pen so the animals stay safe.','Fences keep animals in and visitors out. Leave room for the zookeeper!',[...hl(9,17,20,'fenceO'),...hl(19,26,20,'fenceO'),...hl(28,34,20,'fenceO')]),
+  ST('Plant tall trees for the giraffes and shade for elephants.','Animals feel at home when their pen looks like the wild.',[...tree(13,20,4,'leaves','log',2),...vl(23,14,20,'log'),[24,13,'log'],[22,13,'log'],...hl(20,27,12,'leaves'),...hl(21,26,11,'leaves')]),
+  ST('Dig a cold pool with ice blocks for the penguins.','Penguins love to slide into icy water. Make it deep enough to swim!',[...box(29,21,33,22,'water'),[28,20,'packed'],[29,20,'packed'],[33,20,'packed'],[34,20,'packed'],[34,19,'packed']]),
+  ST('Stack rough stone into a rocky hill for the lions.','Lions love to sit up high where they can see everything.',[...box(35,18,39,20,(x,y)=>(x*3+y)%4?'stone':'cobble'),...hl(36,39,17,'stone'),[37,16,'stone'],[38,16,'stone'],[36,20,'gateDark'],[37,20,'gateDark']]),
+  ST('Give the animals food: hay, fish, and juicy leaves.','Every pen needs food and water. Happy animals are healthy animals!',[[10,20,'hay'],[11,20,'hay'],[10,19,'hay'],[25,20,'barrel'],[34,18,'barrel']]),
+  ST('Add colorful flags and signs so visitors find each animal.','Signs help people find their way. Flags add color and movement!',[[1,11,'flag'],[7,11,'flag'],[18,20,'signpost'],[27,20,'signpost']]),
+  ST('Line the path with lamp posts for evening visits.','Lights spaced evenly along a path look neat and keep it safe at night.',[[0,20,'post'],[0,19,'post'],[0,18,'lantern'],[8,20,'post'],[8,19,'post'],[8,18,'lantern']]),
+  ST('Open the gates and welcome the visitors to the zoo!','A finished zoo is full of life. Watch the animals play!',[[2,20,'flower'],[3,20,'flower3'],[4,20,'flower'],[5,20,'flower4'],[6,20,'flower2']])],
+ mid(c,t,i){const Y=21*16;if(i.done>=4){const P=14000;elephant(c,170+pp(t,P)*80,Y,t,pd(t,P));giraffe(c,322+pp(t+3000,17000)*80,Y,t,pd(t+3000,17000))}
+  if(i.done>=5){penguin(c,28*16+6+pp(t,4000)*12,20*16,t,pd(t,4000),0);const ph=(t%7000)/7000;if(ph<.15){const k=ph/.15;penguin(c,29*16+8+k*24,20*16+k*20-Math.sin(k*Math.PI)*16,t,1,1)}else if(ph<.7){const k=(ph-.15)/.55;fish(c,30*16+Math.sin(k*6)*20,22*16,1,'#222','#fff')}else{const k=(ph-.7)/.3;penguin(c,33*16-4+Math.round(k*4),20*16,t,-1,2)}penguin(c,34*16+8,19*16,t,-1,3)}
+  if(i.done>=6)lion(c,37.5*16,16*16,t)},
+ extra(c,t,i){const X=4.5*16;if(i.done>=2){c.fillStyle='#3a2410';c.font='bold 11px monospace';c.textAlign='center';c.fillText('ZOO',X,13*16+12)}
+  if(i.done>=8)[[-20,'#e23b3b'],[0,'#ffd23a'],[20,'#3b6dc2']].forEach(([dx,col],k)=>{const bx=X+dx+Math.sin(t/700+k)*3,by=8*16+Math.sin(t/500+k*2)*4;c.strokeStyle='#666';c.beginPath();c.moveTo(bx,by+8);c.lineTo(X,12*16);c.stroke();puff(c,bx,by,7,col);vRect(c,bx-3,by-4,2,2,'rgba(255,255,255,.7)')});
+  if(i.done>=10)[0,1,2].forEach(k=>{const x=((t/1000*14+k*210)%720)-40;personWalk(c,x,21*16,t,k)});
+  everyFx(i,'roar',9000,()=>SFX.roar());everyFx(i,'trum',13000,()=>SFX.trumpet())}});
+
+/* ---------- 2. COZY FARM ---------- */
+W({id:'farm',name:'Cozy Farm',diff:1,sky:'day',terrain:T40.grass,backdrop:hills40,
+ stages:[
+  ST('Till rows of farmland next to a little stream of water.','Crops grow faster when water is close by. Farmland must be near it!',[...hl(12,18,21,'farmland'),[19,21,'water'],...hl(20,26,21,'farmland')]),
+  ST('Plant wheat, carrots, and potatoes in neat rows.','Neat rows are easy to harvest. Watch the crops grow as you build!',[...hl(12,18,20,'wheat'),...hl(20,23,20,'carrotCrop'),...hl(24,26,20,'potato')]),
+  ST('Build a big red barn with white wooden corners.','Red walls with white trim is the classic barn look.',[...box(1,15,9,20,(x,y)=>x===1||x===9?'whitePlanks':'redPlanks'),...box(4,18,6,20,'barnDoor')]),
+  ST('Give the barn a tall roof with a little hayloft window.','A tall roof leaves room upstairs to store hay for the winter.',[...tri(0,10,14,'redPlanks','stairL','stairR'),[5,12,'gateDark'],[5,11,'gateDark']]),
+  ST('Stack stone into a round tower for a windmill.','Windmills use the wind to turn big stones that grind wheat into flour.',[...box(32,12,34,20,(x,y)=>y%3?'cobble':'stoneBricks'),[33,20,'doorBot'],[33,19,'doorTop'],[33,15,'glass'],...tri(31,35,11,'darkplanks','stairL','stairR')]),
+  ST('Build a cozy chicken coop with a fenced yard.','Chickens need a safe home at night and space to scratch in the day.',[...box(36,17,38,18,'planks'),[37,18,'gateDark'],[35,16,'stairL'],...hl(36,38,16,'roof'),[39,16,'stairR'],...hl(35,39,20,'fenceO'),[36,19,'fencePost'],[38,19,'fencePost']]),
+  ST('Put hay bales by the barn and a scarecrow in the crops.','A scarecrow keeps the birds from eating your seeds. Hay feeds the cows!',[[10,20,'hay'],[11,20,'hay'],[10,19,'hay'],[22,19,'scarecrow'],[22,20,'fencePost']]),
+  ST('Build a stone well with a little roof for fresh water.','Every farm needs water. A roof keeps leaves out of the well.',[...box(28,19,30,20,'cobble'),[29,19,'water'],[28,18,'fencePost'],[30,18,'fencePost'],[28,17,'fencePost'],[30,17,'fencePost'],[27,16,'stairL'],...hl(28,30,16,'roof'),[31,16,'stairR']]),
+  ST('Plant sunflowers and flowers along the fences.','Flowers make a farm feel happy, and the bees love them too!',[[27,20,'sunflower'],[31,20,'sunflower'],[0,20,'flower'],[11,19,'flower4']]),
+  ST('Hang lanterns on the barn and a torch on the windmill.','Lights help you find your way to the barn after sunset.',[[2,16,'lantern'],[8,16,'lantern'],[33,17,'torch']]),
+  ST('Bring the cows, pigs, and chickens home to the farm!','Animals make a farm come alive. Now it really feels like home!',[[36,20,'hay']])],
+ mid(c,t,i){const Y=21*16;if(i.done>=11){cow(c,30+pp(t,16000)*100,Y,t,pd(t,16000));pig(c,60+pp(t+5000,11000)*80,Y,t,pd(t+5000,11000));for(let k=0;k<3;k++)chicken(c,35*16+10+pp(t+k*2300,6000+k*900)*60,Y,t,pd(t+k*2300,6000+k*900),k)}},
+ extra(c,t,i){if(i.done>=5){const cx=33.5*16,cy=13*16,a=t/1000*(i.done>=11?1.4:.7);for(let k=0;k<4;k++){const an=a+k*Math.PI/2;c.save();c.translate(cx,cy);c.rotate(an);vRect(c,0,-2,56,4,'#6b4f2c');vRect(c,14,-10,40,8,'rgba(240,235,220,.9)');vRect(c,14,-10,40,1,'#6b4f2c');c.restore()}vRect(c,cx-3,cy-3,6,6,'#3a2410')}
+  if(i.done>=9)for(let k=0;k<3;k++){const x=27*16+Math.sin(t/900+k*2)*40+k*60,y=17*16+Math.sin(t/400+k)*14;const f=Math.floor(t/120+k)%2;vRect(c,x-3,y-(f?3:1),3,3,['#ff9ad0','#ffd23a','#9ad0ff'][k]);vRect(c,x+1,y-(f?3:1),3,3,['#ff9ad0','#ffd23a','#9ad0ff'][k]);vRect(c,x,y,1,3,'#333')}
+  everyFx(i,'moo',11000,()=>SFX.moo());everyFx(i,'cluck',7000,()=>SFX.cluck())}});
+
+/* ---------- 3. BEE FARM ---------- */
+const HIVES=[2,6,10,30,34,38];const FL=['flower','flower4','flower3','flower2','sunflower'];
+W({id:'bees',name:'Bee Farm',diff:1,sky:'sunset',terrain:T40.grass,dark:{from:0,alpha:.22},backdrop:hills40,
+ stages:[
+  ST('Plant a big field of flowers so the bees have lots to eat.','Bees visit flowers to collect nectar. More flowers means more honey!',[...range(0,12).map(x=>[x,20,FL[x%5]]),...range(28,39).map(x=>[x,20,FL[x%5]])]),
+  ST('Lay a stone brick foundation for the honey house.','A strong foundation keeps the house level and stops it from sinking.',hl(14,26,20,'stoneBricks')),
+  ST('Build the walls out of honeycomb with log corners.','Using a theme block like honeycomb makes your build tell a story.',box(15,14,25,19,(x,y)=>x===15||x===25?'log':'honeycomb')),
+  ST('Add windows made of orange glass on both sides.','Colored glass matches the theme and makes the light inside warm.',[...box(17,16,18,17,'honeyGlass'),...box(22,16,23,17,'honeyGlass')]),
+  ST('Give the house a roof made of stairs, like a beehive.','Stair roofs make smooth slopes, and this one looks like a hive!',tri(14,26,13,'roof','stairL','stairR')),
+  ST('Put a door in the middle with a sticky honey awning.','An awning over the door adds depth and keeps the rain off.',[[20,19,'doorBot'],[20,18,'doorTop'],[19,17,'honeyBlock'],[20,17,'honeyBlock'],[21,17,'honeyBlock']]),
+  ST('Set up beehives on fence posts around the flower fields.','Bees need a home. Put the hives up high, close to the flowers.',HIVES.flatMap(h=>[[h,18,'beehive'],[h,19,'fencePost'],[h,20,'fencePost']])),
+  ST('Light a campfire next to each hive so the bees stay calm.','Smoke from a campfire calms the bees, so they will not sting you.',HIVES.map(h=>[h+1,20,'campfire'])),
+  ST('Hang glowing honey lanterns on the house and on the hives.','Warm lights look amazing at sunset. They make a build feel cozy.',[[14,15,'honeyLantern'],[26,15,'honeyLantern'],...HIVES.map(h=>[h,17,'honeyLantern'])]),
+  ST('Put flower boxes under each window for extra color.','Little details under windows make a wall look loved and lived in.',[[17,18,'planter'],[18,18,'planter'],[22,18,'planter'],[23,18,'planter']]),
+  ST('Invite the bees to move into their brand new hives!','Listen to them buzz! A bee farm is a sweet build to finish.',[[27,20,'barrel'],[27,19,'honeyBlock'],[13,20,'barrel']])],
+ extra(c,t,i){if(i.done>=7){const n=i.done>=11?18:8;for(let k=0;k<n;k++){const h=HIVES[k%6]*16+8;const x=h+Math.sin(t/(700+k*41)+k)*44,y=18*16+Math.sin(t/(430+k*29)+k*2)*26;bee(c,x,y,t,k)}
+   HIVES.forEach((h,k)=>{const ph=((t/2200)+k*.3)%1;vRect(c,h*16+7,19*16+Math.round(ph*16),2,3,'rgba(255,190,40,'+(1-ph).toFixed(2)+')')})}
+  everyFx(i,'buzz',3000,()=>SFX.buzz())}});
+
+/* ---------- 4. RESTAURANT ---------- */
+const TABLES=[17,21,25,28];
+W({id:'restaurant',name:'Restaurant',diff:2,sky:'night',terrain:T40.grass,dark:{from:0,alpha:.5},backdrop:city,
+ stages:[
+  ST('Lay a checkered floor inside and smooth stone on the patio.','Black and white tiles are the classic diner floor. Patterns look sharp!',[...hl(6,29,21,'checker'),...hl(31,39,21,'smooth')]),
+  ST('Cover the kitchen wall with tiles and the dining room with wallpaper.','Different walls for different rooms show where each room starts.',box(6,9,29,20,(x,y)=>x<=13?'subway':'wallpaper')),
+  ST('Build the outside walls and a flat roof with a dark trim.','A dark trim along the top is called a CORNICE. It makes a roof look finished.',[...vl(5,8,20,'quartz'),...vl(30,8,20,'quartz'),...hl(5,30,8,'quartz'),...hl(4,31,7,'darkplanks'),...vl(14,9,15,'quartz')]),
+  ST('Put big windows on the back wall, so diners can see the stars.','Big windows make a room feel larger, brighter, and more open.',[...box(17,12,19,15,'winNight'),...box(24,12,26,15,'winNight')]),
+  ST('Build the kitchen: a fridge, an oven, a sink, and counters.','Chefs need everything close together. Cooks call this the work triangle.',[[6,20,'fridgeBot'],[6,19,'fridgeTop'],[7,20,'cabinetW'],[8,20,'cabinetW'],[9,20,'oven'],[10,20,'cabinetW'],[11,20,'cabinetW'],[12,20,'sinkTop'],[13,20,'cabinetW'],[9,16,'hood'],[9,19,'pot']]),
+  ST('Set up tables with red and white cloths, plus chairs.','Leave space between tables, so the waiters can walk around.',TABLES.flatMap(x=>[[x,20,'tableCloth'],[x-1,20,'chairL'],[x+1,20,'chairR']])),
+  ST('Hang fancy chandeliers over the tables and a lamp in the kitchen.','Lights above tables make each one feel special and cozy.',[[19,9,'chandelier'],[26,9,'chandelier'],[10,9,'pendant']]),
+  ST('Serve pizza, burgers, cake, and pie on the tables.','Food on the tables makes a restaurant look open and busy.',[[17,19,'pizza'],[21,19,'burger'],[25,19,'cakeO'],[28,19,'pie'],[7,19,'cupcake'],[8,19,'cookieJar'],[11,19,'donut']]),
+  ST('Add a glowing neon sign on the roof, so everyone can find it.','Neon signs flicker and glow at night. They catch everyone\'s eye!',box(10,5,25,6,'signboard')),
+  ST('Put striped umbrellas and little tables out on the patio.','Outdoor seating makes a restaurant feel friendly in the summer.',[[32,17,'awning'],[33,17,'awning'],[34,17,'awning'],[33,18,'pole'],[33,19,'pole'],[33,20,'table'],[37,17,'awning'],[38,17,'awning'],[39,17,'awning'],[38,18,'pole'],[38,19,'pole'],[38,20,'table'],[32,20,'chairL'],[34,20,'chairR'],[37,20,'chairL'],[39,20,'chairR']]),
+  ST('Hang string lights from the roof to a tall pole outside.','String lights add a sparkle of color. They look great in photos!',vl(35,12,20,'pole')),
+  ST('Hire a chef, then open the doors for hungry customers!','The restaurant is open! Listen to the happy diners munching away.',[[30,20,'doorBot'],[30,19,'doorTop']])],
+ mid(c,t,i){const Y=21*16;if(i.done>=12){personWalk(c,7*16+pp(t,6000)*90,Y,t,0);vRect(c,7*16+pp(t,6000)*90-6,Y-35,12,6,'#fff');vRect(c,7*16+pp(t,6000)*90-4,Y-39,8,4,'#fff');
+   [[16,1],[20,2],[24,0],[27,1]].forEach(([x,k])=>drawVillager(c,x*16+8,Y,k,t*.6));personWalk(c,15*16+pp(t,9000)*200,Y,t,2)}},
+ extra(c,t,i){if(i.done>=8)[[17,19],[28,19],[25,19]].forEach(([x,y],k)=>steam(c,x*16+8,y*16+8,t,k));if(i.done>=11)stringLights(c,30*16+8,8*16+4,35*16+8,12*16,t,i.lights,10)},
+ after(c,t,i){if(i.done>=9){const fl=(Math.floor(t/90)%23)!==0;c.save();c.font='bold 18px monospace';c.textAlign='center';c.shadowColor=fl?'#ff4ad8':'transparent';c.shadowBlur=fl?12:0;c.fillStyle=fl?'#ff9af0':'#6a3a5a';c.fillText('BLOCK DINER',18*16,6*16+6);c.restore()}}});
+
+/* ---------- 5. FANCY POOL ---------- */
+W({id:'pool',name:'Fancy Swimming Pool',diff:2,sky:'sunset',terrain:T40.grass,dark:{from:0,alpha:.28},backdrop:hills40,
+ stages:[
+  ST('Dig out the pool and line it with light blue tiles.','Light tiles make the water look bright and clean.',[...vl(16,21,23,'poolTile'),...vl(32,21,23,'poolTile'),...hl(17,31,23,'poolTile'),...box(17,21,31,22,'poolEmpty')]),
+  ST('Fill the pool with water, and add glowing lights underwater.','Underwater lights make a pool glow like magic after sunset.',[...box(17,21,31,22,'water'),[20,23,'poolLight'],[24,23,'poolLight'],[28,23,'poolLight']]),
+  ST('Build a wooden deck all around the pool.','A deck gives people a place to walk, sit, and dry off in the sun.',[...hl(0,15,21,'deck'),...hl(33,39,21,'deck')]),
+  ST('Build a modern villa with white walls and huge windows.','Modern houses use white blocks and lots of glass for a clean look.',[...box(1,15,11,20,'quartz'),...box(2,16,4,19,'glass'),...box(8,16,10,19,'glass'),[6,20,'glassDoor'],[6,19,'glassDoor']]),
+  ST('Add a second floor that hangs out over the first one.','Floors that stick out are called CANTILEVERS. They look super modern!',[...box(3,11,13,14,'quartz'),...box(5,12,12,13,'glass')]),
+  ST('Plant a little garden with bushes on the flat roof.','Roof gardens add some green to a white house and keep it cool.',[...hl(3,13,10,'smooth'),[4,9,'leaves'],[5,9,'leaves'],[12,9,'leaves'],[13,9,'leaves'],[8,9,'flower'],[9,9,'flower4']]),
+  ST('Plant two palm trees for a sunny, tropical vacation feel.','Palm trees instantly make a build feel like a vacation.',[...vl(14,13,20,'palmLog'),...[12,13,14,15,16].map(x=>[x,12,'palmLeaf']),[13,11,'palmLeaf'],[14,11,'palmLeaf'],[15,11,'palmLeaf'],...vl(39,12,20,'palmLog'),[37,11,'palmLeaf'],[38,11,'palmLeaf'],[39,11,'palmLeaf'],[38,10,'palmLeaf'],[39,10,'palmLeaf']]),
+  ST('Build a diving board at the deep end of the pool.','Put the diving board over the deepest part, so jumping is safe.',[[16,20,'boardBase'],[17,20,'boardPlank'],[18,20,'boardPlank']]),
+  ST('Build a twisty water slide with a ladder up to the top.','Slides need a ladder, a platform, and a splash zone at the bottom.',[[36,13,'poolTile'],[37,13,'poolTile'],...vl(37,14,20,'beamW'),...vl(38,13,20,'ladder'),[35,14,'slideTube'],[34,15,'slideTube'],[33,16,'slideTube'],[32,17,'slideTube'],[31,18,'slideTube']]),
+  ST('Put sun loungers on the deck, so people can relax.','Loungers in a row look neat. Face them toward the water!',[[12,20,'lounger'],[13,20,'lounger'],[34,20,'lounger'],[35,20,'lounger']]),
+  ST('Float a ring and a beach ball on top of the water.','Little props like these make a pool look ready for a party.',[[21,21,'floatRing'],[27,21,'floatRing'],[24,21,'beachBall']]),
+  ST('Turn on the music and the lights, then everybody dive in!','Pool party time! Watch the swimmers splash and slide.',[[15,20,'radio']])],
+ extra(c,t,i){if(i.done>=12){stringLights(c,13*16,10*16,39*16,11*16,t,i.lights,14);
+   const sw=18*16+pp(t,9000)*190;vRect(c,sw-4,21*16-2,8,6,'#e9b98f');vRect(c,sw-3,21*16-4,6,2,'#4a2c14');const arm=Math.floor(t/300)%2;vRect(c,sw+(arm?5:-9),21*16-1,5,2,'#e9b98f');
+   const ph=(t%7000)/7000;if(ph<.35){const k=ph/.35;const pts=[[36.5,13],[35,14],[34,15],[33,16],[32,17],[31,18],[30,21]];const f=k*(pts.length-1),j=Math.floor(f),u=f-j;const a=pts[j],b=pts[Math.min(j+1,pts.length-1)];drawVillager(c,(a[0]+(b[0]-a[0])*u)*16,(a[1]+(b[1]-a[1])*u)*16,1,t)}
+   if(ph>.33&&ph<.5){const k=(ph-.33)/.17;for(let s=0;s<8;s++){const ang=s/8*Math.PI;c.fillStyle=`rgba(220,245,255,${(1-k).toFixed(2)})`;c.fillRect(30*16+Math.cos(ang)*k*20,21*16-Math.sin(ang)*k*22,3,3)}}
+   const pd2=((t+3500)%8000)/8000;if(pd2<.25){const k=pd2/.25;drawVillager(c,17.5*16+k*40,20*16-Math.sin(k*Math.PI)*36+k*16,2,t)}
+   for(let k=0;k<3;k++){const ph2=(t/1800+k/3)%1;c.fillStyle=`rgba(255,120,230,${(1-ph2).toFixed(2)})`;c.font='bold 10px monospace';c.textAlign='center';c.fillText('♪',15*16+8+Math.sin(ph2*6+k)*6,20*16-ph2*30)}
+   edgeFx(i,'splash',ph,.33,()=>SFX.splash());edgeFx(i,'dive',pd2,.24,()=>SFX.splash())}}});
+
+/* ---------- 6. MODERN KITCHEN ---------- */
+W({id:'kitchen',name:'Modern Kitchen',diff:2,sky:'none',terrain:T40.kitchen,dark:{from:0,alpha:.35},
+ stages:[
+  ST('Lay a black and white checkered floor for a classic look.','Checkered floors are easy to clean and look great in kitchens.',hl(0,39,21,'checker')),
+  ST('Cover the wall above the counters with shiny white tiles.','Tiles behind a stove are called a BACKSPLASH. They wipe clean easily.',box(4,13,31,17,'subway')),
+  ST('Build a long row of white cabinets along the bottom.','Cabinets hide the pots and pans, so the kitchen looks tidy.',[...box(4,19,8,20,'cabinetW'),...box(11,19,31,20,'cabinetW')]),
+  ST('Put a dark stone counter top on top of the cabinets.','Counters need to be strong and flat for chopping and baking.',[...hl(4,8,18,'counterTop'),...hl(11,31,18,'counterTop')]),
+  ST('Hang upper cabinets on the wall, with a hood in the middle.','A hood over the stove sucks up smoke and smells while you cook.',[...box(4,9,8,11,'cabinetW'),...box(19,9,31,11,'cabinetW'),...box(9,9,10,12,'hood')]),
+  ST('Build a big silver fridge in the corner of the room.','Put the fridge at the end of the counter, so it never blocks your work.',[...box(1,9,3,14,'fridgeTop'),...box(1,15,3,20,'fridgeBot')]),
+  ST('Build an oven, a stove top, and two bubbling pots.','Ovens go below the stove. The pots on top are cooking dinner!',[[9,19,'oven'],[10,19,'oven'],[9,20,'ovenBase'],[10,20,'ovenBase'],[9,18,'stoveTop'],[10,18,'stoveTop'],[9,17,'pot'],[10,17,'pot']]),
+  ST('Add a sink under a window, so you can look outside.','Sinks under windows are a classic trick. Washing up is more fun with a view!',[...box(13,9,17,12,'winNight'),[15,18,'sinkTop']]),
+  ST('Build a marble island in the middle of the kitchen.','An island gives extra space to cook, and friends can sit around it.',box(19,19,30,20,'marble')),
+  ST('Hang three pendant lights over the island.','Lights over an island are called pendants. They make it the star of the room.',[21,25,29].flatMap(x=>[...vl(x,2,6,'cord'),[x,7,'pendant']])),
+  ST('Fill the island with cake, cupcakes, ice cream, and donuts.','Desserts on display make everyone hungry. Yum, yum!',[[20,18,'pie'],[22,18,'cakeBig'],[24,18,'cupcake'],[26,18,'iceCream'],[27,18,'donut'],[29,18,'cookies']]),
+  ST('Add a pantry full of jars, a toaster, and a wall clock.','A pantry keeps food organized. The clock tells you when cookies are done!',[...box(34,9,38,20,'shelfJar'),[6,17,'toasterB'],[7,17,'cookieJar'],[24,5,'clock']])],
+ mid(c,t,i){if(i.done>=12){const P=20000,x=20+pp(t,P)*580;cat(c,x,21*16,t,pd(t,P))}},
+ extra(c,t,i){if(i.done>=7){i.lights.push([9.5*16+8,19.5*16,40,'255,140,40'])}
+  if(i.done>=12)edgeFx(i,'toast',(t%4000)/4000,.6,()=>SFX.pop())}});
+
+/* ---------- 7. FIRE HOUSE ---------- */
+const FIREWIN=[[30,14],[33,14],[30,18],[33,18]];
+W({id:'fire',name:'Fire House',diff:3,sky:'dusk',terrain:T40.grass,dark:{from:0,alpha:.38},backdrop:city,
+ stages:[
+  ST('Pour a concrete driveway so the fire truck can zoom out fast.','Fire trucks are heavy. A smooth driveway helps them leave in seconds.',[...hl(1,6,21,'smooth'),...hl(7,39,21,'road')]),
+  ST('Build the station walls out of red bricks, 2 floors tall.','Bricks don\'t burn, so they are perfect for a fire station.',[...box(6,9,22,14,'brick'),...vl(6,15,20,'brick'),...vl(7,15,20,'brick'),...vl(21,15,20,'brick'),...vl(22,15,20,'brick')]),
+  ST('Leave a garage opening that is 13 blocks wide and 6 tall.','Measure twice! The truck needs room to drive in and out.',box(8,15,20,20,'gateDark')),
+  ST('Build a tall brick tower to dry the long fire hoses.','Real fire stations hang hoses up in tall towers so they can dry.',[...box(1,4,5,20,(x,y)=>y%4===0?'stoneBricks':'brick'),[2,6,'gateDark'],[3,6,'gateDark'],[4,6,'gateDark'],[3,5,'gateDark'],[3,7,'gateDark'],[3,13,'glowWin'],[3,17,'glowWin']]),
+  ST('Put glowing windows on the second floor, all in a row.','Windows in a neat row make a big wall look organized.',[...box(9,11,10,12,'glowWin'),...box(13,11,14,12,'glowWin'),...box(17,11,18,12,'glowWin')]),
+  ST('Hang a big brass bell at the top of the tower.','Long ago, ringing a bell was how firefighters heard the alarm!',[[3,6,'bellO']]),
+  ST('Give the tower a pointy roof, and the station a stone trim.','A trim at the top of a wall finishes the look, like a hat.',[...tri(0,6,3,'darkplanks','stairL','stairR'),...hl(5,23,8,'stoneBricks')]),
+  ST('Put up a sign that says FIRE STATION over the garage.','A clear sign tells everyone this is where the heroes work.',hl(9,19,14,'signboard')),
+  ST('Add flashing red lights on both sides of the garage door.','Flashing lights warn cars to stop when the truck comes out.',[[7,14,'siren'],[21,14,'siren']]),
+  ST('Put a fire hydrant and some orange cones near the road.','Hydrants give the truck water. Cones keep people out of the way.',[[24,20,'hydrant'],[26,20,'cone'],[38,20,'cone']]),
+  ST('Hang ladders and hoses inside, so they\'re ready to grab.','Keep tools in the same spot every time, so you can find them fast.',[...vl(8,16,19,'ladder'),[20,17,'hoseReel']]),
+  ST('Build a training tower with pretend fires for practice.','Firefighters practice a lot. Training makes them fast and safe!',[...box(28,12,36,20,(x,y)=>(x+y)%5?'brick':'cobble'),...hl(27,37,11,'stoneBricks'),...FIREWIN.flatMap(([a,b])=>[[a,b,'gateDark'],[a+1,b,'gateDark'],[a,b+1,'gateDark'],[a+1,b+1,'gateDark'],[a,b+1,'flames'],[a+1,b+1,'flames']])]),
+  ST('Sound the alarm! Drive the truck out and spray the flames!','Teamwork! The crew practices until every single fire is out.',[[23,19,'warnSign']])],
+ pre(i){i.fire=1;i.alarm=i.done>=9;i.truckX=14.5*16;i.spray=0;if(i.done>=13){const ph=i.t%16000;i.alarm=ph<5000||ph>13000;i.ring=ph<2000;
+   if(ph<2000)i.truckX=14.5*16;else if(ph<5000)i.truckX=14.5*16+ease((ph-2000)/3000)*150;else if(ph<13000)i.truckX=14.5*16+150;else i.truckX=14.5*16+150-ease((ph-13000)/3000)*150;
+   if(ph>=5000&&ph<11000){i.spray=1;i.fire=1-(ph-5000)/6000}else if(ph>=11000&&ph<15500)i.fire=0;else if(ph>=15500)i.fire=(ph-15500)/500;
+   edgeFx(i,'siren',ph,100,()=>SFX.siren());edgeFx(i,'bell',ph,200,()=>SFX.clang());edgeFx(i,'spray',ph,5000,()=>SFX.splash())}},
+ mid(c,t,i){if(i.done>=3)fireTruck(c,i.truckX,21*16,t,i.alarm&&i.done>=13)},
+ extra(c,t,i){if(i.done>=8){c.fillStyle='#ffd23a';c.font='bold 11px monospace';c.textAlign='center';c.fillText('FIRE STATION 7',14.5*16,14*16+12)}
+  if(i.spray){const sx=i.truckX+10,sy=21*16-32;const tgt=FIREWIN[Math.floor(t/1500)%4];const tx=tgt[0]*16+16,ty=tgt[1]*16+20;for(let k=0;k<24;k++){const u=((t/600)+k/24)%1;const x=sx+(tx-sx)*u,y=sy+(ty-sy)*u-Math.sin(u*Math.PI)*40;c.fillStyle='rgba(160,210,255,.85)';c.fillRect(Math.round(x),Math.round(y),3,3)}}
+  if(i.done>=12&&i.fire<.6)FIREWIN.forEach(([a,b],k)=>{for(let j=0;j<3;j++){const ph=((t/1500)+j/3+k*.2)%1;puff(c,a*16+16+Math.sin(ph*5)*6,b*16+8-ph*40,4+ph*8,`rgba(200,200,200,${(.5*(1-ph)*(1-i.fire)).toFixed(2)})`)}})}});
+
+/* ---------- 8. HOSPITAL ---------- */
+const HWX=[8,11,14,24,27,30],HWY=[7,12,17];
+W({id:'hospital',name:'Hospital',diff:3,sky:'night',terrain:T40.grass,dark:{from:0,alpha:.5},backdrop:city,
+ stages:[
+  ST('Pave a parking lot and a smooth plaza in front of the doors.','Hospitals need lots of parking, and a flat plaza for wheelchairs.',[...hl(0,5,21,'road'),...hl(6,33,21,'smooth'),...hl(34,39,21,'road')]),
+  ST('Build tall white walls, 3 floors high, for a clean look.','White makes buildings look clean and calm, just right for a hospital.',box(6,6,33,20,'whiteC')),
+  ST('Paint blue stripes between the floors to split them up.','Stripes between floors break up a tall wall and show each floor.',[...hl(6,33,10,'blueC'),...hl(6,33,15,'blueC')]),
+  ST('Fill every floor with windows that are 2 blocks wide.','Patients love windows. Sunshine helps people feel better!',HWX.flatMap(x=>HWY.flatMap(y=>[[x,y,'winCool'],[x+1,y,'winCool'],[x,y+1,'winCool'],[x+1,y+1,'winCool']]))),
+  ST('Build sliding glass doors at the front entrance.','Sliding doors open by themselves, so nobody has to push them.',[...box(18,17,21,20,'glassDoor'),...hl(17,22,16,'quartz')]),
+  ST('Put a big red cross on the front, so everyone knows it\'s a hospital.','Signs that glow at night help people find help quickly.',[[20,7,'redCrossBlk'],[19,8,'redCrossBlk'],[20,8,'redCrossBlk'],[21,8,'redCrossBlk'],[20,9,'redCrossBlk']]),
+  ST('Build a flat roof with a landing pad for helicopters.','Helicopters can bring patients fast, even from very far away!',[...hl(5,34,5,'grayC'),...hl(13,26,4,'helipad'),[19,4,'helipadH']]),
+  ST('Build a covered drop-off area for the ambulances.','A roof over the drop-off keeps patients dry when they arrive.',[...hl(0,5,15,'whiteC'),...vl(0,16,20,'quartzPillar'),[3,14,'beaconRed']]),
+  ST('Add blinking red lights on the roof corners for pilots.','Blinking lights on tall buildings warn helicopters and planes.',[[5,4,'beaconRed'],[34,4,'beaconRed'],[13,3,'beaconRed'],[26,3,'beaconRed']]),
+  ST('Plant a tree and put a bench out front for visitors.','Gardens outside hospitals help visitors relax while they wait.',[...tree(37,20,4,'leaves','log',2),[35,20,'bench']]),
+  ST('Put flower boxes under the windows on every floor.','Flowers add a splash of color to a big white wall.',HWX.flatMap(x=>[[x,9,'planter'],[x+1,9,'planter'],[x,14,'planter'],[x+1,14,'planter']])),
+  ST('Add a lamp post by the parking lot, so it\'s never dark.','Good lighting keeps parking lots safe at night.',[[34,20,'post'],[34,19,'post'],[34,18,'lantern']]),
+  ST('Call in the helicopter and the ambulance for a rescue drill!','Rescue teams practice drills so they are ready for anything.',[[1,20,'cone']])],
+ extra(c,t,i){if(i.done>=8){c.fillStyle='#e01e1e';c.font='bold 9px monospace';c.textAlign='center';c.fillText('EMERGENCY',3*16,15*16+11)}
+  if(i.done>=13){const ph=t%14000;let hx,hy,spin=true;if(ph<4000){const k=ease(ph/4000);hx=CW+60-(CW+60-19.5*16)*k;hy=40+k*10}else if(ph<6500){hx=19.5*16;hy=50+ease((ph-4000)/2500)*(4*16-50)}else if(ph<9500){hx=19.5*16;hy=4*16;spin=ph<7500}else{const k=ease((ph-9500)/4500);hx=19.5*16-k*(19.5*16+80);hy=4*16-k*70}
+   helicopter(c,hx,hy,t,spin);if(spin)i.lights.push([hx,hy-6,30,'255,60,60']);
+   const ap=t%12000;let ax,dir=-1;if(ap<4000)ax=CW+40-(CW+40-3*16)*ease(ap/4000);else if(ap<7000)ax=3*16;else{ax=3*16+ease((ap-7000)/5000)*(CW);dir=1}
+   ambulance(c,ax,21*16,t,true,dir);if(Math.floor(t/140)%2)i.lights.push([ax,21*16-24,40,'255,40,40']);else i.lights.push([ax,21*16-24,40,'60,90,255']);
+   edgeFx(i,'amb',ap,10,()=>SFX.siren());edgeFx(i,'heli',ph,10,()=>SFX.chop());edgeFx(i,'heli2',ph,6000,()=>SFX.chop())}}});
+
+/* ---------- 9. ARMORY ---------- */
+W({id:'armory',name:'Armory',diff:3,sky:'night',terrain:T40.grass,dark:{from:0,alpha:.7},
+ stages:[
+  ST('Lay a polished stone floor across the whole castle.','Polished stone is smooth and strong, great for heavy armor.',hl(0,39,21,'polished')),
+  ST('Build the back wall from stone bricks with a little moss.','A few mossy blocks make a castle look old and mysterious.',box(4,5,35,20,(x,y)=>((x*7+y*3)%9===0)?'mossyBricks':'stoneBricks')),
+  ST('Build 2 dark towers on the corners, with arrow slits.','Thin windows called ARROW SLITS let archers look out but stay safe.',[...box(0,2,3,20,'darkBricks'),...box(36,2,39,20,'darkBricks'),...[6,12,17].flatMap(y=>[[1,y,'gateDark'],[2,y,'gateDark'],[37,y,'gateDark'],[38,y,'gateDark']])]),
+  ST('Add battlements along the top of the walls and towers.','Battlements give a castle its famous bumpy top.',[...range(4,35,2).map(x=>[x,4,'stoneBricks']),[0,1,'darkBricks'],[2,1,'darkBricks'],[37,1,'darkBricks'],[39,1,'darkBricks']]),
+  ST('Build 3 strong pillars to hold up the heavy ceiling.','Pillars spaced evenly make a big room look grand and organized.',[...vl(12,6,20,'darkBricks'),...vl(20,6,20,'darkBricks'),...vl(28,6,20,'darkBricks')]),
+  ST('Build a blacksmith forge with a pool of hot lava.','Lava heats the metal, so the blacksmith can bend it into shape.',[...box(5,18,9,20,'brick'),[6,18,'lava'],[7,18,'lava'],[8,18,'lava'],...vl(7,6,17,'brick'),[10,20,'furnace']]),
+  ST('Put an anvil and a grindstone next to the forge.','The anvil is for fixing tools. The grindstone makes them sharp.',[[11,20,'anvil'],[13,20,'grindstone']]),
+  ST('Hang swords made of iron, gold, and diamond on the wall.','Show off your best gear! Sort it from weakest to strongest.',[[14,13,'swordIron'],[15,13,'swordGold'],[16,13,'swordDia'],[17,13,'swordIron'],[18,13,'swordGold']]),
+  ST('Hang axes and bows on the wall, next to the swords.','Group the same kinds of tools together, just like a real armory.',[[22,13,'axe'],[23,13,'bow'],[24,13,'axe'],[25,13,'bow'],[26,13,'axe']]),
+  ST('Line the top of the wall with colorful shields.','Each shield has a crest. Knights used crests to show their team!',[14,16,18,22,24,26].map((x,k)=>[x,9,['shieldR','shieldB','shieldG'][k%3]])),
+  ST('Build 3 armor stands with iron, gold, and diamond armor.','Armor stands keep armor neat, ready, and looking super cool.',[[30,19,'armorITop'],[30,20,'armorIBot'],[32,19,'armorGTop'],[32,20,'armorGBot'],[34,19,'armorDTop'],[34,20,'armorDBot']]),
+  ST('Hang banners and torches, plus 2 big chandeliers.','Banners add color to gray stone. Torches and chandeliers light it up!',[[9,8,'bannerR'],[17,8,'bannerY'],[23,8,'bannerB'],[31,8,'bannerG'],[12,11,'torch'],[20,11,'torch'],[28,11,'torch'],[14,6,'chandelier'],[26,6,'chandelier']]),
+  ST('Open the treasure chest and watch all the gold sparkle!','Every armory needs treasure. Guard it well, brave knight!',[[25,20,'chest'],[24,20,'goldPile'],[26,20,'goldPile']])],
+ mid(c,t,i){if(i.done>=7){const x=12*16+8;drawVillager(c,x+6,21*16,0,t);const hit=(t%1400)<180;vRect(c,x-6,21*16-20+(hit?6:0),2,10,'#6b4f2c');vRect(c,x-9,21*16-22+(hit?6:0),8,4,'#555');
+   if(hit){for(let k=0;k<6;k++){c.fillStyle='#ffd23a';c.fillRect(11*16+6+Math.cos(k)*k*3,20*16+2-Math.abs(Math.sin(k*2))*10,2,2)}}}},
+ extra(c,t,i){if(i.done>=8){const g=(t%3000)/3000;if(g<.4){const gx=14*16+g/.4*5*16;c.save();c.globalCompositeOperation='lighter';c.fillStyle='rgba(255,255,255,.35)';c.beginPath();c.moveTo(gx,13*16);c.lineTo(gx+6,13*16);c.lineTo(gx-2,14*16);c.lineTo(gx-8,14*16);c.fill();c.restore()}}
+  if(i.done>=7)everyFx(i,'clang',1400,()=>SFX.clang())}});
+
+/* ---------- 10. VILLAGER TRADING HALL ---------- */
+const BOOTHS=[2,8,14,20,26,32],BOOTHWS=['lectern','composter','barrel','smoker','loom','cartography'],FRAMES=['frameBook','frameWheat','frameFish','frameMeat','frameWool','frameMap'],TRADEIT=['📘','🌾','🐟','🍖','🧶','🗺️'];
+W({id:'trading',name:'Villager Trading Hall',diff:4,sky:'day',terrain:T40.grass,dark:{from:0,alpha:.28},backdrop:hills40,
+ stages:[
+  ST('Lay a dark wooden floor all the way down the long hall.','A long hall needs a floor that looks good from one end to the other.',hl(0,39,21,'woodFloor')),
+  ST('Build the back wall from planks, with log columns every 6 blocks.','Columns every few blocks split a long wall into neat sections.',box(1,6,38,20,(x,y)=>(x-1)%6===0||x===38?'log':'planks')),
+  ST('Build a big roof with stairs, and skylights made of glass.','Skylights let sunshine pour in from above. No torches needed in the day!',[...hl(0,39,5,'darkplanks'),[0,4,'stairL'],...hl(1,38,4,'roof'),[39,4,'stairR'],[1,3,'stairL'],...hl(2,37,3,'roof'),[38,3,'stairR'],[2,2,'stairL'],...hl(3,36,2,'roof'),[37,2,'stairR'],...hl(10,12,3,'glass'),...hl(27,29,3,'glass'),...hl(18,21,2,'glass')]),
+  ST('Add tall windows in every booth, so the hall feels bright.','Windows that repeat in every section give the hall a steady rhythm.',BOOTHS.flatMap(b=>box(b+2,8,b+3,11,'glass'))),
+  ST('Build a counter in each booth for the villagers to trade over.','Counters keep the villagers safe in their booths while you trade.',BOOTHS.flatMap(b=>hl(b+1,b+3,20,'cabinetO'))),
+  ST('Give 3 villagers their jobs: librarian, farmer, and fisher.','A villager\'s job depends on the block next to them. It\'s called a WORKSTATION!',BOOTHS.slice(0,3).map((b,k)=>[b+4,20,BOOTHWS[k]])),
+  ST('Give 3 more villagers jobs: butcher, shepherd, and map maker.','Every different workstation gives different trades. Collect them all!',BOOTHS.slice(3).map((b,k)=>[b+4,20,BOOTHWS[k+3]])),
+  ST('Put glass walls between the booths, so villagers can\'t mix up.','Glass keeps each villager in place but still lets everyone see.',BOOTHS.flatMap(b=>vl(b+5,17,20,'glassPane'))),
+  ST('Hang a lantern above every booth, all at the same height.','Lining things up at the same height makes a build look tidy.',BOOTHS.map(b=>[b+2,14,'lantern'])),
+  ST('Put item frames above each booth to show what they sell.','Picture signs help everyone find the trade they want, fast.',BOOTHS.map((b,k)=>[b+3,14,FRAMES[k]])),
+  ST('Roll out a long red carpet down the middle of the hall.','A carpet runner leads guests through the hall like VIPs!',hl(0,39,20,'carpetRed')),
+  ST('Top every column with a shiny block of emeralds.','Emeralds are the money of the village. Show them off!',[1,7,13,19,25,31,37].map(x=>[x,6,'emeraldBlock'])),
+  ST('Hang a golden bell in the middle, so villagers know it\'s time to work.','In a village, the bell calls everyone together. Ding, ding!',[[22,7,'bellO']]),
+  ST('Open the doors on both ends and invite everyone to trade!','The hall is open! Watch the emeralds fly as the villagers trade.',[[0,20,'doorBot'],[0,19,'doorTop'],[39,20,'doorBot'],[39,19,'doorTop']])],
+ pre(i){i.ring=i.done>=14&&(i.t%12000)<1500;if(i.done>=14)edgeFx(i,'bell',i.t%12000,10,()=>SFX.clang())},
+ mid(c,t,i){BOOTHS.forEach((b,k)=>{if(i.done>=(k<3?6:7))drawVillager(c,(b+2)*16+8,21*16,k,t*.5)})},
+ extra(c,t,i){if(i.done>=14){const P=24000,ph=t%P;const x=ph/P*(40*16+40)-20;personWalk(c,x,21*16+2,t,1);
+   const bi=BOOTHS.findIndex(b=>Math.abs(x-(b+2.5)*16)<20);if(bi>=0){const bx=(BOOTHS[bi]+2)*16+8;bubble(c,'💎 → '+TRADEIT[bi],bx,17*16)}
+   BOOTHS.forEach((b,k)=>{const ph2=((t/2500)+k*.37)%1;if(ph2<.5){c.font='10px monospace';c.textAlign='center';c.globalAlpha=1-ph2*2;c.fillText('💎',(b+2)*16+8,18*16-ph2*30);c.globalAlpha=1}})}}});
+
+/* ---------- 11. UNDERWATER BASE ---------- */
+function dome(cx,base,rx,ry){const shell=[],inside=[];for(let y=base-ry;y<=base;y++)for(let x=Math.floor(cx-rx-1);x<=Math.ceil(cx+rx+1);x++){const f=(xx,yy)=>((xx-cx)/rx)**2+((base-yy)/ry)**2<=1&&yy<=base;if(!f(x,y))continue;const edge=!f(x-1,y)||!f(x+1,y)||!f(x,y-1)||(y<base&&!f(x,y+1));(edge?shell:inside).push([x,y])}return{shell,inside}}
+const DM=dome(20,19,6.6,10),DO=dome(34.5,19,3.2,5);
+const KELP=[[2,8],[4,11],[6,7]].flatMap(([x,h])=>vl(x,21-h,20,'kelp'));
+W({id:'ocean',name:'Underwater Base',diff:4,sky:'ocean',terrain:T40.sand,dark:{from:0,alpha:.42,tint:'0,25,60'},
+ stages:[
+  ST('Clear the sand, and pile up a few rocks around your base spot.','Underwater builds look real when the sea floor has rocks and bumps.',[[0,20,'stone'],[0,19,'cobble'],[39,20,'cobble'],[39,19,'stone'],...hl(8,13,21,'gravel'),...hl(30,34,21,'gravel')]),
+  ST('Lay a dark prismarine floor for the whole base to sit on.','Prismarine is the ocean\'s building block. It never looks out of place underwater.',hl(8,38,20,'darkPrism')),
+  ST('Build a giant glass dome, so you can see all of the fish.','Domes are strong underwater, because the water pushes evenly on every side.',DM.shell.map(([x,y])=>[x,y,'domeGlass'])),
+  ST('Pump out the water to make a dry room inside the dome.','Builders call this DRAINING. Fill it with sand, then dig the sand back out!',topdown(DM.inside.map(([x,y])=>[x,y,'roomBack']))),
+  ST('Add a bed, a chest, and a crafting table inside the dome.','Even an underwater base needs a place to sleep and keep treasure.',[[17,19,'chest'],[19,19,'bedL'],[20,19,'bedR'],[23,19,'crafting']]),
+  ST('Put sea lanterns in the ceiling and the floor for bright light.','Sea lanterns glow underwater, so they\'re the best lights for ocean builds.',[[20,10,'seaLantern'],[16,20,'seaLantern'],[24,20,'seaLantern']]),
+  ST('Build a glass tunnel that leads to a second room.','Tunnels connect rooms, so you never have to swim outside.',[...hl(27,31,17,'domeGlass'),...hl(27,31,19,'domeGlass'),...hl(27,31,18,'roomBack')]),
+  ST('Build a small dome at the end to use as an observatory.','An observatory is a room made for looking. Sit and watch the sea creatures!',[...DO.shell.map(([x,y])=>[x,y,'domeGlass']),...DO.inside.map(([x,y])=>[x,y,'roomBack'])]),
+  ST('Build an airlock with an iron door on the other side.','An airlock lets you go outside without flooding the whole base.',[...box(9,16,13,19,'darkPrism'),...box(10,17,12,19,'roomBack'),[9,18,'ironDoorT'],[9,19,'ironDoorB'],[13,18,'roomBack'],[13,19,'roomBack']]),
+  ST('Plant a tall kelp forest that sways in the water.','Kelp grows tall and moves with the water. It makes the ocean feel alive.',KELP),
+  ST('Grow a coral reef in lots of bright, happy colors.','Mixing many colors is what makes a coral reef so beautiful.',[[1,20,'coralR'],[3,20,'coralY'],[5,20,'coralP'],[7,20,'coralB'],[39,18,'coralR'],[38,19,'coralY']]),
+  ST('Place a glowing conduit on top of the dome, and sea pickles below.','A conduit gives you power underwater, and sea pickles glow like night lights.',[[20,8,'conduit'],[0,18,'seaPickle'],[39,17,'seaPickle']]),
+  ST('Hide a treasure chest outside, for brave divers to find!','Every ocean needs a secret treasure. Can you spot the gold?',[[29,16,'chest'],[30,16,'goldPile']]),
+  ST('Turn on every light, then say hello to all of the fish!','Your base is finished! Watch the fish, the turtle, and the glowing jellyfish.',[[11,20,'seaLantern'],[30,20,'seaLantern'],[36,20,'seaLantern']])],
+ mid(c,t,i){const n=i.done>=14?10:3;for(let k=0;k<n;k++){const P=16000+k*1700,dir=k%2?1:-1;let x=((t+k*2300)%P)/P*(CW+80)-40;if(dir<0)x=CW-x;const y=60+((k*53)%9)*28+Math.sin(t/700+k)*6;fish(c,x,y,dir,['#ffb020','#ff5a5a','#5ad8ff','#ffe36a','#c060e0'][k%5],'#fff')}
+  if(i.done>=14){const tx=((t%30000)/30000)*(CW+80)-40;turtle(c,tx,90,t,1);[[100,150,0],[540,110,1]].forEach(([x,y,k])=>{const yy=y+Math.sin(t/900+k*3)*20;jelly(c,x+Math.sin(t/1300+k)*10,yy,t);i.lights.push([x,yy-6,26,'255,140,230'])})}},
+ extra(c,t,i){for(let k=0;k<12;k++){const ph=((t/3000)+k/12)%1;const bx=[2,4,6,9,20,34][k%6]*16+8+Math.sin(ph*9+k)*4;c.fillStyle='rgba(220,245,255,.7)';c.fillRect(Math.round(bx),Math.round(20*16-ph*300),2,2)}
+  everyFx(i,'blub',4000,()=>SFX.bloop())}});
+
+/* ---------- 12. TNT TESTING SITE ---------- */
+const TNTS=[[18,20],[19,20],[18,19],[27,20],[28,20],[34,20],[35,20],[34,19]],BLASTS=[[18.5*16,19.5*16],[27.5*16,20*16],[34.5*16,19.5*16]];
+const TGTCELLS=[...box(14,12,17,20,'tgtStone'),...box(21,17,26,20,'tgtPlank'),...tri(20,27,16,'tgtRoof','tgtStairL','tgtStairR'),...box(30,10,33,20,'tgtCobble'),...box(30,8,33,9,'tgtGlass')];
+const DEBRIS=(()=>{const r=rng(5);return TGTCELLS.map(([x,y,tp])=>({x:x*16,y:y*16,tex:TGT[tp],vx:(r()-.5)*.35+(x-24)*.012,vy:-(.25+r()*.35),rot:(r()-.5)*.02}))})();
+W({id:'tnttest',name:'TNT Testing Site',diff:4,sky:'desert',terrain:T40.sand,backdrop:mesas,
+ stages:[
+  ST('Mark the edge of the test zone with sandstone in the sand.','Always mark where the danger zone starts, so everyone knows where to stand.',hl(10,39,21,'sandstone')),
+  ST('Build a bunker out of obsidian, the toughest block around.','Obsidian is blast-proof! TNT can\'t break it, so you stay safe inside.',[...vl(0,13,20,'obsidian'),...vl(9,13,20,'obsidian'),...hl(0,9,13,'obsidian'),...hl(0,9,12,'obsidian'),...box(1,14,8,20,'grayC')]),
+  ST('Add a thick, blast-proof window so you can watch safely.','Special glass lets you see the boom without getting hurt.',[[9,16,'blastGlass'],[9,17,'blastGlass']]),
+  ST('Install screens and control panels inside the bunker.','Screens show what is happening outside. Scientists measure every blast!',[[2,15,'screen'],[3,15,'screen'],[5,15,'screen'],[6,15,'screen'],[3,20,'console'],[4,20,'console'],[5,20,'console']]),
+  ST('Put a big red button on its own stand. Don\'t press it yet!','The most important button needs its very own special spot.',[[7,20,'bigButton']]),
+  ST('Build a striped warning wall in front of the bunker.','Yellow and black stripes mean DANGER, all around the world.',box(10,19,11,20,'hazard')),
+  ST('Build a stone brick tower, 4 blocks wide and 9 blocks tall.','Test targets show how strong each kind of block is.',[...box(14,12,17,20,'tgtStone'),[15,14,'tgtGlass'],[16,14,'tgtGlass'],[15,17,'tgtGlass'],[16,17,'tgtGlass']]),
+  ST('Build a little wooden hut with a pointy roof as target 2.','Wood is much weaker than stone. Let\'s see what happens to it!',[...box(21,17,26,20,'tgtPlank'),...tri(20,27,16,'tgtRoof','tgtStairL','tgtStairR')]),
+  ST('Build a tall cobblestone pillar with a glass top as target 3.','Tall, thin towers wobble more. Scientists love testing them!',[...box(30,10,33,20,'tgtCobble'),...box(30,8,33,9,'tgtGlass')]),
+  ST('Place TNT crates next to every target. Careful, now!','Always place explosives LAST, after everything else is built.',TNTS.map(([x,y])=>[x,y,'tntO'])),
+  ST('Run redstone wire from the bunker out to the TNT.','Redstone carries the signal like a long wire. Zap!',[12,13,20,29,36].map(x=>[x,20,'dust'])),
+  ST('Put up warning lights that flash before the big blast.','Flashing lights give everyone time to get back to the bunker.',[[12,18,'post'],[12,19,'post'],[12,17,'beaconRed'],[37,18,'post'],[37,19,'post'],[37,17,'beaconRed']]),
+  ST('Add red flags and signs that say: stand back, please!','Signs remind visitors to stay safe. Safety first, always!',[[16,11,'redFlag'],[31,7,'redFlag'],[24,12,'redFlag'],[38,20,'warnSign']]),
+  ST('Everyone into the bunker! 3, 2, 1... press the big red button!','KA-BOOM! Watch the targets fly, then the site resets for another test.',[[1,19,'warnSign']])],
+ pre(i){i.power=i.done>=11;if(i.done<14)return;const ph=i.t%11000;i.ph=ph;const B={};if(ph<3000)B.flash=true;else if(ph<8000)B.gone=true;else B.rise=ease((ph-8000)/2500);i.blast=B;
+  edgeFx(i,'b1',ph,1000,()=>SFX.beep());edgeFx(i,'b2',ph,2000,()=>SFX.beep());edgeFx(i,'b3',ph,2900,()=>SFX.beep());edgeFx(i,'boom',ph,3000,()=>{SFX.boom(1.4);setTimeout(()=>SFX.boom(.9),180);setTimeout(()=>SFX.boom(.7),380);SFX.rumble(2)})},
+ shake(i){if(!i.blast||!i.ph)return 0;const k=i.ph-3000;return k>0&&k<900?8*(1-k/900):0},
+ extra(c,t,i){if(i.done<14||!i.blast)return;const ph=i.ph,k=ph-3000;
+  if(ph<3000){const n=3-Math.floor(ph/1000);c.save();c.font='bold 64px monospace';c.textAlign='center';c.fillStyle='rgba(255,255,255,.9)';c.strokeStyle='#e01e1e';c.lineWidth=4;c.strokeText(n,CW/2+60,120);c.fillText(n,CW/2+60,120);c.restore();return}
+  if(k<5500){for(const d of DEBRIS){const tt=Math.min(k,2600);let x=d.x+d.vx*tt,y=d.y+d.vy*tt+.00045*tt*tt;if(y>20*16){y=20*16}const a=k>4000?1-(k-4000)/1500:1;c.save();c.globalAlpha=Math.max(0,a);c.translate(x+6,y+6);c.rotate(d.rot*tt);c.drawImage(TEX[d.tex],-6,-6,12,12);c.restore()}}
+  BLASTS.forEach(([bx,by],j)=>{const kk=k-j*150;if(kk<0)return;if(kk<1400){const r=10+kk*.08;c.save();c.globalCompositeOperation='lighter';const g=c.createRadialGradient(bx,by,0,bx,by,r);g.addColorStop(0,`rgba(255,255,220,${(1-kk/1400).toFixed(2)})`);g.addColorStop(.4,`rgba(255,180,40,${(.9*(1-kk/1400)).toFixed(2)})`);g.addColorStop(1,'rgba(255,60,0,0)');c.fillStyle=g;c.fillRect(bx-r,by-r,r*2,r*2);c.restore();
+     c.strokeStyle=`rgba(255,255,255,${(.8*(1-kk/700)).toFixed(2)})`;c.lineWidth=3;if(kk<700){c.beginPath();c.arc(bx,by,kk*.25,0,6.283);c.stroke()}}
+   for(let s=0;s<6;s++){const sk=kk-200;if(sk<0||sk>5000)continue;const u=sk/5000;puff(c,bx+Math.sin(s*2.1)*u*60,by-20-u*120-s*6,8+u*26,`rgba(90,85,80,${(.55*(1-u)).toFixed(2)})`)}});
+  if(k<400){c.fillStyle=`rgba(255,255,255,${(1-k/400).toFixed(2)})`;c.fillRect(0,0,CW,CH)}}});
+
+/* ---------- 13. TNT FACTORY ---------- */
+const SAW=[...hl(0,30,5,'metal'),...range(0,4).flatMap(k=>{const x0=1+k*6;return[[x0+2,4,'metal'],[x0+3,4,'metal'],[x0+4,4,'metal'],[x0+5,4,'glass'],[x0+4,3,'metal'],[x0+5,3,'glass']]})];
+const TESTCH=(()=>{const a=[];for(let y=11;y<=16;y++)for(let x=32;x<=37;x++){const e=x===32||x===37||y===11||y===16;a.push([x,y,e?'blastGlass':'gateDark'])}return a})();
+W({id:'factory',name:'TNT Factory',diff:5,sky:'night',terrain:T40.grass,dark:{from:0,alpha:.6},backdrop:city,
+ stages:[
+  ST('Lay a metal floor inside the factory, and gravel outside of it.','Metal floors are tough enough for heavy machines and carts.',[...hl(0,30,21,'metalFloor'),...hl(31,39,21,'gravel')]),
+  ST('Build the factory walls from metal panels, 15 blocks tall.','Metal panels are quick to build and easy to keep clean.',[...box(1,6,29,20,'metal'),...vl(0,6,20,'darkBricks'),...vl(30,6,16,'darkBricks')]),
+  ST('Make a saw-tooth roof, with glass on every single slope.','Factory roofs are shaped like saw teeth, so daylight can get inside.',SAW),
+  ST('Put rows of glowing windows along the walls, 2 blocks tall.','Windows let workers see the weather and get some fresh air.',[[3,8],[9,8],[15,8]].flatMap(([x,y])=>box(x,y,x+1,y+1,'glowWin'))),
+  ST('Build two tall brick smokestacks on top of the roof.','Smokestacks carry smoke high up, far away from the workers.',[...box(4,0,5,4,'brick'),...box(25,0,26,4,'brick')]),
+  ST('Build an upper floor with a safety railing on the edge.','Railings keep workers from falling. Safety is part of good design!',[...hl(1,19,12,'metalFloor'),...hl(15,19,11,'bars')]),
+  ST('Install 3 big mixing vats on the upper floor.','Vats mix the ingredients slowly and carefully, bubble by bubble.',[[3,10],[7,10],[11,10]].flatMap(([x,y])=>[[x,y,'vat'],[x+1,y,'vat'],[x,y+1,'vatB'],[x+1,y+1,'vatB']])),
+  ST('Run pipes from each vat down to the machines below.','Pipes move things around without anyone carrying heavy buckets.',[4,8,12].flatMap(x=>vl(x,13,16,'pipeV'))),
+  ST('Build a long conveyor belt that sits on metal supports.','Conveyor belts carry the crates all by themselves. So efficient!',[...hl(3,29,18,'conveyor'),...[5,11,17,23,29].flatMap(x=>vl(x,19,20,'pipeV'))]),
+  ST('Add 3 stamping pistons above the belt to seal every crate.','Pistons push down hard and fast, like a giant stamp. Thunk, thunk!',[[10,15,'pistonDown'],[16,15,'pistonDown'],[22,15,'pistonDown']]),
+  ST('Build a control room with screens and a glass window.','Managers watch the whole factory from up high in the control room.',[...box(20,7,28,10,'roomBack'),...hl(20,28,11,'metalFloor'),...hl(21,27,8,'glass'),[22,9,'screen'],[26,9,'screen'],[21,10,'console'],[23,10,'console'],[25,10,'console'],[27,10,'console']]),
+  ST('Add flashing warning lights all around the factory.','Flashing lights tell workers when machines are moving. Watch out!',[[2,13,'beaconRed'],[28,13,'beaconRed'],[30,5,'beaconRed'],[0,5,'beaconRed']]),
+  ST('Lay rails outside, so minecarts can carry the crates away.','Rails and carts move heavy things far away without any effort.',hl(31,36,20,'rail')),
+  ST('Build a glass test chamber, and stack crates in storage.','Test chambers have thick walls, so small booms stay safely inside.',[...TESTCH,...vl(33,17,19,'pipeV'),...vl(36,17,19,'pipeV'),...box(37,18,39,20,'crate')]),
+  ST('Flip the big switch and start the whole factory! Go, go, go!','Everything moves at once! Crates roll, pistons stamp, and tests go POP.',[[2,20,'lever']])],
+ pre(i){i.power=i.done>=15;i.stamp=(x,t)=>{if(!i.power)return 0;const loc=((t/1000-(x*16-48)/26)%2.4+2.4)%2.4;return loc<.32?Math.sin(loc/.32*Math.PI)*1.9:0};
+  if(i.power){const ph=i.t%5000;i.pop=ph<900?ph:null;edgeFx(i,'pop',ph,10,()=>{SFX.boom(.35)});everyFx(i,'thunk',2400,()=>SFX.piston())}},
+ shake(i){return i.pop!=null&&i.pop<300?2:0},
+ extra(c,t,i){if(i.done>=5)[[4.5,0],[25.5,0]].forEach(([x],k)=>{for(let j=0;j<5;j++){const ph=((t/2600)+j/5+k*.3)%1;puff(c,x*16+8+Math.sin(ph*4+j)*8,-ph*10+4,5+ph*12,`rgba(150,150,150,${(.5*(1-ph)).toFixed(2)})`)}});
+  if(i.power){for(let k=0;k<12;k++){const s=Math.floor(t/2400)-k;const x=48+26*(t/1000-s*2.4);if(x<48||x>29*16+8)continue;c.drawImage(TEX.crate,Math.round(x),18*16-10,12,12);if(x>16*16)vRect(c,Math.round(x)+4,18*16-7,4,4,'#e01e1e')}
+   const cp=(t%6000)/6000;const cx=31*16+cp*(9*16);drawCart(c,cx,20*16,false);c.drawImage(TEX.crate,Math.round(cx)+2,20*16-8,12,12);
+   if(i.pop!=null){const k=i.pop/900;c.save();c.globalCompositeOperation='lighter';const g=c.createRadialGradient(34.5*16,13.5*16,0,34.5*16,13.5*16,40);g.addColorStop(0,`rgba(255,240,180,${(1-k).toFixed(2)})`);g.addColorStop(1,'rgba(255,120,0,0)');c.fillStyle=g;c.fillRect(33*16,12*16,64,64);c.restore();i.lights.push([34.5*16,13.5*16,70*(1-k),'255,180,60'])}
+   [[2,13],[28,13],[30,5],[0,5]].forEach(([x,y],k)=>{const a=t/400+k;c.save();c.globalCompositeOperation='lighter';c.translate(x*16+8,y*16+8);c.rotate(a);const g=c.createLinearGradient(0,0,70,0);g.addColorStop(0,'rgba(255,40,30,.35)');g.addColorStop(1,'rgba(255,40,30,0)');c.fillStyle=g;c.beginPath();c.moveTo(0,0);c.lineTo(70,-14);c.lineTo(70,14);c.fill();c.restore()})}}});
+
+/* ---------- 14. SKY ISLAND WITH DRAGONS ---------- */
+const SKYMAIN=(()=>{const top=[],under=[],drips=[];for(let x=8;x<=30;x++){top.push([x,14,'grass'],[x,15,'dirt']);const b=15+Math.round(5*Math.sin(Math.PI*(x-7.5)/23.5));for(let y=16;y<=b;y++)under.push([x,y,y===16?'dirt':'stone']);if(x%3===1)drips.push([x,b+1,'drip'])}return{top,under:topdown(under),drips}})();
+const ISLE=(x1,x2,ty)=>{const a=[];for(let x=x1;x<=x2;x++){a.push([x,ty,'grass'],[x,ty+1,'dirt']);const b=ty+1+Math.round(2.5*Math.sin(Math.PI*(x-x1+.5)/(x2-x1+1)));for(let y=ty+2;y<=b;y++)a.push([x,y,'stone'])}return a};
+W({id:'sky',name:'Sky Island with Dragons',diff:5,sky:'skyset',terrain:T40.none,dark:{from:0,alpha:.18},backdrop:cloudSea,
+ stages:[
+  ST('Build the top of a giant floating island with grass and dirt.','Floating islands look best when the top is flat and the bottom is pointy.',SKYMAIN.top),
+  ST('Make the bottom of the island pointy, like an upside-down mountain.','Builders call this the ROOT of the island. Make it deepest in the middle!',SKYMAIN.under),
+  ST('Hang dripping stone spikes underneath the island.','Little drips under an island make it look ancient and magical.',SKYMAIN.drips),
+  ST('Build two smaller islands floating on each side of it.','Small islands around a big one make the sky feel huge.',[...ISLE(0,6,9),...ISLE(33,39,6)]),
+  ST('Pour waterfalls off the edges, all the way down into the clouds.','Waterfalls pouring off floating islands are one of the coolest sky tricks!',[...vl(31,14,23,'waterfall'),...vl(7,10,23,'waterfall')]),
+  ST('Build the castle walls with stone bricks on the big island.','A castle on a sky island looks like it\'s from a fairy tale.',box(13,9,25,13,'stoneBricks')),
+  ST('Build 2 towers and a tall keep in the very middle.','Towers of different heights make a castle look exciting from far away.',[...box(12,5,14,13,'stoneBricks'),...box(24,5,26,13,'stoneBricks'),...box(17,4,21,8,'stoneBricks')]),
+  ST('Top every tower with a pointy, bright red roof.','Pointy roofs make towers look taller and much more magical.',[...tri(11,15,4,'roof','stairL','stairR'),...tri(23,27,4,'roof','stairL','stairR'),...tri(16,22,3,'roof','stairL','stairR')]),
+  ST('Light up the windows, so the castle glows at sunset.','Glowing windows make a castle look cozy and alive.',[[13,7],[25,7],[19,6],[16,11],[22,11],[13,10],[25,10]].map(([x,y])=>[x,y,'glowWin'])),
+  ST('Hang chains and a wooden bridge between the islands.','Bridges connect your islands, so you can walk across the sky!',[[7,10,'slabWood'],[8,11,'slabWood'],[9,12,'slabWood'],[10,13,'slabWood'],...vl(33,9,13,'chain'),[32,13,'slabWood'],[31,13,'slabWood']]),
+  ST('Plant pink cherry trees on every single island.','Cherry blossoms add soft pink color. So pretty against the sky!',[...tree(3,8,3,'cherryLeaves','cherryLog',2),...tree(36,5,3,'cherryLeaves','cherryLog',2),...tree(10,13,3,'cherryLeaves','cherryLog',1),...tree(28,13,3,'cherryLeaves','cherryLog',1)]),
+  ST('Grow glowing purple crystals on the islands.','Crystals glow softly in the dark and sparkle when the light hits them.',[[34,5,'crystal'],[38,5,'crystal'],[9,13,'crystal']]),
+  ST('Build a dragon nest with 2 glowing eggs on the left island.','Dragons need a cozy nest. Keep the eggs warm and safe!',[[0,8,'hay'],[1,8,'hay'],[5,8,'hay'],[6,8,'hay'],[1,7,'dragonEgg'],[5,7,'dragonEgg']]),
+  ST('Put flags on the towers, and lanterns under the islands.','Flags show which way the wind blows. Lanterns light the way home.',[[13,1,'flag'],[25,1,'flag'],[3,13,'lantern'],[36,10,'lantern']]),
+  ST('Call the dragons home! Watch them fly loop-de-loops in the sky.','Your sky kingdom is finished! Say hello to your friendly dragons.',[[19,13,'doorBot'],[19,12,'doorTop']])],
+ extra(c,t,i){const drag=(k,col,belly,P,ax,ay,cx,cy)=>{const a=t/P+k*2.1;const x=cx+Math.sin(a)*ax,y=cy+Math.sin(2*a)*ay;const dir=Math.cos(a)>0?1:-1;dragon(c,x,y,t+k*300,dir,col,belly);
+   if(((t/1000+k*1.3)%5)<.8){for(let s=0;s<10;s++){const u=s/10;c.fillStyle=['#ff6ad0','#ffd23a','#6ad8ff','#9aff6a'][s%4];c.fillRect(Math.round(x+dir*(26+u*50)),Math.round(y-8+Math.sin(t/60+s)*u*8),3,3)}i.lights.push([x+dir*50,y-8,40,'255,200,120'])}};
+  if(i.done>=13)drag(3,'#b07ad8','#e8c8ff',1400,60,14,3*16,4*16);
+  if(i.done>=15){drag(0,'#3fae4a','#c8f0a0',2600,240,60,CW/2,7*16);drag(1,'#d8402a','#ffd0a0',3100,260,50,CW/2,9*16);drag(2,'#2a7ad8','#bfe0ff',2200,200,40,CW/2,5*16);everyFx(i,'roar',9000,()=>SFX.roar())}
+  if(i.done>=5)for(let k=0;k<10;k++){const ph=((t/1500)+k/10)%1;c.fillStyle=`rgba(255,255,255,${(.6*(1-ph)).toFixed(2)})`;c.fillRect(31*16+4+Math.sin(k)*8,CH-30+ph*-20,3,3)}}});
+
+/* ---------- 15. SILO BUNKER ---------- */
+W({id:'silo',name:'Rocket Silo Bunker',diff:5,sky:'day',terrain:T40.under,dark:{from:5,alpha:.72},
+ stages:[
+  ST('Dig a deep elevator shaft straight down from the surface.','Shafts need walls on every side. Never dig straight down under yourself!',topdown(box(2,5,3,21,'lightGrayC'))),
+  ST('Carve out the control room and the bunk room, side by side.','Plan your rooms on paper first. Rooms side by side save lots of digging!',[...box(4,8,15,11,'lightGrayC'),...box(17,8,25,11,'lightGrayC'),...hl(4,26,12,'metalFloor')]),
+  ST('Carve the power room and the storage room on the lower floor.','Heavy machines go on the bottom floor, so the floors above don\'t shake.',[...box(4,16,15,20,'lightGrayC'),...box(17,16,25,20,'lightGrayC'),...hl(4,26,21,'metalFloor')]),
+  ST('Line every room with thick, reinforced concrete walls.','Bunkers need extra-thick walls. Reinforced concrete is super tough!',[...hl(4,26,7,'reinforced'),...hl(4,26,15,'reinforced'),...vl(16,8,11,'reinforced'),...vl(16,16,20,'reinforced'),...vl(26,8,11,'reinforced'),...vl(26,16,18,'reinforced')]),
+  ST('Put a ladder in the shaft for emergencies, next to the elevator.','Always have a backup way out. Ladders never run out of power!',vl(3,5,21,'ladder')),
+  ST('Install computer screens and control panels in the control room.','Control rooms have lots of screens to watch every part of the base.',[[6,9,'screen'],[7,9,'screen'],[8,9,'screen'],[11,9,'screenMap'],[12,9,'screenMap'],[13,9,'screen'],...[6,7,8,11,12,13].map(x=>[x,11,'console'])]),
+  ST('Put 4 bunk beds in the bunk room for the crew to sleep in.','Bunk beds stack two beds in one spot. Great for tiny rooms!',[18,20,22,24].flatMap(x=>[[x,10,'bunkTop'],[x,11,'bunkBot']])),
+  ST('Build the glowing power core that runs the whole base.','The core makes energy for the lights, the screens, and the elevator.',[[9,16,'coreBase'],[10,16,'coreBase'],[9,17,'core'],[10,17,'core'],[9,18,'core'],[10,18,'core'],[9,19,'core'],[10,19,'core'],[9,20,'coreBase'],[10,20,'coreBase']]),
+  ST('Run thick pipes and cables along the walls and ceilings.','Pipes carry air and water. Cables carry power to every room.',[...hl(5,8,18,'pipeH'),...hl(11,15,18,'pipeH'),...hl(17,25,16,'pipeH'),...hl(5,15,8,'pipeH')]),
+  ST('Stack crates of food and water in the storage room.','Bunkers store lots of supplies, enough to last for months!',[...box(18,19,20,20,'crate'),[22,20,'crate'],[23,20,'barrel'],[24,20,'barrel'],[23,19,'barrel']]),
+  ST('Dig the giant silo shaft, and line it with steel walls.','This silo is 18 blocks deep, so it can hold something REALLY big!',[...topdown([...vl(27,5,22,'reinforced'),...vl(34,5,22,'reinforced'),...hl(27,34,22,'reinforced'),...box(28,5,33,21,'siloBack')]),[26,19,'ironDoorT'],[26,20,'ironDoorB']]),
+  ST('Build a launch pad and a gantry, then put the rocket together.','A gantry is a tall tower that holds the rocket steady until launch.',[...hl(28,33,21,'hazard'),...vl(33,9,20,'beamW')]),
+  ST('Put two sliding blast doors on the top of the silo.','Blast doors stay shut until launch time, to keep the rocket safe.',hl(28,33,4,'hatch')),
+  ST('Add red alarm lights in the silo and in the control room.','Alarms make sure everyone knows a launch is about to happen!',[[28,6,'alarm'],[32,6,'alarm'],[15,9,'alarm']]),
+  ST('Build a fence, warning signs, and a radar dish up on top.','The radar watches the sky. The fence keeps curious visitors away.',[...hl(20,26,3,'fenceO'),[22,3,'warnSign'],...hl(35,39,3,'fenceO'),[38,2,'post'],[38,3,'post']]),
+  ST('Count down from 10 and launch the rocket into space! 3... 2... 1... liftoff!','Blast off! The rocket zooms up through the doors and into the stars.',[[1,3,'warnSign'],[0,3,'fenceO']])],
+ pre(i){i.alarm=false;i.doorOpen=0;i.rocketY=21*16;i.flame=0;i.rocket=i.done>=12;if(i.done<16)return;const ph=i.t%18000;i.ph=ph;i.alarm=ph<6000;
+  if(ph>=3000&&ph<5000)i.doorOpen=ease((ph-3000)/2000);else if(ph>=5000&&ph<11000)i.doorOpen=1;else if(ph>=11000&&ph<13000)i.doorOpen=1-ease((ph-11000)/2000);
+  if(ph>=5000&&ph<6000)i.flame=(ph-5000)/1000;if(ph>=6000&&ph<11000){i.flame=1;const k=(ph-6000)/5000;i.rocketY=21*16-k*k*700}if(ph>=11000&&ph<14000)i.rocket=false;if(ph>=14000)i.rocketY=21*16+(1-ease((ph-14000)/3500))*230;
+  edgeFx(i,'a',ph,10,()=>SFX.siren());[1000,2000,3000,4000].forEach(a=>edgeFx(i,'c',ph,a,()=>SFX.beep()));edgeFx(i,'ign',ph,5000,()=>SFX.rumble(3));edgeFx(i,'go',ph,6000,()=>{SFX.boom(1);SFX.whoosh()})},
+ shake(i){return i.flame>0&&i.ph<9000?3*i.flame:0},
+ mid(c,t,i){if(i.done>=1){const ey=6*16+pp(t,10000)*14*16;vRect(c,2*16,Math.round(ey),32,4,'#6a7076');vRect(c,2*16,Math.round(ey)-1,32,1,'#9aa0a6');if(i.done>=6)drawVillager(c,2.5*16+4,Math.round(ey),1,t)}
+  if(i.done>=6)drawVillager(c,9*16,12*16,0,t*.5);if(i.done>=8)drawVillager(c,13*16,21*16,2,t*.5);
+  if(i.rocket){rocketDraw(c,31*16,i.rocketY,i.flame);if(i.flame>0)i.lights.push([31*16,i.rocketY+30,120,'255,160,60'])}},
+ extra(c,t,i){if(i.done>=15){const a=t/700;c.save();c.translate(38*16+8,2*16);vRect(c,-2,0,4,4,'#888');c.rotate(Math.sin(a)*.6);c.fillStyle='#d8d8d8';c.beginPath();c.ellipse(0,-6,14,5,0,0,6.283);c.fill();vRect(c,-1,-14,2,8,'#666');c.restore()}
+  if(i.flame>0){for(let s=0;s<12;s++){const ph=((t/1400)+s/12)%1;const by=Math.min(21*16,i.rocketY+20);puff(c,31*16+Math.sin(s*2.3)*ph*50,by+ph*-80*(i.ph>6000?0.5:1),6+ph*16,`rgba(220,220,220,${(.55*(1-ph)*Math.min(1,i.flame)).toFixed(2)})`)}}}});
+
+/* ---------- 16. AMUSEMENT PARK ---------- */
+const COASTER=[[29*16,19*16],[31*16,13*16],[33*16,6*16],[35*16,15*16],[37*16,9*16],[40*16+16,12*16]];
+const WHEEL={x:23*16+8,y:9*16+8,r:7*16};
+function coasterAt(u){const n=COASTER.length-1,f=Math.max(0,Math.min(.9999,u))*n,j=Math.floor(f),k=f-j;const a=COASTER[j],b=COASTER[j+1];return[a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k]}
+const LEGS=[...line(23,10,18,20,'beamW'),...line(23,10,28,20,'beamW')];
+W({id:'park',name:'Amusement Park',diff:5,sky:'night',terrain:T40.grass,dark:{from:0,alpha:.55},backdrop:city,
+ stages:[
+  ST('Pave colorful brick paths, so visitors can walk everywhere.','Colorful paths make a park feel fun from the very first step.',hl(0,39,21,'pathTile')),
+  ST('Build the entrance with two candy-striped pillars.','Stripes look like candy canes. They make an entrance feel playful!',[...vl(0,13,20,'stripeRW'),...vl(4,13,20,'stripeRW')]),
+  ST('Add a sign on top with flashing lights all around it.','Chasing lights pull your eyes along, so everybody looks at the sign.',hl(0,4,12,'marquee')),
+  ST('Build a round platform and a tall pole for the carousel.','Every carousel spins around a strong pole right in the middle.',[...hl(6,13,20,'quartz'),...vl(9,14,19,'quartzPillar'),...vl(10,14,19,'quartzPillar')]),
+  ST('Give the carousel a striped roof shaped like a big tent.','Tent roofs are a classic fairground look. Stripes make them pop!',[...tri(5,14,13,'stripeRW','stairL','stairR'),[10,8,'flag']]),
+  ST('Put 2 poles on the carousel for the horses to ride on.','The horses move up and down on poles while the carousel spins.',[...vl(7,14,19,'pole'),...vl(12,14,19,'pole')]),
+  ST('Build the two legs of the Ferris wheel, wide at the bottom.','A wide base is stable, just like the letter A. It won\'t tip over!',LEGS),
+  ST('Build the giant wheel and its spokes around a center hub.','The spokes hold the wheel in a perfect circle, just like a bike wheel.',[[23,9,'metal']]),
+  ST('Hang 8 colorful gondolas around the wheel for the riders.','Each gondola swings, so the riders always stay right side up!',[[23,10,'metal']]),
+  ST('Build tall white supports for the roller coaster track.','Supports must be taller under the hills and shorter in the dips.',[...vl(31,14,20,'beamW'),...vl(33,7,20,'beamW'),...vl(35,16,20,'beamW'),...vl(37,10,20,'beamW'),...vl(39,13,20,'beamW')]),
+  ST('Lay the twisty roller coaster track on top of the supports.','Big hills and fast drops are what make a coaster exciting. Wheee!',[[29,20,'stripeBY'],[30,20,'stripeBY']]),
+  ST('Build cotton candy and popcorn stands with striped roofs.','Food stands near rides keep hungry visitors happy and having fun.',[...box(15,19,17,20,'stripeBY'),...hl(15,17,17,'awning'),[15,18,'cottonCandy'],[17,18,'popcorn']]),
+  ST('Set up a balloon cart near the entrance for the kids.','Balloons tied to a cart bob in the wind. Every kid wants one!',[[2,20,'balloonCart']]),
+  ST('Put lamp posts along the paths and hang twinkly string lights.','Warm lamps and twinkly strings make the park magical at night.',[[5,18,'lantern'],[5,19,'post'],[5,20,'post'],[14,18,'lantern'],[14,19,'post'],[14,20,'post']]),
+  ST('Hide fireworks launchers behind the coaster for the big finale.','Fireworks are launched far away from people, so everyone stays safe.',[[32,20,'fireworkBox'],[34,20,'fireworkBox'],[36,20,'fireworkBox'],[38,20,'fireworkBox']]),
+  ST('Turn on the power! Ride the wheel, the coaster, and the carousel!','The park is open! Listen to everyone cheer as fireworks light the sky.',[[1,20,'flower4'],[3,20,'flower3']])],
+ pre(i){i.power=i.done>=16},
+ mid(c,t,i){const on=i.power;if(i.done>=6){const a=on?t/700:0;for(let k=0;k<4;k++){const an=a+k*Math.PI/2;const x=9.5*16+8+Math.cos(an)*44,dep=Math.sin(an),y=19*16+(on?Math.sin(t/300+k)*4:0);if(dep<0)continue;spr(c,x,y,Math.cos(an+Math.PI/2)>0?1:-1,R=>{const col=['#fff','#ffd0a0','#c8e0ff','#ffc8e8'][k];R(-8,-8,14,6,col);R(4,-13,5,7,col);R(7,-11,3,2,col);R(-7,-2,2,4,col);R(3,-2,2,4,col);R(-10,-8,3,3,'#d4a017');R(-2,-12,4,4,'#e23b3b')})}}},
+ extra(c,t,i){const on=i.power;const prog=(s)=>i.done>s?1:(i.stage===s?i.frac:0);
+  const wr=prog(7);if(wr>0){const a=on?t/4000:0;c.strokeStyle='#e8e8e8';c.lineWidth=3;c.beginPath();c.arc(WHEEL.x,WHEEL.y,WHEEL.r,a,a+wr*6.283);c.stroke();c.lineWidth=1.5;for(let k=0;k<12;k++){const an=a+k/12*6.283;if(k/12>wr)break;c.beginPath();c.moveTo(WHEEL.x,WHEEL.y);c.lineTo(WHEEL.x+Math.cos(an)*WHEEL.r,WHEEL.y+Math.sin(an)*WHEEL.r);c.stroke()}
+   if(on)for(let k=0;k<24;k++){const an=a+k/24*6.283;const lit=(Math.floor(t/200)+k)%3!==0;const x=WHEEL.x+Math.cos(an)*WHEEL.r,y=WHEEL.y+Math.sin(an)*WHEEL.r;vRect(c,Math.round(x)-1,Math.round(y)-1,3,3,lit?['#ff5a5a','#ffd23a','#5ad8ff','#9aff6a'][k%4]:'#555');if(lit&&k%4===0)i.lights.push([x,y,22,'255,220,140'])}}
+  const gp=prog(8);if(gp>0){const a=on?t/4000:0;for(let k=0;k<8;k++){if(k/8>=gp)break;const an=a+k/8*6.283;const x=WHEEL.x+Math.cos(an)*WHEEL.r,y=WHEEL.y+Math.sin(an)*WHEEL.r;vRect(c,Math.round(x)-1,Math.round(y),2,5,'#888');vRect(c,Math.round(x)-7,Math.round(y)+5,14,10,['#e23b3b','#ffd23a','#3b6dc2','#3fa83a'][k%4]);vRect(c,Math.round(x)-5,Math.round(y)+7,10,4,'#9ad0ff')}}
+  const tp=prog(10);if(tp>0){c.strokeStyle='#d42a1e';c.lineWidth=3;c.beginPath();const steps=60;for(let s=0;s<=steps*tp;s++){const [x,y]=coasterAt(s/steps);s?c.lineTo(x,y):c.moveTo(x,y)}c.stroke();c.strokeStyle='#ffd23a';c.lineWidth=1;c.stroke();
+   const u=on?((t%7000)/7000):0;const [cx,cy]=coasterAt(u);const [nx,ny]=coasterAt(Math.min(.9999,u+.01));const ang=Math.atan2(ny-cy,nx-cx);c.save();c.translate(cx,cy);c.rotate(ang);vRect(c,-10,-10,20,8,'#2a7ad8');vRect(c,-8,-14,4,4,'#e9b98f');vRect(c,2,-14,4,4,'#e9b98f');c.restore();
+   if(on&&u>.35&&u<.5){bubble(c,'Wheee!',cx,cy-20)}if(on)edgeFx(i,'whee',u,.36,()=>SFX.whee())}
+  if(i.done>=13)[['#e23b3b',-10],['#ffd23a',0],['#3b6dc2',10],['#9aff6a',18]].forEach(([col,dx],k)=>{const bx=2.5*16+dx+Math.sin(t/700+k)*3,by=17*16+Math.sin(t/500+k*2)*3;c.strokeStyle='#bbb';c.beginPath();c.moveTo(bx,by+7);c.lineTo(2.5*16,20*16+6);c.stroke();puff(c,bx,by,6,col)});
+  if(i.done>=14){stringLights(c,4*16+8,12*16,22*16,4*16,t,i.lights,16);stringLights(c,24*16,4*16,33*16,7*16,t,i.lights,10)}
+  if(on){fireworks(c,t,[60,30,CW-60,140],5,77,i.lights,i);[0,1,2,3].forEach(k=>{const x=((t/1000*16+k*170)%720)-40;personWalk(c,x,21*16,t,k)})}},
+ after(c,t,i){if(i.done>=3){const on=Math.floor(t/300)%2||!i.power;c.save();c.font='bold 10px monospace';c.textAlign='center';c.fillStyle=on?'#fff3a0':'#ffd23a';c.shadowColor='#ffd23a';c.shadowBlur=on?8:2;c.fillText('FUN PARK',2.5*16,12*16+11);c.restore()}}});
+
+/* ---------- register the worlds with progression ---------- */
+WORLDS.forEach((w,k)=>{w.need=k+2;w.price=20+k*12;w.reward=8+k*2;PROJ_LIST.push(w);PROJ[w.id]=w});
+
+/* ================= PROGRESSION & MY PROGRESS ================= */
+function isDone(p){return !!(S.completed&&S.completed[p.id])||bstage(p)>=p.stages.length}
+function buildsDone(){return PROJ_LIST.filter(isDone).length}
+function worldOpen(p){return !p.tier||!!(S.owned&&S.owned[p.id])||buildsDone()>=p.need}
+function openWorldIds(){return PROJ_LIST.filter(p=>p.tier&&worldOpen(p)).map(p=>p.id)}
+function renderBuilds(){const g=$('#bgrid');g.innerHTML='';const done=buildsDone(),total=PROJ_LIST.length;const next=PROJ_LIST.find(p=>p.tier&&!worldOpen(p));
+  $('#bprogress').innerHTML=`<div class="bphead"><b>BUILDS FINISHED: ${done} / ${total}</b><span class="prog"><i style="width:${100*done/total}%"></i></span></div>`+
+   (next?`<p>🔒 Next world: <b>${esc(next.name)}</b> — finish ${next.need-done} more build${next.need-done===1?'':'s'}, or buy it for 💎 ${next.price}.</p>`:'<p>🏆 Every world is unlocked. You are a legend!</p>');
+  const sec=(title,list)=>{const h=document.createElement('div');h.className='bsec';h.textContent=title;g.appendChild(h);list.forEach(p=>g.appendChild(buildCard(p)))};
+  sec('⭐ STARTER BUILDS',PROJ_LIST.filter(p=>!p.tier));sec('🌍 ADVENTURE WORLDS — bigger builds, more typing, more effects!',PROJ_LIST.filter(p=>p.tier))}
+function buildCard(p){const n=p.stages.length,st=bstage(p),open=worldOpen(p),fin=isDone(p);const d=document.createElement('button');d.className='bcard'+(open?'':' locked');
+  const stars=p.tier?'★'.repeat(p.diff)+'☆'.repeat(5-p.diff)+' · ':'';
+  d.innerHTML=`<span class="bthumb"><canvas></canvas>${open?'':'<span class="block">🔒</span>'}</span><span class="bname">${esc(p.name)}</span><span class="bprog">${stars}${fin&&st>=n?'✅ FINISHED!':fin?`✅ DONE · TIP ${st}/${n}`:st?`TIP ${st} OF ${n}`:`${n} TIPS`}</span>`+
+   (open?`<span class="prog"><i style="width:${100*st/n}%"></i></span>`:`<span class="bneed">Finish ${p.need} builds · or 💎 ${p.price}</span>`);
+  const cnv=d.querySelector('canvas');const x=cnv.getContext('2d');renderScene(x,p,n,0,2600,false);if(!open){x.fillStyle='rgba(0,0,0,.55)';x.fillRect(0,0,cnv.width,cnv.height)}
+  d.onclick=()=>{if(open){SFX.door();S.bproj=p.id;save();show('build')}else lockedWorld(p)};return d}
+function lockedWorld(p){const done=buildsDone(),can=S.emeralds>=p.price;SFX.click();
+  modal(`<div class="big">🔒 ${esc(p.name.toUpperCase())}</div><p>${p.stages.length} builder tips · difficulty ${'★'.repeat(p.diff)}${'☆'.repeat(5-p.diff)}</p><p>Unlock it by finishing <b>${p.need}</b> builds (you have finished ${done}),<br>or buy it right now for <b>💎 ${p.price} emeralds</b> (you have ${S.emeralds}).</p>${can?'':'<p>Keep typing to earn more emeralds!</p>'}`,
+   can?[{label:'Not now'},{label:`Buy for 💎 ${p.price}`,primary:true,fn:()=>{S.emeralds-=p.price;(S.owned=S.owned||{})[p.id]=true;save();renderHUD();SFX.gem();setTimeout(SFX.jingle,200);confetti(120);toast(`🔓 ${esc(p.name)} unlocked!`);renderBuilds()}}]:[{label:'OK',primary:true}])}
+const ACH=[
+ {icon:'👣',name:'First Steps',desc:'Pass Finger Camp lesson 1',test:()=>(S.lessons[0]||0)>=1},
+ {icon:'🏠',name:'Home Row Hero',desc:'Pass Finger Camp lessons 1 to 6',test:()=>[0,1,2,3,4,5].every(i=>(S.lessons[i]||0)>=1)},
+ {icon:'⌨️',name:'Keyboard Master',desc:'Pass all 20 Finger Camp lessons',test:()=>LESSONS.every((_,i)=>(S.lessons[i]||0)>=1)},
+ {icon:'🧱',name:'First Build',desc:'Finish any build',test:()=>buildsDone()>=1},
+ {icon:'🏗️',name:'Master Builder',desc:'Finish all 7 starter builds',test:()=>PROJ_LIST.filter(p=>!p.tier).every(isDone)},
+ {icon:'🌍',name:'World Explorer',desc:'Unlock 5 adventure worlds',test:()=>openWorldIds().length>=5},
+ {icon:'👑',name:'Legendary Builder',desc:'Finish every single build',test:()=>buildsDone()>=PROJ_LIST.length},
+ {icon:'🛡️',name:'Village Guardian',desc:'Pass 10 Protect the Villagers levels',test:()=>Object.values(S.village||{}).filter(v=>v>=1).length>=10},
+ {icon:'🦸',name:'Village Hero',desc:'Get 3 stars on all 20 village levels',test:()=>LESSONS.every((_,i)=>((S.village||{})[i]||0)>=3)},
+ {icon:'⚡',name:'Speedy Fingers',desc:'Reach Iron rank in the Speed Run',test:()=>S.best.score>=120},
+ {icon:'💎',name:'Lightning Fingers',desc:'Reach Diamond rank in the Speed Run',test:()=>S.best.score>=260},
+ {icon:'📖',name:'Storyteller',desc:'Save 3 stories',test:()=>S.stories.length>=3},
+ {icon:'🎵',name:'Song Bird',desc:'Play 5 whole songs while typing',test:()=>(S.stats.songs||0)>=5},
+ {icon:'💰',name:'Emerald Collector',desc:'Have 100 emeralds at once',test:()=>S.emeralds>=100},
+ {icon:'🔟',name:'10,000 Letters',desc:'Type 10,000 correct letters',test:()=>(S.stats.chars||0)>=10000}];
+function renderProgress(){const L=LESSONS.length,sum=o=>Object.values(o||{}).reduce((a,b)=>a+b,0);
+  const campPass=LESSONS.filter((_,i)=>(S.lessons[i]||0)>=1).length,vilPass=LESSONS.filter((_,i)=>((S.village||{})[i]||0)>=1).length;
+  const bd=buildsDone(),tipsAll=PROJ_LIST.reduce((a,p)=>a+bstage(p),0),tipsTotal=PROJ_LIST.reduce((a,p)=>a+p.stages.length,0),worlds=openWorldIds().length,nw=PROJ_LIST.filter(p=>p.tier).length;
+  const rank=RANKS.reduce((r,x)=>S.best.score>=x.min?x:r,RANKS[0]),st=S.stats||{},words=S.stories.reduce((a,s)=>a+(s.words||0),0);
+  const row=(icon,name,val,frac)=>`<div class="pg"><span class="pgi">${icon}</span><span class="pgn">${name}</span><span class="pgv">${val}</span>${frac!=null?`<span class="prog"><i style="width:${Math.min(100,frac*100)}%"></i></span>`:''}</div>`;
+  const got=ACH.filter(a=>a.test()).length;
+  $('#progBody').innerHTML=`${row('⭐','Level',`${levelOf(S.xp)} · ${levelTitle(levelOf(S.xp))}`,null)}${row('💎','Emeralds',S.emeralds,null)}
+   <h3 class="pgh">Modes</h3>${row('✋','Finger Camp',`${campPass}/${L} lessons · ${sum(S.lessons)}/${L*3} ★`,campPass/L)}${row('🧱','Build School',`${bd}/${PROJ_LIST.length} builds · ${tipsAll}/${tipsTotal} tips`,bd/PROJ_LIST.length)}
+   ${row('🌍','Adventure worlds open',`${worlds}/${nw}`,worlds/nw)}${row('🛡️','Protect the Villagers',`${vilPass}/${L} levels · ${sum(S.village)}/${L*3} ★`,vilPass/L)}
+   ${row('⚡','Speed Run best',S.best.score?`${S.best.score} pts · ${S.best.wpm} WPM · ${rank.n}`:'not played yet',null)}${row('📖','Story Book',`${S.stories.length} stories · ${words} words`,null)}
+   <h3 class="pgh">Typing totals</h3>${row('⌨️','Letters typed',(st.chars||0).toLocaleString(),null)}${row('🎓','Builder tips typed',st.tips||0,null)}${row('🎵','Songs played',st.songs||0,null)}
+   <h3 class="pgh">Badges: ${got} / ${ACH.length}</h3><div class="achs">${ACH.map(a=>{const ok=a.test();return `<div class="ach${ok?' ok':''}"><span class="ai">${a.icon}</span><b>${a.name}</b><small>${a.desc}</small></div>`}).join('')}</div>`}
 
 /* ================= PROTECT THE VILLAGERS ================= */
 const JOKES=[
@@ -1420,7 +2220,7 @@ class VillageGame{
     else{this.target=null;const m=this.mobs.filter(m=>m.state==='walk'&&m.word[0]===k).sort((a,b)=>a.x-b.x)[0];
       if(m){this.target=m;m.typed=1;this.good(k);if(m.typed>=m.word.length)this.fire(m)}else{const n=this.nearest();if(n)this.bad(k,n.word[0])}}
     this.coach()}
-  good(k){this.correct++;this.streak++;this.bestStreak=Math.max(this.bestStreak,this.streak);flashKey(keyIdFromEvent(k),true);
+  good(k){this.correct++;this.streak++;this.bestStreak=Math.max(this.bestStreak,this.streak);S.stats.chars++;flashKey(keyIdFromEvent(k),true);
     if(musicOn())playNextNote();else SFX.click();addXP(1);$('#oops').textContent='';
     if(this.streak%30===0){addGems(1);SFX.snack();toast(`🍗 ${this.streak} in a row! Snack time! +1 emerald`)}}
   bad(k,exp){this.errors++;this.streak=0;this.missMap[exp]=(this.missMap[exp]||0)+1;const id=keyIdFromEvent(k);if(id)flashKey(id,false);SFX.err();
@@ -1561,7 +2361,7 @@ $('#storyText').addEventListener('keydown',e=>{capsCheck(e);if(e.ctrlKey||e.meta
   if(e.key.length===1)info=charInfo(e.key);else if(e.key==='Enter')info={key:'Enter',finger:'R5',label:'Enter'};else if(e.key==='Backspace')info={key:'Backspace',finger:'R5',label:'Backspace'};
   if(!info)return;coachNext(info,'You pressed');flashKey(info.key,true);if(info.shiftKey)flashKey(info.shiftKey,true);storySound(e.key);kdHandled=true});
 let kdHandled=false;
-function storySound(k){if(k==='Backspace'){SFX.dirt();return}if(k==='Enter'){SFX.pop();return}if(musicOn()){if(k!==' ')playNextNote();return}if(k===' '){SFX.note(-12);return}
+function storySound(k){if(k.length===1)S.stats.chars++;if(k==='Backspace'){SFX.dirt();return}if(k==='Enter'){SFX.pop();return}if(musicOn()){if(k!==' ')playNextNote();return}if(k===' '){SFX.note(-12);return}
   const P=[0,2,4,7,9];const c=k.toLowerCase().charCodeAt(0);const idx=c%10;SFX.note(P[idx%5]+12*Math.floor(idx/5)+(k!==k.toLowerCase()?12:0))}
 $('#storyText').addEventListener('input',e=>{if(!kdHandled&&e.data){const ch=e.data.slice(-1);const info=charInfo(ch);if(info){coachNext(info,'You pressed');flashKey(info.key,true)}storySound(ch)}kdHandled=false});
 $('#storyText').addEventListener('input',()=>{S.draft=$('#storyText').value;save();updateWords()});
