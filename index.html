@@ -2055,6 +2055,57 @@ W({id:'park',name:'Amusement Park',diff:5,sky:'night',terrain:T40.grass,dark:{fr
   if(on){fireworks(c,t,[60,30,CW-60,140],5,77,i.lights,i);[0,1,2,3].forEach(k=>{const x=((t/1000*16+k*170)%720)-40;personWalk(c,x,21*16,t,k)})}},
  after(c,t,i){if(i.done>=3){const on=Math.floor(t/300)%2||!i.power;c.save();c.font='bold 10px monospace';c.textAlign='center';c.fillStyle=on?'#fff3a0':'#ffd23a';c.shadowColor='#ffd23a';c.shadowBlur=on?8:2;c.fillText('FUN PARK',2.5*16,12*16+11);c.restore()}}});
 
+/* ---------- SCHOOL WITH PLAYGROUND ---------- */
+(function(){const make=(n,fn)=>{const c=cv();fn(c.getContext('2d'));TEX[n]=c};const px=(x,c,a,b,w=1,h=1)=>{x.fillStyle=c;x.fillRect(a,b,w,h)};
+  make('chalk',x=>{px(x,'#2f5a3a',0,0,16,16);px(x,'#7a5534',0,0,16,2);px(x,'#7a5534',0,14,16,2);px(x,'#3a6a46',2,4,12,1)});
+  make('desk',x=>{px(x,'#c8a46a',1,7,14,3);px(x,'#7a5a32',2,10,2,6);px(x,'#7a5a32',12,10,2,6);px(x,'#3b6dc2',4,5,5,2);px(x,'#fff',5,5,3,1)});
+  make('liftBtn',x=>{px(x,'#555',5,5,6,6);px(x,'#e01e1e',6,6,4,4)});
+  make('pistonUp',x=>{x.drawImage(TEX.pistonBody,0,0);x.drawImage(TEX.pistonHead,0,0)});})();
+['desk','dustV','liftBtn'].forEach(n=>OVER.add(n));
+const LIFTY=[21*16,15*16,10*16],LAMPROW={17:0,12:1,7:2};
+ANIM.dustV=(c,px,py,t,x,y,i)=>{const b=i.liftMoving?.6+.4*Math.sin(t/70-y):.3;c.fillStyle=`rgb(${110+145*b|0},${20*b|0},${10*b|0})`;c.fillRect(px+7,py,2,16);if(i.liftMoving&&(Math.floor(t/60)+y)%4===0){c.fillStyle='#ff9a7a';c.fillRect(px+6,py+5,4,4)}};
+ANIM.liftLamp=(c,px,py,t,x,y,i)=>c.drawImage(TEX[i.liftOn&&i.liftFloor===LAMPROW[y]?'lampOn':'lampOff'],px,py);
+LIGHTFN.liftLamp=(t,i,x,y)=>i.liftOn&&i.liftFloor===LAMPROW[y]?[2.2,'255,170,60']:0;
+function kid(c,x,y,t,k,dir,run){const st=run?Math.floor(t/110+k)%2:0;const sh=['#e23b3b','#3b6dc2','#3fa83a','#f0a020','#c060e0','#ff7ab0'][k%6],hr=['#4a2c14','#e8c040','#1c1c1c','#a0501a'][k%4];
+  spr(c,x,y,dir,R=>{R(-3,-4,2,4-st,'#3a3a6a');R(1,-4,2,4-(1-st),'#3a3a6a');R(-4,-11,8,7,sh);R(-3,-18,7,7,'#e9b98f');R(-3,-19,7,3,hr);R(2,-15,1,1,'#222');R(1,-13,2,1,'#9a4a3a');if(run){R(4,-10+st,2,4,sh);R(-6,-10+(1-st),2,4,sh)}})}
+const SCHOOL={id:'school',name:'School & Playground',diff:2,sky:'day',terrain:T40.grass,backdrop:hills40,
+ stages:[
+  ST('Lay a stone path to the front door, and a sand pit by the slide.','A path shows everyone the way in. Sand under a slide makes landings soft!',[...hl(0,23,21,'smooth'),...hl(36,39,21,'sand')]),
+  ST('Build the school walls out of bricks, 3 floors tall.','Schools need lots of room. Three floors fit many classrooms on a small spot.',box(1,5,22,20,(x,y)=>x===1||x===22?'brick':x>=18&&x<=20?'grayC':'drywall')),
+  ST('Add strong floors between each level of the school.','Floors split a tall building into levels. Leave a gap for the elevator!',[...hl(2,17,10,'polished'),...hl(2,17,15,'polished')]),
+  ST('Build a roof with a clock tower, plus a front door.','A clock on the tower helps everyone get to class on time.',[...hl(0,23,4,'darkplanks'),...box(10,1,13,3,'brick'),[11,2,'clock'],[12,0,'flag'],[1,19,'doorTop'],[1,20,'doorBot']]),
+  ST('Put big windows on every floor, so the classrooms are bright.','Sunny classrooms help kids feel awake and happy while they learn.',[3,14].flatMap(x=>[7,12,17].flatMap(y=>box(x,y,x+1,y+1,'glass')))),
+  ST('Hang a green chalkboard on the wall of every classroom.','Every classroom needs a board where the teacher can write.',[7,12,17].flatMap(y=>box(7,y,11,y+1,'chalk'))),
+  ST('Put desks in rows, so every kid has a place to sit.','Desks in neat rows all face the board, so everyone can see.',[9,14,20].flatMap(y=>[4,7,10,13].map(x=>[x,y,'desk']))),
+  ST('Build the elevator shaft, with a ladder for emergencies.','An elevator helps everyone reach the top floor, even with heavy backpacks.',vl(20,6,20,'ladder')),
+  ST('Run redstone dust up the wall, and put a button on each floor.','Redstone dust works like a wire. Press a button and the signal travels up!',[...vl(21,5,20,'dustV'),[17,9,'liftBtn'],[17,14,'liftBtn'],[17,19,'liftBtn']]),
+  ST('Put sticky pistons at the top and bottom, plus a lamp on each floor.','The pistons push the elevator up and pull it down. The lamp shows where it is!',[[19,5,'pistonDown'],[19,21,'pistonUp'],[17,7,'liftLamp'],[17,12,'liftLamp'],[17,17,'liftLamp']]),
+  ST('Build swings, a seesaw, and a twisty slide on the playground.','A playground needs different kinds of fun, so every kid finds a favorite.',[...vl(24,15,20,'log'),...vl(28,15,20,'log'),...hl(24,28,14,'log'),...vl(34,15,20,'ladder'),[34,14,'planks'],[35,14,'planks'],[36,15,'slideTube'],[37,16,'slideTube'],[38,17,'slideTube'],[39,18,'slideTube'],[31,20,'stone']]),
+  ST('Put a fence around the playground, with flowers by the gate.','A fence keeps the playground safe, so nobody runs into the street.',[...hl(23,39,20,'fenceO'),[23,20,'flower4'],[29,20,'flower3']]),
+  ST('Ring the school bell! It is time for recess, everybody!','The bell rings and the kids rush out to play. The elevator never stops!',[[12,3,'bellO']])],
+ pre(i){i.stamp=()=>0;i.liftOn=i.done>=10;i.liftFloor=0;i.liftMoving=false;i.carY=LIFTY[0];if(!i.liftOn)return;
+  const ph=i.t%15000,seg=[[0,2000,0,0],[2000,3500,0,1],[3500,5500,1,1],[5500,7000,1,2],[7000,9000,2,2],[9000,12000,2,0],[12000,15000,0,0]].find(s=>ph>=s[0]&&ph<s[1]);
+  const k=ease((ph-seg[0])/(seg[1]-seg[0]));i.carY=LIFTY[seg[2]]+(LIFTY[seg[3]]-LIFTY[seg[2]])*k;i.liftMoving=seg[2]!==seg[3];i.liftFloor=i.liftMoving?-1:seg[2];
+  [2000,5500,9000].forEach(a=>edgeFx(i,'up'+a,ph,a,()=>SFX.piston()));[3500,7000,12000].forEach(a=>edgeFx(i,'ding'+a,ph,a,()=>SFX.chime()));
+  i.ring=i.done>=13&&(i.t%20000)<1600;if(i.done>=13)edgeFx(i,'bell',i.t%20000,20,()=>SFX.clang())},
+ mid(c,t,i){
+  if(i.done>=7)[[160,0],[240,1],[336,2]].forEach(([fy,f])=>[5,11].forEach((x,j)=>{if(!(i.done>=13&&f===2&&j===1))kid(c,x*16,fy,t,f*2+j,1,false)}));
+  if(i.done>=13){const Y=21*16;
+   kid(c,25*16+pp(t,5200)*200,Y,t,0,pd(t,5200),true);kid(c,25*16+pp(t+600,5200)*200,Y,t,1,pd(t+600,5200),true);
+   kid(c,31*16+pp(t+2000,7000)*120,Y,t,4,pd(t+2000,7000),true);
+   const sp=(t%5000)/5000;if(sp<.35){kid(c,34*16+8,Y-sp/.35*7*16,t,3,1,false)}else if(sp<.65){const k=(sp-.35)/.3;kid(c,(35.5+k*4)*16,(15+k*4)*16,t,3,1,false)}else kid(c,38*16+(sp-.65)*120,Y,t,3,1,true);
+   edgeFx(i,'whee',sp,.36,()=>SFX.whee())}},
+ extra(c,t,i){
+  if(i.done>=6){c.fillStyle='#e8f0e0';c.font='bold 10px monospace';c.textAlign='center';[['ABC 123',7],['2+2=4',12],['A+ Great!',17]].forEach(([s,y])=>c.fillText(s,9.5*16,y*16+14))}
+  if(i.done>=4){c.fillStyle='#ffd23a';c.font='bold 10px monospace';c.textAlign='center';c.fillText('BLOCK SCHOOL',5.5*16,4*16+12)}
+  if(i.liftOn){const y=Math.round(i.carY),x0=18*16;c.strokeStyle='#555';c.lineWidth=1;c.beginPath();c.moveTo(19.5*16,6*16);c.lineTo(19.5*16,y-38);c.stroke();
+   if(i.done>=13){kid(c,18.6*16,y,t,5,1,false);kid(c,19.6*16,y,t,2,-1,false)}
+   vRect(c,x0,y-38,48,2,'#9aa0a6');vRect(c,x0,y-38,2,38,'#9aa0a6');vRect(c,x0+46,y-38,2,38,'#9aa0a6');vRect(c,x0,y-2,48,4,'#6a7076');vRect(c,x0+16,y+2,16,7,'#c4271a');vRect(c,x0+18,y+3,4,2,'#ff6a4a');
+   c.fillStyle='rgba(180,220,255,.18)';c.fillRect(x0+2,y-36,44,34);if(i.liftMoving)i.lights.push([x0+24,y+5,30,'255,60,40'])}
+  if(i.done>=11){[25.2,27.2].forEach((sx,k)=>{const a=i.done>=13?Math.sin(t/650+k*2)*.6:0;const px=sx*16+8,py=15*16;const L=62;const ex=px+Math.sin(a)*L,ey=py+Math.cos(a)*L;c.strokeStyle='#666';c.beginPath();c.moveTo(px,py);c.lineTo(ex,ey);c.stroke();vRect(c,ex-6,ey,12,3,'#7a5a32');if(i.done>=13)kid(c,ex,ey,t,k+1,a>0?1:-1,false)});
+   const ang=i.done>=13?Math.sin(t/700)*.28:.18,cx=31*16+8,cy=20*16+2;c.save();c.translate(cx,cy);c.rotate(ang);vRect(c,-30,-2,60,4,'#c23b3b');if(i.done>=13){c.restore();[-1,1].forEach((s,k)=>{const kx=cx+s*26*Math.cos(ang),ky=cy+s*26*Math.sin(ang)-1;kid(c,kx,ky,t,k+3,-s,false)});c.save()}c.restore()}}};
+WORLDS.splice(WORLDS.findIndex(w=>w.id==='kitchen'),0,Object.assign({gw:40,gh:24,tier:1},SCHOOL));
+
 /* ---------- register the worlds with progression ---------- */
 WORLDS.forEach((w,k)=>{w.need=k+2;w.price=20+k*12;w.reward=8+k*2;PROJ_LIST.push(w);PROJ[w.id]=w});
 

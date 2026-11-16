@@ -5,7 +5,7 @@ A blocky, building-themed typing game that teaches kids proper finger placement.
 **Play it:** https://badrian404.github.io/block-builder-typing-quest/
 
 - **Finger Camp** – 20 lessons, one or two new keys at a time, with stars to unlock the next lesson
-- **Build School** – type real building tips to build 7 starter scenes, then unlock 16 bigger **adventure worlds** (zoo, farm, bee farm, restaurant, pool, kitchen, fire house, hospital, armory, trading hall, underwater base, TNT test site, TNT factory, sky island with dragons, rocket silo bunker, amusement park) by finishing builds or buying them with emeralds
+- **Build School** – type real building tips to build 7 starter scenes, then unlock 17 bigger **adventure worlds** (zoo, farm, bee farm, restaurant, pool, school & playground with a redstone elevator, kitchen, fire house, hospital, armory, trading hall, underwater base, TNT test site, TNT factory, sky island with dragons, rocket silo bunker, amusement park) by finishing builds or buying them with emeralds
 - **Silly Speed Run** – funny sentences that use all 26 letters, ranked Wood → Diamond
 - **Story Book** – write stories and have them read aloud
 - **Protect the Villagers** – type the words on silly mobs to snowball them into snacks; 20 levels that follow Finger Camp, with a joke to unlock on every level
